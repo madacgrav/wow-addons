@@ -571,14 +571,14 @@ table.insert(WUK.refreshers, function() WUK.ApplyDock() end)
 
 #### Manual
 - [x] Deployed to AddOns with robocopy
-- [ ] With the Cooldown Manager on, `/wuk dock` puts the Essential viewer (Corruption, Immolate, Curses) and the Buff viewer under the strip; moving the strip moves them
-- [ ] In combat the docked timers count down and there is no "Lua Taint: WarlockUtilityKit" error
-- [ ] Opening and closing Edit Mode doesn't leave them stuck elsewhere
-- [ ] `/wuk dock` again, then `/reload`, restores the Edit Mode position
+- [x] With the Cooldown Manager on, `/wuk dock` puts the Essential viewer (Corruption, Immolate, Curses) and the Buff viewer under the strip; moving the strip moves them
+- [x] In combat the docked timers count down and there is no "Lua Taint: WarlockUtilityKit" error
+- [x] Opening and closing Edit Mode doesn't leave them stuck elsewhere
+- [x] `/wuk dock` again, then `/reload`, restores the Edit Mode position
 
 ---
 
 ## Final checks
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] `git status` shows changes only under `WarlockUtilityKit/` and `thoughts/`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `git status` shows changes only under `WarlockUtilityKit/` and `thoughts/`
 - [ ] Open a PR from `wuk-v2`; after merge, CI publishes release `wuk-v0.2.0`
