@@ -16,7 +16,7 @@ events:SetScript("OnEvent", function(_, event, ...)
   for _, fn in ipairs(handlers[event]) do fn(...) end
 end)
 
-local DEFAULTS = { locked = false, shown = true, frames = {}, icons = {}, minimapAngle = 220 }
+local DEFAULTS = { locked = false, shown = true, frames = {}, icons = {}, minimapAngle = 220, dockViewers = false }
 local CHAR_DEFAULTS = { pet = "imp" }
 
 WUK.On("ADDON_LOADED", function(name)
@@ -232,5 +232,10 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   elseif cmd == "probe" then WUK.Probe()
   elseif cmd == "board" then WUK.ToggleBoard()
   elseif cmd == "lead" then WUK.ClaimLead()
-  else WUK.Print("/wuk config | board | lead | show | hide | lock | reset | probe | pet <imp|voidwalker|succubus|felhunter>") end
+  elseif cmd == "dock" then
+    if InCombatLockdown() then return WUK.Print("not in combat") end
+    WUK.db.dockViewers = not WUK.db.dockViewers
+    if WUK.db.dockViewers then WUK.ApplyDock(); WUK.Print("cooldown viewers docked under strip")
+    else WUK.Print("undocked - /reload to restore the Edit Mode position") end
+  else WUK.Print("/wuk config | board | lead | dock | show | hide | lock | reset | probe | pet <imp|voidwalker|succubus|felhunter>") end
 end

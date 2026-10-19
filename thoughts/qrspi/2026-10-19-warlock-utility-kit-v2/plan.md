@@ -521,10 +521,10 @@ eq(lines[2], "WUK: Zed - Curse of Tongues", "zed line")
 
 #### Manual
 - [x] Deployed to AddOns with robocopy
-- [ ] In a party, the lead's Announce posts one line per assigned warlock in party chat, with raid icons
-- [ ] In a raid as leader or assistant, the lines appear as raid warnings; as a plain member, in raid chat
-- [ ] Non-leads see no Announce button
-- [ ] Solo, Announce prints the lines locally
+- [x] In a party, the lead's Announce posts one line per assigned warlock in party chat, with raid icons
+- [x] In a raid as leader or assistant, the lines appear as raid warnings; as a plain member, in raid chat
+- [x] Non-leads see no Announce button
+- [x] Solo, Announce prints the lines locally
 
 ---
 
@@ -566,11 +566,11 @@ table.insert(WUK.refreshers, function() WUK.ApplyDock() end)
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] Every `.lua` file passes the syntax check
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] Every `.lua` file passes the syntax check
 
 #### Manual
-- [ ] Deployed to AddOns with robocopy
+- [x] Deployed to AddOns with robocopy
 - [ ] With the Cooldown Manager on, `/wuk dock` puts the Essential viewer (Corruption, Immolate, Curses) and the Buff viewer under the strip; moving the strip moves them
 - [ ] In combat the docked timers count down and there is no "Lua Taint: WarlockUtilityKit" error
 - [ ] Opening and closing Edit Mode doesn't leave them stuck elsewhere

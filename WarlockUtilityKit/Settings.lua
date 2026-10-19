@@ -17,7 +17,7 @@ end
 
 local function Build()
   win = CreateFrame("Frame", "WUKSettings", UIParent, "BasicFrameTemplateWithInset")
-  win:SetSize(300, 230); win:SetPoint("CENTER"); win:SetFrameStrata("DIALOG")
+  win:SetSize(320, 258); win:SetPoint("CENTER"); win:SetFrameStrata("DIALOG")
   win:SetMovable(true); win:EnableMouse(true); win:RegisterForDrag("LeftButton")
   win:SetScript("OnDragStart", win.StartMoving); win:SetScript("OnDragStop", win.StopMovingOrSizing)
   tinsert(UISpecialFrames, "WUKSettings") -- Escape closes it
@@ -28,13 +28,15 @@ local function Build()
     Check(win, "Show strip", -36, function() return WUK.db.shown end, function(on) Run(on and "show" or "hide") end),
     Check(win, "Lock frames (no Shift+drag)", -64, function() return WUK.db.locked end,
       function(on) if on ~= WUK.db.locked then Run("lock") end end),
+    Check(win, "Dock Blizzard cooldown timers under strip", -92, function() return WUK.db.dockViewers end,
+      function(on) if on ~= WUK.db.dockViewers then Run("dock") end end),
   }
 
   local label = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  label:SetPoint("TOPLEFT", 20, -104); label:SetText("Preferred pet")
+  label:SetPoint("TOPLEFT", 20, -132); label:SetText("Preferred pet")
   -- Mainline 11.0+ menu API (UIDropDownMenu is deprecated)
   local dd = CreateFrame("DropdownButton", nil, win, "WowStyle1DropdownTemplate")
-  dd:SetWidth(160); dd:SetPoint("TOPLEFT", 18, -122)
+  dd:SetWidth(160); dd:SetPoint("TOPLEFT", 18, -150)
   dd:SetupMenu(function(_, root)
     for _, pet in ipairs(PETS) do
       root:CreateRadio(pet:sub(1, 1):upper() .. pet:sub(2),

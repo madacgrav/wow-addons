@@ -14,4 +14,5 @@ Summon.lua
 Trade.lua
 Comm.lua
 Board.lua
+Dock.lua
 Settings.lua
