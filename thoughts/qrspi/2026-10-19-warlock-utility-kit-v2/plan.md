@@ -452,7 +452,7 @@ eq(WUK.AcceptLead(brd, 10), false, "stale claim"); eq(WUK.AcceptLead(brd, 11), t
 - [x] Every `.lua` file passes the syntax check
 
 #### Manual (two warlocks in a party, both running WUK)
-- [ ] Deployed to AddOns with robocopy
+- [x] Deployed to AddOns with robocopy
 - [ ] A clicks Take lead; B's board shows "Lead: A" and B's dropdowns are disabled
 - [ ] A sets B to Elements + Star + SS on A; within ~1s B's board and strip update and B gets the chat line
 - [ ] B `/reload`s; the board comes back after login, via R and full sync
