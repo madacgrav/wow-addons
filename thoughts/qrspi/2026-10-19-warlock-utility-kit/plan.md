@@ -884,7 +884,7 @@ Two changes to `PrepSteps`, both from the user's in-game report:
 The prep button moves to the next step by design. A separate `WUKPetButton` (36px, second slot) now always shows the `/wuk pet` choice, or Imp if that pet isn't learned. It is grey while that pet isn't out, and a click summons it. The stone icons shift one slot right; the strip is 284 wide.
 
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] In game: the pet icon stays on the chosen pet through summoning, death and mounting; a click summons it
+- [x] In game: the pet icon stays on the chosen pet through summoning, death and mounting; a click summons it
 
 ---
 
@@ -896,8 +896,8 @@ This replaces design.md's "no minimap button, no settings panel" decision at the
 - Every control calls the existing `/wuk` handler, so there is one code path. Escape closes the window.
 
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed` (no new pure logic)
-- [ ] In game: the minimap button shows, drags around the ring and keeps its spot after `/reload`; a click opens and closes the window
-- [ ] In game: each option works and matches the `/wuk` equivalents; the window reflects the current state when reopened
+- [x] In game: the minimap button shows, drags around the ring and keeps its spot after `/reload`; a click opens and closes the window
+- [x] In game: each option works and matches the `/wuk` equivalents; the window reflects the current state when reopened
 
 ---
 
