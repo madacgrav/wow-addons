@@ -29,14 +29,14 @@ end
 
 table.insert(WUK.inits, function()
   local f = CreateFrame("Frame", "WUKStrip", UIParent, "BackdropTemplate")
-  -- prep button + 5 stone buttons, 36px each with 4px gaps; soulstone line underneath
-  f:SetSize(4 + 6 * 40, 62)
+  -- prep + pet + 5 stone buttons, 36px each with 4px gaps; soulstone line underneath
+  f:SetSize(4 + 7 * 40, 62)
   f:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
   f:SetBackdropColor(0, 0, 0, 0.6); f:SetBackdropBorderColor(0.58, 0.51, 0.79, 1)
   f.icons = {}
   for i, kind in ipairs(KINDS) do
     local b = CreateFrame("Button", "WUKStone_" .. kind, f, "SecureActionButtonTemplate")
-    b:SetSize(36, 36); b:SetPoint("TOPLEFT", 4 + i * 40, -4)
+    b:SetSize(36, 36); b:SetPoint("TOPLEFT", 4 + (i + 1) * 40, -4)
     b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetAttribute("type", "macro")
     b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints()

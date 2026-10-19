@@ -34,6 +34,24 @@ table.insert(WUK.inits, function()
 end)
 table.insert(WUK.refreshers, function() WUK.UpdatePrepButton() end)
 
+-- pet button: always the /wuk pet choice (Imp if not learned); grey while that pet isn't out
+local petBtn
+table.insert(WUK.inits, function()
+  petBtn = CreateFrame("Button", "WUKPetButton", WUK.strip, "SecureActionButtonTemplate")
+  petBtn:SetSize(36, 36); petBtn:SetPoint("TOPLEFT", 44, -4)
+  petBtn:RegisterForClicks("AnyUp", "AnyDown")
+  petBtn:SetAttribute("type", "macro")
+  petBtn.icon = petBtn:CreateTexture(nil, "ARTWORK"); petBtn.icon:SetAllPoints()
+  petBtn:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+end)
+table.insert(WUK.refreshers, function()
+  local pet = WUK.known[WUK.char.pet] and WUK.char.pet or "imp"
+  local spell = WUK.known[pet]
+  petBtn.icon:SetTexture(spell and C_Spell.GetSpellTexture(spell) or 134400)
+  petBtn.icon:SetDesaturated(WUK.PetFamily() ~= pet)
+  if not InCombatLockdown() then petBtn:SetAttribute("macrotext", spell and ("/cast " .. spell) or "") end
+end)
+
 table.insert(WUK.inits, function()
   WUK.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
     if unit == "player" and WUK.SpellName(spellID) == "Soulstone Resurrection" then

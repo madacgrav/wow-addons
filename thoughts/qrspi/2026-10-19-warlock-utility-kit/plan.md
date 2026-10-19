@@ -880,6 +880,14 @@ Two changes to `PrepSteps`, both from the user's in-game report:
 
 ---
 
+## Fix: dedicated pet button (in-game report: the prep icon changes once the pet is summoned)
+The prep button moves to the next step by design. A separate `WUKPetButton` (36px, second slot) now always shows the `/wuk pet` choice, or Imp if that pet isn't learned. It is grey while that pet isn't out, and a click summons it. The stone icons shift one slot right; the strip is 284 wide.
+
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [ ] In game: the pet icon stays on the chosen pet through summoning, death and mounting; a click summons it
+
+---
+
 ## Final checks (after Phase 7)
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 - [ ] (deferred) `/console addonCombatRestrictionsForced 1`, then exercise the strip, prep, chat "123" and whisper "hs": no Lua errors. Reset with `/console addonCombatRestrictionsForced 0`
