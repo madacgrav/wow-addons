@@ -863,9 +863,9 @@ The stone icons become 36px `SecureActionButtonTemplate` macro buttons, the same
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] The icons are the same size as the prep button, in one row with no overlap
-- [ ] Clicking healthstone uses it if you have one, or creates one if you don't; same for spellstone and firestone
-- [ ] Clicking soulstone with a friendly target soulstones them, and with no target soulstones yourself
+- [x] The icons are the same size as the prep button, in one row with no overlap
+- [x] Clicking healthstone uses it if you have one, or creates one if you don't; same for spellstone and firestone
+- [x] Clicking soulstone with a friendly target soulstones them, and with no target soulstones yourself
 - [ ] Shift+drag on the strip's bottom edge (the soulstone text area) still moves it
 
 ---
