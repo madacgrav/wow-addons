@@ -876,7 +876,7 @@ Two changes to `PrepSteps`, both from the user's in-game report:
 - While mounted (`IsMounted()`), the pet and Soul Link steps are skipped, so the dismissed pet doesn't flip the button.
 
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] In game: with the preferred pet dead and 0 shards, the button still shows that pet; mounting doesn't change the button
+- [x] (covered by the dedicated pet button check) In game: with the preferred pet dead and 0 shards, the button still shows that pet; mounting doesn't change the button
 
 ---
 
