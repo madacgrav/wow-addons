@@ -16,7 +16,7 @@ events:SetScript("OnEvent", function(_, event, ...)
   for _, fn in ipairs(handlers[event]) do fn(...) end
 end)
 
-local DEFAULTS = { locked = false, shown = true, frames = {}, icons = {} }
+local DEFAULTS = { locked = false, shown = true, frames = {}, icons = {}, minimapAngle = 220 }
 local CHAR_DEFAULTS = { pet = "imp" }
 
 WUK.On("ADDON_LOADED", function(name)
@@ -152,5 +152,6 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   elseif cmd == "reset" then wipe(WUK.db.frames); WUK.Print("positions reset - /reload to apply")
   elseif cmd == "pet" and (arg == "imp" or arg == "voidwalker" or arg == "succubus" or arg == "felhunter") then
     WUK.char.pet = arg; WUK.Print("preferred pet: " .. arg); WUK.Refresh()
-  else WUK.Print("/wuk show | hide | lock | reset | pet <imp|voidwalker|succubus|felhunter>") end
+  elseif cmd == "config" then WUK.ToggleSettings()
+  else WUK.Print("/wuk config | show | hide | lock | reset | pet <imp|voidwalker|succubus|felhunter>") end
 end

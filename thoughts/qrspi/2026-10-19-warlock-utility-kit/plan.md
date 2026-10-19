@@ -888,6 +888,19 @@ The prep button moves to the next step by design. A separate `WUKPetButton` (36p
 
 ---
 
+## Feature: minimap button + settings window (user request)
+This replaces design.md's "no minimap button, no settings panel" decision at the user's request.
+- New `Settings.lua`, listed last in the TOC.
+- A draggable minimap button (angle stored in `WUK.db.minimapAngle`, default 220) toggles the `WUKSettings` window. `/wuk config` does the same.
+- The window has a Show strip checkbox, a Lock frames checkbox, Preferred pet buttons and a Reset positions button.
+- Every control calls the existing `/wuk` handler, so there is one code path. Escape closes the window.
+
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed` (no new pure logic)
+- [ ] In game: the minimap button shows, drags around the ring and keeps its spot after `/reload`; a click opens and closes the window
+- [ ] In game: each option works and matches the `/wuk` equivalents; the window reflects the current state when reopened
+
+---
+
 ## Final checks (after Phase 7)
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 - [ ] (deferred) `/console addonCombatRestrictionsForced 1`, then exercise the strip, prep, chat "123" and whisper "hs": no Lua errors. Reset with `/console addonCombatRestrictionsForced 0`

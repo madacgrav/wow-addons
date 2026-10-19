@@ -12,3 +12,4 @@ UI.lua
 Prep.lua
 Summon.lua
 Trade.lua
+Settings.lua
