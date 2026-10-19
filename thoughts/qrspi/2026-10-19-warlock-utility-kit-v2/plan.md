@@ -17,7 +17,11 @@ DoT timers are deferred until the probe results are in.
 - **Secure attributes:** set only out of combat. Board frames are insecure, so they need no combat gating.
 - **Test command (repo root):** `lua WarlockUtilityKit/tests/run.lua` must print `all tests passed`. Lua is at `C:\Users\madac\AppData\Local\Programs\Lua\bin`, so add it to PATH in PowerShell.
 - **Syntax check:** `lua -e "assert(loadfile([[<file>]]))"` for every `.lua` file.
-- **Deploy for manual checks:** the user copies `WarlockUtilityKit/` to `C:\Program Files (x86)\World of Warcraft\_classic_beta_\Interface\AddOns`.
+- **Deploy after every phase (implementer does it, before handing over for manual checks):**
+  ```powershell
+  robocopy "D:\Source\wow-addons\WarlockUtilityKit" "C:\Program Files (x86)\World of Warcraft\_classic_beta_\Interface\AddOns\WarlockUtilityKit" /MIR /XD tests /NJH /NJS /NP /NDL
+  ```
+  Robocopy exit codes 0-7 mean success. The user then runs `/reload` in game.
 - **Branch:** work on `wuk-v2` (create it from `main`), with one commit per phase.
 
 ---
@@ -68,6 +72,7 @@ Slash branch: `elseif cmd == "probe" then WUK.Probe()`. Add `probe` to the usage
 - [x] Every `.lua` file passes the syntax check
 
 #### Manual
+- [x] Deployed to AddOns (Phase 1 was copied by the user)
 - [x] `/wuk probe` with no target prints the instance/combat/lockdown/secrecy lines and "target: none", with no Lua errors
 - [x] With a mob you've cursed in the open world, out of combat and then in combat, it lists your debuffs (or SECRET)
 - [ ] (skipped: not needed after the in-combat result, see probe-results.md) Inside a dungeon it runs without errors
@@ -297,6 +302,7 @@ eq(WUK.NextRev(5, 3), 6, "rev bumps"); eq(WUK.NextRev(5, 100), 100, "rev uses cl
 - [x] Every `.lua` file passes the syntax check
 
 #### Manual
+- [x] Deployed to AddOns with robocopy
 - [ ] `/wuk board`, the Settings button and right-clicking the minimap button all open the board; you are listed (plus any party warlocks)
 - [ ] Setting curse, mark and SS on your row updates the strip line (raid icon shown) and prints "Your assignment: ..."
 - [ ] With SS set to a party member, the soulstone icon click soulstones them
@@ -446,6 +452,7 @@ eq(WUK.AcceptLead(brd, 10), false, "stale claim"); eq(WUK.AcceptLead(brd, 11), t
 - [ ] Every `.lua` file passes the syntax check
 
 #### Manual (two warlocks in a party, both running WUK)
+- [ ] Deployed to AddOns with robocopy
 - [ ] A clicks Take lead; B's board shows "Lead: A" and B's dropdowns are disabled
 - [ ] A sets B to Elements + Star + SS on A; within ~1s B's board and strip update and B gets the chat line
 - [ ] B `/reload`s; the board comes back after login, via R and full sync
@@ -512,6 +519,7 @@ eq(lines[2], "WUK: Zed - Curse of Tongues", "zed line")
 - [ ] Every `.lua` file passes the syntax check
 
 #### Manual
+- [ ] Deployed to AddOns with robocopy
 - [ ] In a party, the lead's Announce posts one line per assigned warlock in party chat, with raid icons
 - [ ] In a raid as leader or assistant, the lines appear as raid warnings; as a plain member, in raid chat
 - [ ] Non-leads see no Announce button
@@ -561,6 +569,7 @@ table.insert(WUK.refreshers, function() WUK.ApplyDock() end)
 - [ ] Every `.lua` file passes the syntax check
 
 #### Manual
+- [ ] Deployed to AddOns with robocopy
 - [ ] With the Cooldown Manager on, `/wuk dock` puts the Essential viewer (Corruption, Immolate, Curses) and the Buff viewer under the strip; moving the strip moves them
 - [ ] In combat the docked timers count down and there is no "Lua Taint: WarlockUtilityKit" error
 - [ ] Opening and closing Edit Mode doesn't leave them stuck elsewhere
