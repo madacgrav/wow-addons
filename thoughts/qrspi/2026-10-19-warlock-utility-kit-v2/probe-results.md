@@ -13,6 +13,17 @@
 - target hostile: true. **raid mark: nil**: readable and not secret, but this mob had no mark.
 - **`C_UnitAuras.GetUnitAuras("target", "HARMFUL|PLAYER")` raised an error:** `Auras cannot be accessed when secret while tainted by 'WarlockUtilityKit'`.
 
+## Run 3: open world, IN combat, Cooldown Manager enabled (2026-10-19)
+- `C_CooldownViewer`: true. `cooldownViewerEnabled`: 1. `IsCooldownViewerAvailable()`: true.
+- **Category sets are readable by the addon in combat (not secret):**
+  - Essential (3): Corruption, Immolate, Curses
+  - TrackedBuff (11): Curses, Corruption, Fear, Immolate, Banish, Demon Skin, Demon Armor, Detect Invisibility, Subjugate Demon, Berserking, Rapid Regeneration
+  - TrackedBar: 0
+  - Utility (4): Healthstone, Soulstone Resurrection, Berserking, Rapid Regeneration
+- **Global viewer frames exist and are shown:** `EssentialCooldownViewer` (6 children), `UtilityCooldownViewer` (3), `BuffIconCooldownViewer` (3), `BuffBarCooldownViewer` (3).
+- Direct aura reads still error in combat (same as run 2).
+- **Takeaway:** Blizzard's own viewers render DoT/curse timers, and the addon can reach their frames. Docking or anchoring those frames to the WUK strip is a possible path to timers without reading secrets. That path is untested: Edit Mode may override `SetPoint`, and moving these frames may cause taint (Enhanced CDM's changelog reports taint fixes).
+
 ## Conclusion for DoT/curse timers (v3)
 - In combat, even in the open world, addon (tainted) code cannot read the player's own debuffs on an enemy. The API errors rather than returning secret values.
 - Every warlock DoT and curse is ContextuallySecret, with no never-secret exemption.
