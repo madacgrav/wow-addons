@@ -79,4 +79,10 @@ eq(WUK.AcceptRow(brd, "Other", 11), false, "non-lead row"); eq(WUK.AcceptRow(brd
 eq(WUK.AcceptRow(brd, "Lead", 10), true, "same rev ok")
 eq(WUK.AcceptLead(brd, 10), false, "stale claim"); eq(WUK.AcceptLead(brd, 11), true, "newer claim")
 
+-- v2 Phase 4
+local lines = WUK.AnnounceLines({ rows = {
+  Zed = { curse = "tongues", mark = 0 }, Abe = { curse = "elements", mark = 1, ss = "Healbot" }, Mia = { mark = 0 } } })
+eq(#lines, 2, "skips empty"); eq(lines[1], "WUK: Abe - Curse of the Elements - Banish {rt1} - SS: Healbot", "abe line")
+eq(lines[2], "WUK: Zed - Curse of Tongues", "zed line")
+
 print("all tests passed")

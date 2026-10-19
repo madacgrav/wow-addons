@@ -452,12 +452,13 @@ eq(WUK.AcceptLead(brd, 10), false, "stale claim"); eq(WUK.AcceptLead(brd, 11), t
 - [x] Every `.lua` file passes the syntax check
 
 #### Manual (two warlocks in a party, both running WUK)
+> **DEFERRED (2026-10-19):** needs a second warlock running WUK; verify before release.
 - [x] Deployed to AddOns with robocopy
-- [ ] A clicks Take lead; B's board shows "Lead: A" and B's dropdowns are disabled
-- [ ] A sets B to Elements + Star + SS on A; within ~1s B's board and strip update and B gets the chat line
-- [ ] B `/reload`s; the board comes back after login, via R and full sync
-- [ ] B takes lead; A's dropdowns disable, and B's edits reach A
-- [ ] On a trial account, or with `/console addonChatRestrictionsForced 1`: at most one "board sync unavailable" warning, no Lua errors, and the local board still edits
+- [ ] (deferred) A clicks Take lead; B's board shows "Lead: A" and B's dropdowns are disabled
+- [ ] (deferred) A sets B to Elements + Star + SS on A; within ~1s B's board and strip update and B gets the chat line
+- [ ] (deferred) B `/reload`s; the board comes back after login, via R and full sync
+- [ ] (deferred) B takes lead; A's dropdowns disable, and B's edits reach A
+- [ ] (deferred) On a trial account, or with `/console addonChatRestrictionsForced 1`: at most one "board sync unavailable" warning, no Lua errors, and the local board still edits
 
 ---
 
@@ -515,11 +516,11 @@ eq(lines[2], "WUK: Zed - Curse of Tongues", "zed line")
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] Every `.lua` file passes the syntax check
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] Every `.lua` file passes the syntax check
 
 #### Manual
-- [ ] Deployed to AddOns with robocopy
+- [x] Deployed to AddOns with robocopy
 - [ ] In a party, the lead's Announce posts one line per assigned warlock in party chat, with raid icons
 - [ ] In a raid as leader or assistant, the lines appear as raid warnings; as a plain member, in raid chat
 - [ ] Non-leads see no Announce button

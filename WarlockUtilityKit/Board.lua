@@ -69,6 +69,17 @@ function WUK.OnBoardMessage(sender, m)
   end
 end
 
+function WUK.Announce()
+  if not WUK.IsLead() then return WUK.Print("only the lead can announce") end
+  local lines = WUK.AnnounceLines(WUK.board)
+  if #lines == 0 then return WUK.Print("nothing to announce") end
+  local ch = (IsInRaid() and ((UnitIsGroupLeader("player") or UnitIsGroupAssistant("player")) and "RAID_WARNING" or "RAID"))
+    or (IsInGroup() and "PARTY") or nil
+  if not ch then for _, l in ipairs(lines) do WUK.Print(l) end return end
+  local send = C_ChatInfo.SendChatMessage or SendChatMessage
+  for i, l in ipairs(lines) do C_Timer.After((i - 1) * 0.3, function() send(l, ch) end) end
+end
+
 local function Radio(root, label, row, field, val)
   root:CreateRadio(label,
     function() local r = WUK.board.rows[row.warlock]; return (r and r[field]) == val end,
@@ -130,6 +141,7 @@ local function Build()
   end
   win.leadBtn = Button("Take lead", 16, WUK.ClaimLead)
   Button("Sync", 132, WUK.RequestSync)
+  win.announceBtn = Button("Announce", 248, WUK.Announce)
 
   function win:Sync()
     local list = WUK.GroupWarlocks()
@@ -143,6 +155,7 @@ local function Build()
     end
     self.leadText:SetText("Lead: " .. (WUK.board.lead or (me .. " (local)")))
     self.leadBtn:SetShown(WUK.board.lead ~= me)
+    self.announceBtn:SetShown(WUK.IsLead())
   end
   win:SetScript("OnShow", win.Sync)
   win:Hide()

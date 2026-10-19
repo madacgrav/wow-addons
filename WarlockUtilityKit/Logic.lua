@@ -141,3 +141,20 @@ end
 
 function WUK.AcceptLead(board, rev) return rev > (board.rev or 0) end
 function WUK.AcceptRow(board, sender, rev) return sender == board.lead and rev >= (board.rev or 0) end
+
+function WUK.AnnounceLines(board)
+  local names = {}
+  for n, r in pairs(board.rows) do
+    if r.curse or (r.mark or 0) > 0 or r.ss then names[#names + 1] = n end
+  end
+  table.sort(names)
+  local out = {}
+  for _, n in ipairs(names) do
+    local r, parts = board.rows[n], { "WUK: " .. n }
+    if r.curse then local c = CURSE_BY_KEY[r.curse]; parts[#parts + 1] = c and c.name or r.curse end
+    if (r.mark or 0) > 0 then parts[#parts + 1] = "Banish " .. WUK.MarkToken(r.mark) end
+    if r.ss then parts[#parts + 1] = "SS: " .. r.ss end
+    out[#out + 1] = table.concat(parts, " - ")
+  end
+  return out
+end
