@@ -20,4 +20,31 @@ sv = WUK.MergeDefaults({ a = 5, t = {} }, { a = 1, t = { b = 2 } })
 eq(sv.a, 5, "keep existing"); eq(sv.t.b, 2, "fill nested")
 eq(WUK.FormatTime(1799), "29:59", "format")
 
+-- Phase 2
+local function state(o)
+  local s = { known = { armor = "Demon Armor", detect = "Detect Invisibility", imp = "Summon Imp",
+      felhunter = "Summon Felhunter", healthstone = "Create Healthstone", soulstone = "Create Soulstone" },
+    counts = { shard = 3, healthstone = 0, soulstone = 0, ids = {} }, buffs = {}, pet = nil,
+    preferredPet = "felhunter", soulstoneActive = false }
+  for k, v in pairs(o or {}) do s[k] = v end
+  return s
+end
+local steps = WUK.PrepSteps(state())
+eq(steps[1].key, "armor", "armor first"); eq(steps[2].key, "detect", "detect second")
+eq(steps[3].macro, "/cast Summon Felhunter", "preferred pet"); eq(steps[4].key, "healthstone", "hs")
+eq(steps[5].key, "soulstone", "ss create"); eq(#steps, 5, "count fresh")
+local done = state({ buffs = { ["Demon Armor"] = true, ["Detect Invisibility"] = true }, pet = "felhunter",
+  counts = { shard = 1, healthstone = 1, soulstone = 0, ids = {} }, soulstoneActive = true })
+eq(#WUK.PrepSteps(done), 0, "fully prepped")
+local noShard = WUK.PrepSteps(state({ buffs = { ["Demon Armor"] = true, ["Detect Invisibility"] = true },
+  counts = { shard = 0, healthstone = 1, soulstone = 0, ids = {} } }))
+eq(noShard[1].macro, "/cast Summon Imp", "imp fallback"); eq(#noShard, 1, "no shard skips stones")
+eq(#WUK.PrepSteps(state({ buffs = { ["Demon Armor"] = true, ["Detect Invisibility"] = true }, pet = "felhunter",
+  counts = { shard = 0, healthstone = 1, soulstone = 0, ids = {} } })), 0, "keeps felhunter when broke")
+local use = WUK.PrepSteps(state({ buffs = { ["Demon Armor"] = true, ["Detect Invisibility"] = true }, pet = "felhunter",
+  counts = { shard = 2, healthstone = 1, soulstone = 1, ids = { soulstone = 16893 } } }))
+eq(use[1].key, "usesoulstone", "use ss"); eq(use[1].macro, "/target player\n/use item:16893\n/targetlasttarget", "use macro")
+eq(#WUK.PrepSteps(state({ buffs = { demonicSacrifice = true, ["Demon Armor"] = true, ["Detect Invisibility"] = true },
+  counts = { shard = 1, healthstone = 1, soulstone = 0, ids = {} }, soulstoneActive = true })), 0, "demonic sacrifice skips pet")
+
 print("all tests passed")

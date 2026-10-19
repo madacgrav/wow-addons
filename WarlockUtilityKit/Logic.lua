@@ -25,3 +25,29 @@ end
 function WUK.FormatTime(sec)
   return string.format("%d:%02d", math.floor(sec / 60), math.floor(sec % 60))
 end
+
+-- state = { known = {key=spellName}, counts = Counts, buffs = {[buffName]=true, demonicSacrifice=bool},
+--           pet = "imp"|"voidwalker"|... |nil, preferredPet = string, soulstoneActive = bool }
+function WUK.PrepSteps(s)
+  local k, b, c, out = s.known, s.buffs, s.counts, {}
+  local function add(key, macro) out[#out + 1] = { key = key, macro = macro } end
+  if k.armor and not b[k.armor] then add("armor", "/cast " .. k.armor) end
+  if k.detect and not b[k.detect] then add("detect", "/cast " .. k.detect) end
+  if not b.demonicSacrifice then
+    local want = s.preferredPet
+    if want ~= "imp" and c.shard == 0 then want = "imp" end
+    if not k[want] then want = "imp" end
+    -- any pet is fine when the preferred one is unaffordable; avoids swapping Felhunter for Imp
+    local satisfied = s.pet == s.preferredPet or (s.pet ~= nil and want ~= s.preferredPet)
+    if not satisfied and k[want] then add("pet", "/cast " .. k[want]) end
+    if k.soullink and s.pet and not b[k.soullink] then add("soullink", "/cast " .. k.soullink) end
+  end
+  if k.healthstone and c.healthstone == 0 and c.shard > 0 then add("healthstone", "/cast " .. k.healthstone) end
+  if k.soulstone and c.soulstone == 0 and not s.soulstoneActive and c.shard > 0 then
+    add("soulstone", "/cast " .. k.soulstone)
+  end
+  if c.soulstone > 0 and not s.soulstoneActive and c.ids.soulstone then
+    add("usesoulstone", "/target player\n/use item:" .. c.ids.soulstone .. "\n/targetlasttarget")
+  end
+  return out
+end

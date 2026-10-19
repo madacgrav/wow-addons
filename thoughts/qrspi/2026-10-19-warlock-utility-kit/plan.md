@@ -253,11 +253,11 @@ print("all tests passed")
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual (Forever client; copy or symlink `WarlockUtilityKit/` into `_retail_`-equivalent `Interface/AddOns/`)
-- [ ] The addon list shows "Warlock Utility Kit", not marked out of date
-- [ ] On a warlock, the strip appears with the correct counts; looting or creating a shard changes the count
-- [ ] Shift+drag moves the strip and the position survives `/reload` and relog; `/wuk lock` blocks dragging
-- [ ] On the rogue alt there is no strip and no Lua errors; `/wuk` prints "warlocks only"
-- [ ] `/console scriptErrors 1` shows no errors during login, looting or `/reload`
+- [x] The addon list shows "Warlock Utility Kit", not marked out of date
+- [x] On a warlock, the strip appears with the correct counts; looting or creating a shard changes the count
+- [x] Shift+drag moves the strip and the position survives `/reload` and relog; `/wuk lock` blocks dragging
+- [x] On the rogue alt there is no strip and no Lua errors; `/wuk` prints "warlocks only"
+- [x] `/console scriptErrors 1` shows no errors during login, looting or `/reload`
 
 ---
 
@@ -457,7 +457,7 @@ eq(#WUK.PrepSteps(state({ buffs = { demonicSacrifice = true, ["Demon Armor"] = t
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] `/dump WUK` is not global. Instead, `/run print(WUKPrepButton:GetAttribute("macrotext"))` shows the first missing step
@@ -810,7 +810,43 @@ eq(WUK.IsHealthstoneRequest("this is it"), false, "no hs in words"); eq(WUK.IsHe
 
 ---
 
-## Final checks (after Phase 5)
+## Phase 6: Icon strip (added after Phase 1 in-game review)
+Replace the strip's text counts ("Shards 5  HS 1 ...") with five item icons, each with a count overlay. An icon is desaturated when its count is 0.
+
+### Changes
+
+#### 1. UI
+**File**: `WarlockUtilityKit/UI.lua`
+**Action**: modify
+
+```lua
+local KINDS = { "shard", "healthstone", "soulstone", "spellstone", "firestone" }
+-- fallback textures for kinds not in bags (no item ID to ask the client)
+local FALLBACK = {
+  shard = "Interface\\Icons\\INV_Misc_Gem_Amethyst_02", healthstone = "Interface\\Icons\\INV_Stone_04",
+  soulstone = "Interface\\Icons\\Spell_Shadow_SoulGem", spellstone = "Interface\\Icons\\INV_Misc_Gem_Sapphire_01",
+  firestone = "Interface\\Icons\\INV_Ammo_FireTar",
+}
+```
+- In the init: replace `f.counts` with `f.icons[kind]`, 22x22 textures anchored left to right from x=48. Each gets an `OVERLAY` `NumberFontNormalSmall` count at BOTTOMRIGHT. `f.stone` anchors under the icon row.
+- In the refresher: for each kind,
+  - set the texture with `SetTexture(c.ids[kind] and C_Item.GetItemIconByID(c.ids[kind]) or FALLBACK[kind])`
+  - set the count text
+  - call `SetDesaturated(c[kind] == 0)`
+- Remember the last real icon per kind in `WUK.db.icons[kind]`, so a used-up stone keeps its true icon. Add `icons = {}` to `DEFAULTS` in Core.lua.
+
+### Verification
+#### Automated
+- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed` (no new pure logic)
+
+#### Manual
+- [ ] The strip shows five icons with counts; a kind with 0 count is grey
+- [ ] Icons match the actual items in bags; after using the last healthstone, its icon stays (greyed)
+- [ ] The prep button (Phase 2) still sits left of the icons with no overlap
+
+---
+
+## Final checks (after Phase 6)
 - [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 - [ ] `/console addonCombatRestrictionsForced 1`, then exercise the strip, prep, chat "123" and whisper "hs": no Lua errors. Reset with `/console addonCombatRestrictionsForced 0`
 - [ ] Inside a dungeon, out of combat: no Lua errors. Summon rows may not appear (chat can be secret on restricted maps); this is expected
