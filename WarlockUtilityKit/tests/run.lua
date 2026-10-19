@@ -72,4 +72,8 @@ eq(WUK.SummonFailure(with({ helpers = 1 })), "need 2 helpers", "helpers")
 local unknown = with({}); unknown.helpers = nil
 eq(WUK.SummonFailure(unknown), nil, "unknown helpers ok")
 
+-- Phase 5
+eq(WUK.IsHealthstoneRequest("hs pls"), true, "hs"); eq(WUK.IsHealthstoneRequest("Healthstone?"), true, "healthstone")
+eq(WUK.IsHealthstoneRequest("this is it"), false, "no hs in words"); eq(WUK.IsHealthstoneRequest("Stone ready - open a trade with me."), false, "reply safe")
+
 print("all tests passed")

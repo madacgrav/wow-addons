@@ -62,6 +62,9 @@ WUK.HasWord = HasWord
 local SUMMON_WORDS = { ["123"] = true, sum = true, summon = true, port = true }
 function WUK.IsSummonRequest(text) return HasWord(text, SUMMON_WORDS) end
 
+local HS_WORDS = { hs = true, healthstone = true }
+function WUK.IsHealthstoneRequest(text) return HasWord(text, HS_WORDS) end
+
 function WUK.QueueAdd(list, name, max)
   for _, r in ipairs(list) do if r.name == name then return false end end
   if #list >= max then return false end

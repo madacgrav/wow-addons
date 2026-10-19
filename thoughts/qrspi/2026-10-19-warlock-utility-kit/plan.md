@@ -730,12 +730,13 @@ eq(WUK.SummonFailure(unknown), nil, "unknown helpers ok")
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] A party member types "123" in party chat and a row appears with their name, zone ("?" in a party) and reason
-- [ ] The reason changes when they go offline or die, or when the warlock has 0 shards; with fewer than 2 other members in range it shows "need 2 helpers"
-- [ ] Left-click targets them and starts Ritual of Summoning; the row disappears after the cast succeeds
-- [ ] Ctrl+click only targets; right-click removes the row
-- [ ] A request during combat appears after combat ends
-- [ ] A guild member who is not in the group shows "not in group"
+> **DEFERRED (2026-10-19):** user could not test in game yet; verify these before release.
+- [ ] (deferred) A party member types "123" in party chat and a row appears with their name, zone ("?" in a party) and reason
+- [ ] (deferred) The reason changes when they go offline or die, or when the warlock has 0 shards; with fewer than 2 other members in range it shows "need 2 helpers"
+- [ ] (deferred) Left-click targets them and starts Ritual of Summoning; the row disappears after the cast succeeds
+- [ ] (deferred) Ctrl+click only targets; right-click removes the row
+- [ ] (deferred) A request during combat appears after combat ends
+- [ ] (deferred) A guild member who is not in the group shows "not in group"
 
 ---
 
@@ -799,7 +800,7 @@ eq(WUK.IsHealthstoneRequest("this is it"), false, "no hs in words"); eq(WUK.IsHe
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] Another player whispers "hs" and receives "Stone ready - open a trade with me." exactly once, even if they repeat the whisper
