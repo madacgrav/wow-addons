@@ -460,12 +460,12 @@ eq(#WUK.PrepSteps(state({ buffs = { demonicSacrifice = true, ["Demon Armor"] = t
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] `/dump WUK` is not global. Instead, `/run print(WUKPrepButton:GetAttribute("macrotext"))` shows the first missing step
-- [ ] On a warlock with no armor, no pet and no stones: repeated clicks cast armor, then Detect, then the pet, then Healthstone, then Soulstone, then use Soulstone on self. The border goes from yellow with a count to green
-- [ ] With 0 shards and Felhunter preferred, an Imp is summoned; with Felhunter already out and 0 shards, nothing is summoned
-- [ ] Entering combat turns the border red, and a click does nothing new. Leaving combat restores yellow or green
-- [ ] `/wuk pet voidwalker` changes the pet step
-- [ ] If the spellbook scan finds nothing on Forever, both scan branches have failed: report the API names found via `/dump C_SpellBook` and stop
+- [x] `/dump WUK` is not global. Instead, `/run print(WUKPrepButton:GetAttribute("macrotext"))` shows the first missing step
+- [x] On a warlock with no armor, no pet and no stones: repeated clicks cast armor, then Detect, then the pet, then Healthstone, then Soulstone, then use Soulstone on self. The border goes from yellow with a count to green
+- [x] With 0 shards and Felhunter preferred, an Imp is summoned; with Felhunter already out and 0 shards, nothing is summoned
+- [x] Entering combat turns the border red, and a click does nothing new. Leaving combat restores yellow or green
+- [x] `/wuk pet voidwalker` changes the pet step
+- [x] If the spellbook scan finds nothing on Forever, both scan branches have failed: report the API names found via `/dump C_SpellBook` and stop
 
 ---
 
@@ -532,7 +532,7 @@ eq(WUK.SoulstoneRemaining({ expires = 160 }, 100), 60, "ss active")
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] Using a soulstone on self shows "Soulstone: <you> 29:59" and counts down

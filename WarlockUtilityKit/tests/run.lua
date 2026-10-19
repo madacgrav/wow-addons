@@ -47,4 +47,9 @@ eq(use[1].key, "usesoulstone", "use ss"); eq(use[1].macro, "/target player\n/use
 eq(#WUK.PrepSteps(state({ buffs = { demonicSacrifice = true, ["Demon Armor"] = true, ["Detect Invisibility"] = true },
   counts = { shard = 1, healthstone = 1, soulstone = 0, ids = {} }, soulstoneActive = true })), 0, "demonic sacrifice skips pet")
 
+-- Phase 3
+eq(WUK.SoulstoneRemaining(nil, 100), nil, "ss absent")
+eq(WUK.SoulstoneRemaining({ expires = 100 }, 100), nil, "ss expired")
+eq(WUK.SoulstoneRemaining({ expires = 160 }, 100), 60, "ss active")
+
 print("all tests passed")

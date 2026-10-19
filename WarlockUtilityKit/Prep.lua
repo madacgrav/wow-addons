@@ -33,3 +33,19 @@ table.insert(WUK.inits, function()
   WUK.On("PLAYER_REGEN_DISABLED", function() SetBorder(0.9, 0.1, 0.1) end)
 end)
 table.insert(WUK.refreshers, function() WUK.UpdatePrepButton() end)
+
+table.insert(WUK.inits, function()
+  WUK.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
+    if unit == "player" and WUK.SpellName(spellID) == "Soulstone Resurrection" then
+      WUK.char.soulstone = { target = WUK.lastCastTarget or UnitName("player"), expires = time() + 1800 }
+      WUK.Refresh()
+    end
+  end)
+  local wasActive = false
+  C_Timer.NewTicker(1, function()
+    local rem = WUK.SoulstoneRemaining(WUK.char.soulstone, time())
+    WUK.strip.stone:SetText(rem and ("Soulstone: " .. WUK.char.soulstone.target .. "  " .. WUK.FormatTime(rem)) or "Soulstone: none")
+    if wasActive and not rem then WUK.Refresh() end -- expiry re-enables the prep steps
+    wasActive = rem ~= nil
+  end)
+end)

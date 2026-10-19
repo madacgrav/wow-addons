@@ -51,3 +51,10 @@ function WUK.PrepSteps(s)
   end
   return out
 end
+
+function WUK.SoulstoneRemaining(rec, now)
+  if type(rec) ~= "table" or not rec.expires then return nil end
+  local r = rec.expires - now
+  if r <= 0 then return nil end
+  return r
+end

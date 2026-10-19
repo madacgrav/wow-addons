@@ -130,6 +130,15 @@ WUK.On("SPELLS_CHANGED", function() if WUK.active then WUK.ScanSpells(); WUK.Ref
 WUK.On("UNIT_AURA", function(u) if u == "player" then WUK.Refresh() end end)
 WUK.On("UNIT_PET", function(u) if u == "player" then WUK.Refresh() end end)
 
+WUK.On("UNIT_SPELLCAST_SENT", function(unit, target)
+  if unit == "player" then WUK.lastCastTarget = (target and not WUK.Secret(target) and target ~= "") and target or nil end
+end)
+function WUK.SpellName(spellID)
+  if not spellID or WUK.Secret(spellID) then return nil end
+  local info = C_Spell.GetSpellInfo(spellID)
+  return info and info.name
+end
+
 SLASH_WARLOCKUTILITYKIT1 = "/wuk"
 SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   if not WUK.active then return WUK.Print("warlocks only") end
