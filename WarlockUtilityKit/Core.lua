@@ -153,6 +153,32 @@ function WUK.Probe()
     local ok, lvl = pcall(function() return C_Secrets.GetSpellAuraSecrecy(n) end) -- C_Secrets may be absent
     P("secrecy " .. n, ok and S(lvl) or "n/a")
   end
+  -- Blizzard Cooldown Manager ("Essential Cooldowns"): can addons reach it?
+  local CV = C_CooldownViewer
+  P("C_CooldownViewer", CV ~= nil)
+  P("cooldownViewerEnabled", C_CVar and C_CVar.GetCVar("cooldownViewerEnabled") or "n/a")
+  if CV then
+    local okA, avail = pcall(CV.IsCooldownViewerAvailable)
+    P("viewer available", okA and S(avail) or "n/a")
+    for cat, label in pairs({ [0] = "Essential", [1] = "Utility", [2] = "TrackedBuff", [3] = "TrackedBar" }) do
+      local okS, ids = pcall(CV.GetCooldownViewerCategorySet, cat)
+      if okS and ids and not WUK.Secret(ids) then
+        local names = {}
+        for _, id in ipairs(ids) do
+          local okI, info = pcall(CV.GetCooldownViewerCooldownInfo, id)
+          local sid = okI and info and info.spellID
+          names[#names + 1] = (sid and not WUK.Secret(sid)) and (WUK.SpellName(sid) or tostring(sid)) or "?"
+        end
+        P("  " .. label, #ids .. ": " .. table.concat(names, ", "))
+      else
+        P("  " .. label, okS and "SECRET/nil" or ("error: " .. tostring(ids)))
+      end
+    end
+  end
+  for _, f in ipairs({ "EssentialCooldownViewer", "UtilityCooldownViewer", "BuffIconCooldownViewer", "BuffBarCooldownViewer" }) do
+    local frame = _G[f]
+    P("frame " .. f, frame and ("shown=" .. S(frame:IsShown()) .. " children=" .. S(select("#", frame:GetChildren()))) or "missing")
+  end
   if not UnitExists("target") then return P("target", "none") end
   P("target hostile", UnitCanAttack("player", "target"))
   P("raid mark", S(GetRaidTargetIndex("target")))
