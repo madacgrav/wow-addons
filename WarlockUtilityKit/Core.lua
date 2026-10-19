@@ -138,6 +138,35 @@ function WUK.SpellName(spellID)
   return info and info.name
 end
 
+local PROBE_SPELLS = { "Curse of Agony", "Curse of Doom", "Bane of Agony", "Bane of Doom", "Corruption", "Immolate",
+  "Curse of the Elements", "Curse of Recklessness", "Curse of Shadow", "Banish" }
+
+-- prints in-game facts about secrets/lockdown; output gets pasted back for v3 timer planning
+function WUK.Probe()
+  local function P(k, v) WUK.Print(k .. ": " .. tostring(v)) end
+  local function S(v) if WUK.Secret(v) then return "SECRET" end return tostring(v) end
+  local inInst, kind = IsInInstance()
+  P("instance", tostring(inInst) .. " " .. tostring(kind))
+  P("combat", InCombatLockdown())
+  P("chat lockdown", C_ChatInfo.InChatMessagingLockdown and C_ChatInfo.InChatMessagingLockdown() or "n/a")
+  for _, n in ipairs(PROBE_SPELLS) do
+    local ok, lvl = pcall(function() return C_Secrets.GetSpellAuraSecrecy(n) end) -- C_Secrets may be absent
+    P("secrecy " .. n, ok and S(lvl) or "n/a")
+  end
+  if not UnitExists("target") then return P("target", "none") end
+  P("target hostile", UnitCanAttack("player", "target"))
+  P("raid mark", S(GetRaidTargetIndex("target")))
+  local ok, auras = pcall(C_UnitAuras.GetUnitAuras, "target", "HARMFUL|PLAYER")
+  if not ok then return P("GetUnitAuras error", auras) end
+  if not auras or WUK.Secret(auras) then return P("my debuffs", auras and "SECRET table" or "nil") end
+  P("my debuffs", #auras)
+  for _, a in ipairs(auras) do
+    local okD, dur = pcall(C_UnitAuras.GetAuraDuration, "target", a.auraInstanceID)
+    P("  aura", S(a.name) .. " id=" .. S(a.spellId) .. " exp=" .. S(a.expirationTime)
+      .. " durationObj=" .. tostring(okD and dur ~= nil))
+  end
+end
+
 SLASH_WARLOCKUTILITYKIT1 = "/wuk"
 SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   if not WUK.active then return WUK.Print("warlocks only") end
@@ -149,5 +178,6 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   elseif cmd == "pet" and (arg == "imp" or arg == "voidwalker" or arg == "succubus" or arg == "felhunter") then
     WUK.char.pet = arg; WUK.Print("preferred pet: " .. arg); WUK.Refresh()
   elseif cmd == "config" then WUK.ToggleSettings()
-  else WUK.Print("/wuk config | show | hide | lock | reset | pet <imp|voidwalker|succubus|felhunter>") end
+  elseif cmd == "probe" then WUK.Probe()
+  else WUK.Print("/wuk config | show | hide | lock | reset | probe | pet <imp|voidwalker|succubus|felhunter>") end
 end

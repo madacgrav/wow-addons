@@ -64,8 +64,8 @@ Slash branch: `elseif cmd == "probe" then WUK.Probe()`. Add `probe` to the usage
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] Every `.lua` file passes the syntax check
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] Every `.lua` file passes the syntax check
 
 #### Manual
 - [ ] `/wuk probe` with no target prints the instance/combat/lockdown/secrecy lines and "target: none", with no Lua errors
