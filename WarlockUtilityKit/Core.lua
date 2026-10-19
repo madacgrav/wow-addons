@@ -91,17 +91,13 @@ function WUK.ScanSpells()
   WUK.known = known
 end
 
-local DEMONIC_SACRIFICE = { ["Burning Wish"] = true, ["Fel Stamina"] = true, ["Touch of Shadow"] = true, ["Fel Energy"] = true }
 function WUK.ReadPlayerBuffs()
   local set = {}
   for i = 1, 40 do
     local a = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL")
     if not a then break end
     local n = a.name
-    if n and not WUK.Secret(n) then
-      set[n] = true
-      if DEMONIC_SACRIFICE[n] then set.demonicSacrifice = true end
-    end
+    if n and not WUK.Secret(n) then set[n] = true end
   end
   return set
 end

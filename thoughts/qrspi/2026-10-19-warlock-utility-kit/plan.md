@@ -901,6 +901,18 @@ This replaces design.md's "no minimap button, no settings panel" decision at the
 
 ---
 
+## Change: prep button replaced by armor button (user request)
+The pet and stone buttons duplicated most of the prep chain, so the prep button looked like a second healthstone icon. At the user's request it is now `WUKArmorButton`:
+- It shows the highest known armor spell, lit when the buff is missing and grey once it is up.
+- A click casts it.
+- `PrepSteps`, its tests and the Demonic Sacrifice tracking are removed.
+- Detect Invisibility, Soul Link and the use-soulstone step are no longer automated; the soulstone icon still uses a held stone.
+
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [ ] In game: the armor icon is lit without the buff and grey with it, and a click casts it
+
+---
+
 ## Final checks (after Phase 7)
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 - [ ] (deferred) `/console addonCombatRestrictionsForced 1`, then exercise the strip, prep, chat "123" and whisper "hs": no Lua errors. Reset with `/console addonCombatRestrictionsForced 0`
