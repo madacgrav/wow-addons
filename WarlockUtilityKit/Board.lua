@@ -30,13 +30,43 @@ end
 function WUK.SetAssignment(warlock, field, value)
   local b = WUK.board
   if not warlock or not WUK.IsLead() then return end
-  if b.lead == nil then b.lead = me end
+  if b.lead == nil then WUK.ClaimLead() end -- first edit claims lead so others accept the rows
   local row = b.rows[warlock] or { mark = 0 }
   row[field] = value
   b.rows[warlock] = row
   b.rev = WUK.NextRev(b.rev, time())
   if WUK.SendRow then WUK.SendRow(warlock) end
   SaveIfLead(); WUK.BoardChanged()
+end
+
+function WUK.SendRow(warlock)
+  local b, r = WUK.board, WUK.board.rows[warlock]
+  WUK.Send(WUK.Encode("A", b.rev, warlock, r.curse, r.mark or 0, r.ss))
+end
+
+function WUK.SendFullBoard()
+  local b = WUK.board
+  WUK.Send(WUK.Encode("L", b.rev))
+  for w in pairs(b.rows) do WUK.SendRow(w) end
+  WUK.Send(WUK.Encode("E", b.rev))
+end
+
+function WUK.RequestSync() WUK.Send(WUK.Encode("R")) end
+
+function WUK.OnBoardMessage(sender, m)
+  local b = WUK.board
+  -- same lead re-sending its claim at an equal rev (full sync) is accepted too
+  if m.kind == "L" and (sender == b.lead or WUK.AcceptLead(b, m.rev)) then
+    b.lead, b.rev = sender, m.rev
+    WUK.char.board = nil -- someone else leads now
+    WUK.BoardChanged()
+  elseif m.kind == "A" and WUK.AcceptRow(b, sender, m.rev) then
+    b.rows[m.warlock] = { curse = m.curse, mark = m.mark, ss = m.ss }
+    b.rev = m.rev
+    WUK.BoardChanged()
+  elseif m.kind == "R" and b.lead == me then
+    WUK.SendFullBoard()
+  end
 end
 
 local function Radio(root, label, row, field, val)
@@ -99,6 +129,7 @@ local function Build()
     return b
   end
   win.leadBtn = Button("Take lead", 16, WUK.ClaimLead)
+  Button("Sync", 132, WUK.RequestSync)
 
   function win:Sync()
     local list = WUK.GroupWarlocks()
@@ -126,6 +157,7 @@ table.insert(WUK.inits, function()
   me = UnitName("player")
   local saved = WUK.char.board -- restore my own plan if I was lead before /reload
   if saved and IsInGroup() then WUK.board.lead, WUK.board.rev, WUK.board.rows = me, saved.rev or 0, saved.rows or {} end
+  if IsInGroup() then WUK.RequestSync() end
   local wasInGroup = IsInGroup()
   WUK.On("GROUP_ROSTER_UPDATE", function()
     local inGroup = IsInGroup()

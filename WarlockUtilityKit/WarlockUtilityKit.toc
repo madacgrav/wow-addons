@@ -12,5 +12,6 @@ UI.lua
 Prep.lua
 Summon.lua
 Trade.lua
+Comm.lua
 Board.lua
 Settings.lua

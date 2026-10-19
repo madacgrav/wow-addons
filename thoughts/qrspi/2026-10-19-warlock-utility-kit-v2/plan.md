@@ -303,11 +303,11 @@ eq(WUK.NextRev(5, 3), 6, "rev bumps"); eq(WUK.NextRev(5, 100), 100, "rev uses cl
 
 #### Manual
 - [x] Deployed to AddOns with robocopy
-- [ ] `/wuk board`, the Settings button and right-clicking the minimap button all open the board; you are listed (plus any party warlocks)
-- [ ] Setting curse, mark and SS on your row updates the strip line (raid icon shown) and prints "Your assignment: ..."
-- [ ] With SS set to a party member, the soulstone icon click soulstones them
-- [ ] In a party, the board survives `/reload` (lead copy); after leaving the group it clears
-- [ ] The summon queue still works ("123" from a party member makes a row), confirming the helper move
+- [x] `/wuk board`, the Settings button and right-clicking the minimap button all open the board; you are listed (plus any party warlocks)
+- [x] Setting curse, mark and SS on your row updates the strip line (raid icon shown) and prints "Your assignment: ..."
+- [x] With SS set to a party member, the soulstone icon click soulstones them
+- [x] In a party, the board survives `/reload` (lead copy); after leaving the group it clears
+- [x] The summon queue still works ("123" from a party member makes a row), confirming the helper move
 
 ---
 
@@ -448,8 +448,8 @@ eq(WUK.AcceptLead(brd, 10), false, "stale claim"); eq(WUK.AcceptLead(brd, 11), t
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] Every `.lua` file passes the syntax check
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] Every `.lua` file passes the syntax check
 
 #### Manual (two warlocks in a party, both running WUK)
 - [ ] Deployed to AddOns with robocopy

@@ -113,3 +113,31 @@ function WUK.AssignmentText(row, markFmt)
 end
 
 function WUK.NextRev(rev, now) return math.max(now, (rev or 0) + 1) end
+
+local PROTO = "1"
+local function enc(v) if v == nil or v == "" then return "-" end return tostring(v) end
+local function dec(s) if s == "-" then return nil end return s end
+
+-- 1|L|rev  1|A|rev|warlock|curse|mark|ss  1|R  1|E|rev ; "-" = nil
+function WUK.Encode(kind, ...)
+  local parts = { PROTO, kind }
+  for i = 1, select("#", ...) do parts[#parts + 1] = enc((select(i, ...))) end
+  return table.concat(parts, "|")
+end
+
+function WUK.Decode(msg)
+  if type(msg) ~= "string" then return nil end
+  local f = {}
+  for p in (msg .. "|"):gmatch("(.-)|") do f[#f + 1] = p end
+  if f[1] ~= PROTO then return nil end
+  local kind = f[2]
+  if kind == "R" and #f == 2 then return { kind = "R" } end
+  if (kind == "L" or kind == "E") and #f == 3 and tonumber(f[3]) then return { kind = kind, rev = tonumber(f[3]) } end
+  if kind == "A" and #f == 7 and tonumber(f[3]) and tonumber(f[6]) and dec(f[4]) then
+    return { kind = "A", rev = tonumber(f[3]), warlock = f[4], curse = dec(f[5]), mark = tonumber(f[6]), ss = dec(f[7]) }
+  end
+  return nil
+end
+
+function WUK.AcceptLead(board, rev) return rev > (board.rev or 0) end
+function WUK.AcceptRow(board, sender, rev) return sender == board.lead and rev >= (board.rev or 0) end
