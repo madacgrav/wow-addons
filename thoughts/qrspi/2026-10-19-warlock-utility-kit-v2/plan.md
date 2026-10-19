@@ -519,6 +519,55 @@ eq(lines[2], "WUK: Zed - Curse of Tongues", "zed line")
 
 ---
 
+## Phase 5: Dock Blizzard Cooldown Manager under the strip (added after the probe; see probe-results.md)
+The addon cannot read DoT or curse timers in combat. Blizzard's Cooldown Manager draws them, though, and its frames are reachable. This phase anchors those frames to the WUK strip.
+
+### Changes
+- **`Core.lua`**: add `dockViewers = false` to `DEFAULTS`. The `/wuk dock` slash command toggles it (refused in combat).
+- **New `Dock.lua`** (TOC: after Board.lua):
+```lua
+local ADDON, WUK = ...
+local VIEWERS = { "EssentialCooldownViewer", "BuffIconCooldownViewer" }
+local applying = false
+
+function WUK.ApplyDock()
+  if not WUK.db.dockViewers or InCombatLockdown() then return end
+  local anchor = WUK.strip
+  applying = true
+  for _, name in ipairs(VIEWERS) do
+    local v = _G[name]
+    if v then v:ClearAllPoints(); v:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT", 0, -4); anchor = v end
+  end
+  applying = false
+end
+
+table.insert(WUK.inits, function()
+  for _, name in ipairs(VIEWERS) do
+    local v = _G[name]
+    -- Edit Mode re-anchors on layout changes; put it back (out of combat only)
+    if v then hooksecurefunc(v, "SetPoint", function() if not applying then C_Timer.After(0, WUK.ApplyDock) end end) end
+  end
+  WUK.On("EDIT_MODE_LAYOUTS_UPDATED", WUK.ApplyDock)
+  WUK.ApplyDock()
+end)
+table.insert(WUK.refreshers, function() WUK.ApplyDock() end)
+```
+- **Undocking** needs `/reload` so that Edit Mode restores its own layout. The command prints this.
+- **`Settings.lua`**: add a "Dock Blizzard cooldown timers under strip" checkbox that runs `Run("dock")`.
+
+### Verification
+#### Automated
+- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [ ] Every `.lua` file passes the syntax check
+
+#### Manual
+- [ ] With the Cooldown Manager on, `/wuk dock` puts the Essential viewer (Corruption, Immolate, Curses) and the Buff viewer under the strip; moving the strip moves them
+- [ ] In combat the docked timers count down and there is no "Lua Taint: WarlockUtilityKit" error
+- [ ] Opening and closing Edit Mode doesn't leave them stuck elsewhere
+- [ ] `/wuk dock` again, then `/reload`, restores the Edit Mode position
+
+---
+
 ## Final checks
 - [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 - [ ] `git status` shows changes only under `WarlockUtilityKit/` and `thoughts/`
