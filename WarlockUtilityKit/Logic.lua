@@ -23,10 +23,13 @@ function WUK.MergeDefaults(sv, defaults)
 end
 
 -- stone icon click: use the stone if held (soulstone on friendly target, else self), otherwise create one
-function WUK.StoneMacro(kind, count, itemID, createSpell)
+function WUK.StoneMacro(kind, count, itemID, createSpell, ssTarget)
   if kind == "shard" then return nil end
   if count > 0 and itemID then
-    if kind == "soulstone" then return "/use [help] item:" .. itemID .. "; [@player] item:" .. itemID end
+    if kind == "soulstone" then
+      if ssTarget then return "/use [@" .. ssTarget .. "] item:" .. itemID end
+      return "/use [help] item:" .. itemID .. "; [@player] item:" .. itemID
+    end
     return "/use item:" .. itemID
   end
   return createSpell and ("/cast " .. createSpell) or nil
@@ -79,3 +82,34 @@ function WUK.SoulstoneRemaining(rec, now)
   if r <= 0 then return nil end
   return r
 end
+
+WUK.CURSES = {
+  { key = "elements", name = "Curse of the Elements", short = "Elements" },
+  { key = "recklessness", name = "Curse of Recklessness", short = "Recklessness" },
+  { key = "tongues", name = "Curse of Tongues", short = "Tongues" },
+  { key = "weakness", name = "Curse of Weakness", short = "Weakness" },
+  { key = "exhaustion", name = "Curse of Exhaustion", short = "Exhaustion" },
+  { key = "shadow", name = "Curse of Shadow", short = "Shadow" }, -- may not exist on Forever; board lists it only if known
+}
+local CURSE_BY_KEY = {}
+for _, c in ipairs(WUK.CURSES) do CURSE_BY_KEY[c.key] = c end
+function WUK.CurseInfo(key) return CURSE_BY_KEY[key] end
+
+function WUK.MarkToken(mark)
+  if type(mark) == "number" and mark >= 1 and mark <= 8 then return "{rt" .. mark .. "}" end
+  return ""
+end
+
+-- markFmt: MarkToken for chat, a texture-escape function for FontStrings
+function WUK.AssignmentText(row, markFmt)
+  if not row then return "No assignment" end
+  markFmt = markFmt or WUK.MarkToken
+  local parts = {}
+  if row.curse then local c = CURSE_BY_KEY[row.curse]; parts[#parts + 1] = c and c.short or row.curse end
+  if (row.mark or 0) > 0 then parts[#parts + 1] = "Banish " .. markFmt(row.mark) end
+  if row.ss then parts[#parts + 1] = "SS: " .. row.ss end
+  if #parts == 0 then return "No assignment" end
+  return table.concat(parts, "  ")
+end
+
+function WUK.NextRev(rev, now) return math.max(now, (rev or 0) + 1) end

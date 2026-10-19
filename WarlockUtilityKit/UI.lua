@@ -30,7 +30,7 @@ end
 table.insert(WUK.inits, function()
   local f = CreateFrame("Frame", "WUKStrip", UIParent, "BackdropTemplate")
   -- prep + pet + 5 stone buttons, 36px each with 4px gaps; soulstone line underneath
-  f:SetSize(4 + 7 * 40, 62)
+  f:SetSize(4 + 7 * 40, 76)
   f:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
   f:SetBackdropColor(0, 0, 0, 0.6); f:SetBackdropBorderColor(0.58, 0.51, 0.79, 1)
   f.icons = {}
@@ -46,7 +46,9 @@ table.insert(WUK.inits, function()
     f.icons[kind] = b
   end
   f.stone = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-  f.stone:SetPoint("BOTTOMLEFT", 6, 6)
+  f.stone:SetPoint("BOTTOMLEFT", 6, 20)
+  f.assign = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  f.assign:SetPoint("BOTTOMLEFT", 6, 6)
   WUK.strip = f
   WUK.MakeMovable(f, "strip", 0, -220)
   WUK.ApplyShown()
@@ -62,7 +64,8 @@ table.insert(WUK.refreshers, function()
     b.icon:SetDesaturated(c[kind] == 0)
     b.count:SetText(c[kind])
     if not InCombatLockdown() then
-      b:SetAttribute("macrotext", WUK.StoneMacro(kind, c[kind], id, WUK.known[kind]) or "")
+      local ss = kind == "soulstone" and WUK.MySoulstoneTarget and WUK.MySoulstoneTarget() or nil
+      b:SetAttribute("macrotext", WUK.StoneMacro(kind, c[kind], id, WUK.known[kind], ss) or "")
     end
   end
 end)

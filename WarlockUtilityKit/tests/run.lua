@@ -56,4 +56,13 @@ eq(WUK.StoneMacro("healthstone", 0, nil, "Create Healthstone (Major)"), "/cast C
 eq(WUK.StoneMacro("soulstone", 1, 16893, nil), "/use [help] item:16893; [@player] item:16893", "use ss")
 eq(WUK.StoneMacro("firestone", 0, nil, nil), nil, "unknown spell")
 
+-- v2 Phase 2
+eq(WUK.MarkToken(1), "{rt1}", "mark 1"); eq(WUK.MarkToken(8), "{rt8}", "mark 8"); eq(WUK.MarkToken(0), "", "mark none")
+eq(WUK.AssignmentText(nil), "No assignment", "no row")
+eq(WUK.AssignmentText({ mark = 0 }), "No assignment", "empty row")
+eq(WUK.AssignmentText({ curse = "elements", mark = 1, ss = "Healbot" }), "Elements  Banish {rt1}  SS: Healbot", "full row")
+eq(WUK.AssignmentText({ curse = "mystery", mark = 0 }), "mystery", "unknown curse key shown raw")
+eq(WUK.StoneMacro("soulstone", 1, 16893, nil, "Healbot"), "/use [@Healbot] item:16893", "ss on assigned target")
+eq(WUK.NextRev(5, 3), 6, "rev bumps"); eq(WUK.NextRev(5, 100), 100, "rev uses clock")
+
 print("all tests passed")

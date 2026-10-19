@@ -293,8 +293,8 @@ eq(WUK.NextRev(5, 3), 6, "rev bumps"); eq(WUK.NextRev(5, 100), 100, "rev uses cl
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] Every `.lua` file passes the syntax check
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] Every `.lua` file passes the syntax check
 
 #### Manual
 - [ ] `/wuk board`, the Settings button and right-clicking the minimap button all open the board; you are listed (plus any party warlocks)

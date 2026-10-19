@@ -58,6 +58,7 @@ local SPELLS = {
   spellstone = { "Create Spellstone (Major)", "Create Spellstone (Greater)", "Create Spellstone" },
   firestone = { "Create Firestone (Major)", "Create Firestone (Greater)", "Create Firestone",
                 "Create Firestone (Lesser)" },
+  curseshadow = { "Curse of Shadow" },
 }
 
 local function SpellbookNames()
@@ -107,6 +108,30 @@ function WUK.PetFamily()
   local fam = UnitCreatureFamily("pet")
   if not fam or WUK.Secret(fam) then return nil end
   return fam:lower()
+end
+
+function WUK.GroupUnits()
+  local u = {}
+  if IsInRaid() then for i = 1, GetNumGroupMembers() do u[#u + 1] = "raid" .. i end
+  else for i = 1, GetNumSubgroupMembers() do u[#u + 1] = "party" .. i end end
+  return u
+end
+
+function WUK.UnitFull(unit)
+  local n, realm = UnitName(unit)
+  if not n or WUK.Secret(n) then return nil end
+  return Ambiguate((realm and realm ~= "") and (n .. "-" .. realm) or n, "none")
+end
+
+function WUK.GroupWarlocks()
+  local me = UnitName("player")
+  local list = { me }
+  for _, u in ipairs(WUK.GroupUnits()) do
+    local n, class = WUK.UnitFull(u), select(2, UnitClass(u)) -- classFilename is never secret
+    if n and n ~= me and class == "WARLOCK" then list[#list + 1] = n end
+  end
+  table.sort(list)
+  return list
 end
 
 function WUK.Refresh()
@@ -205,5 +230,7 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
     WUK.char.pet = arg; WUK.Print("preferred pet: " .. arg); WUK.Refresh()
   elseif cmd == "config" then WUK.ToggleSettings()
   elseif cmd == "probe" then WUK.Probe()
-  else WUK.Print("/wuk config | show | hide | lock | reset | probe | pet <imp|voidwalker|succubus|felhunter>") end
+  elseif cmd == "board" then WUK.ToggleBoard()
+  elseif cmd == "lead" then WUK.ClaimLead()
+  else WUK.Print("/wuk config | board | lead | show | hide | lock | reset | probe | pet <imp|voidwalker|succubus|felhunter>") end
 end

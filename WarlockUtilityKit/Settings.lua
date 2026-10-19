@@ -47,6 +47,10 @@ local function Build()
   reset:SetSize(130, 22); reset:SetPoint("BOTTOMLEFT", 16, 16); reset:SetText("Reset positions")
   reset:SetScript("OnClick", function() Run("reset") end)
 
+  local board = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
+  board:SetSize(130, 22); board:SetPoint("BOTTOMRIGHT", -16, 16); board:SetText("Assignment board")
+  board:SetScript("OnClick", function() Run("board") end)
+
   function win:Sync()
     for _, cb in ipairs(checks) do cb:Sync() end
     dd:GenerateMenu() -- refresh the shown selection
@@ -86,11 +90,14 @@ table.insert(WUK.inits, function()
     end)
   end)
   b:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
-  b:SetScript("OnClick", WUK.ToggleSettings)
+  b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  b:SetScript("OnClick", function(_, button)
+    if button == "RightButton" then WUK.ToggleBoard() else WUK.ToggleSettings() end
+  end)
   b:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
     GameTooltip:AddLine("Warlock Utility Kit")
-    GameTooltip:AddLine("Click: settings   Drag: move", 1, 1, 1)
+    GameTooltip:AddLine("Click: settings   Right-click: board   Drag: move", 1, 1, 1)
     GameTooltip:Show()
   end)
   b:SetScript("OnLeave", GameTooltip_Hide)

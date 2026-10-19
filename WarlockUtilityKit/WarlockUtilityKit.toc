@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Warlock Utility Kit
 ## Notes: Shards, stones, prep, summons and healthstone trades for WoW Forever.
-## Version: 0.1.0
+## Version: 0.2.0
 ## IconTexture: Interface\Icons\INV_Misc_Gem_Amethyst_02
 ## SavedVariables: WarlockUtilityKitDB
 ## SavedVariablesPerCharacter: WarlockUtilityKitCharDB
@@ -12,4 +12,5 @@ UI.lua
 Prep.lua
 Summon.lua
 Trade.lua
+Board.lua
 Settings.lua
