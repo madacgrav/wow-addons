@@ -4,7 +4,7 @@ local btn
 local function State()
   return {
     known = WUK.known, counts = WUK.counts, buffs = WUK.ReadPlayerBuffs(), pet = WUK.PetFamily(),
-    preferredPet = WUK.char.pet,
+    preferredPet = WUK.char.pet, mounted = IsMounted(),
     soulstoneActive = WUK.SoulstoneRemaining and WUK.SoulstoneRemaining(WUK.char.soulstone, time()) ~= nil or false,
   }
 end

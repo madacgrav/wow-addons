@@ -43,13 +43,11 @@ function WUK.PrepSteps(s)
   local function add(key, macro) out[#out + 1] = { key = key, macro = macro } end
   if k.armor and not b[k.armor] then add("armor", "/cast " .. k.armor) end
   if k.detect and not b[k.detect] then add("detect", "/cast " .. k.detect) end
-  if not b.demonicSacrifice then
-    local want = s.preferredPet
-    if want ~= "imp" and c.shard == 0 then want = "imp" end
-    if not k[want] then want = "imp" end
-    -- any pet is fine when the preferred one is unaffordable; avoids swapping Felhunter for Imp
-    local satisfied = s.pet == s.preferredPet or (s.pet ~= nil and want ~= s.preferredPet)
-    if not satisfied and k[want] then add("pet", "/cast " .. k[want]) end
+  -- mounting dismisses the pet; don't nag about it until we're back on foot
+  if not b.demonicSacrifice and not s.mounted then
+    -- stick with the chosen pet even with 0 shards (no Imp fallback); Imp only if the choice isn't learned
+    local want = k[s.preferredPet] and s.preferredPet or "imp"
+    if s.pet ~= want and k[want] then add("pet", "/cast " .. k[want]) end
     if k.soullink and s.pet and not b[k.soullink] then add("soullink", "/cast " .. k.soullink) end
   end
   if k.healthstone and c.healthstone == 0 and c.shard > 0 then add("healthstone", "/cast " .. k.healthstone) end

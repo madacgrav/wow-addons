@@ -38,7 +38,10 @@ local done = state({ buffs = { ["Demon Armor"] = true, ["Detect Invisibility"] =
 eq(#WUK.PrepSteps(done), 0, "fully prepped")
 local noShard = WUK.PrepSteps(state({ buffs = { ["Demon Armor"] = true, ["Detect Invisibility"] = true },
   counts = { shard = 0, healthstone = 1, soulstone = 0, ids = {} } }))
-eq(noShard[1].macro, "/cast Summon Imp", "imp fallback"); eq(#noShard, 1, "no shard skips stones")
+eq(noShard[1].macro, "/cast Summon Felhunter", "no imp fallback when broke"); eq(#noShard, 1, "no shard skips stones")
+eq(WUK.PrepSteps(state({ preferredPet = "succubus" }))[3].macro, "/cast Summon Imp", "imp when choice unlearned")
+eq(#WUK.PrepSteps(state({ mounted = true, buffs = { ["Demon Armor"] = true, ["Detect Invisibility"] = true },
+  counts = { shard = 1, healthstone = 1, soulstone = 0, ids = {} }, soulstoneActive = true })), 0, "mounted: no pet step")
 eq(#WUK.PrepSteps(state({ buffs = { ["Demon Armor"] = true, ["Detect Invisibility"] = true }, pet = "felhunter",
   counts = { shard = 0, healthstone = 1, soulstone = 0, ids = {} } })), 0, "keeps felhunter when broke")
 local use = WUK.PrepSteps(state({ buffs = { ["Demon Armor"] = true, ["Detect Invisibility"] = true }, pet = "felhunter",

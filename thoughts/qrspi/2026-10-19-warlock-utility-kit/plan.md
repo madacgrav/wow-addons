@@ -870,6 +870,16 @@ The stone icons become 36px `SecureActionButtonTemplate` macro buttons, the same
 
 ---
 
+## Fix: prep pet step (after Phase 7 in-game review)
+Two changes to `PrepSteps`, both from the user's in-game report:
+- The pet step no longer falls back to Imp when you have 0 shards; it stays on the pet chosen with `/wuk pet`. It uses Imp only if that pet isn't learned yet.
+- While mounted (`IsMounted()`), the pet and Soul Link steps are skipped, so the dismissed pet doesn't flip the button.
+
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [ ] In game: with the preferred pet dead and 0 shards, the button still shows that pet; mounting doesn't change the button
+
+---
+
 ## Final checks (after Phase 7)
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 - [ ] (deferred) `/console addonCombatRestrictionsForced 1`, then exercise the strip, prep, chat "123" and whisper "hs": no Lua errors. Reset with `/console addonCombatRestrictionsForced 0`
