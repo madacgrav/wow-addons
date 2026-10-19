@@ -535,10 +535,10 @@ eq(WUK.SoulstoneRemaining({ expires = 160 }, 100), 60, "ss active")
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] Using a soulstone on self shows "Soulstone: <you> 29:59" and counts down
-- [ ] Using one on a party member (target them, `/use Soulstone`) shows their name
-- [ ] The record survives `/reload` and relog, and while it is active the prep button skips create/use soulstone
-- [ ] If the cast name is not "Soulstone Resurrection" on Forever, `/etrace` UNIT_SPELLCAST_SUCCEEDED, read the spell name, and update the string
+- [x] Using a soulstone on self shows "Soulstone: <you> 29:59" and counts down
+- [x] Using one on a party member (target them, `/use Soulstone`) shows their name
+- [x] The record survives `/reload` and relog, and while it is active the prep button skips create/use soulstone
+- [x] If the cast name is not "Soulstone Resurrection" on Forever, `/etrace` UNIT_SPELLCAST_SUCCEEDED, read the spell name, and update the string
 
 ---
 
@@ -727,7 +727,7 @@ eq(WUK.SummonFailure(unknown), nil, "unknown helpers ok")
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] A party member types "123" in party chat and a row appears with their name, zone ("?" in a party) and reason

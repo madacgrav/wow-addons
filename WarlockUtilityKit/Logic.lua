@@ -52,6 +52,40 @@ function WUK.PrepSteps(s)
   return out
 end
 
+local function HasWord(text, words)
+  if type(text) ~= "string" then return false end
+  for w in text:lower():gmatch("%w+") do if words[w] then return true end end
+  return false
+end
+WUK.HasWord = HasWord
+
+local SUMMON_WORDS = { ["123"] = true, sum = true, summon = true, port = true }
+function WUK.IsSummonRequest(text) return HasWord(text, SUMMON_WORDS) end
+
+function WUK.QueueAdd(list, name, max)
+  for _, r in ipairs(list) do if r.name == name then return false end end
+  if #list >= max then return false end
+  list[#list + 1] = { name = name, at = os and os.time and os.time() or 0 }
+  return true
+end
+function WUK.QueueRemove(list, name)
+  for i = #list, 1, -1 do if list[i].name == name then table.remove(list, i) end end
+end
+function WUK.QueuePrune(list, keep)
+  for i = #list, 1, -1 do if not keep(list[i]) then table.remove(list, i) end end
+end
+
+-- ctx = { inGroup, connected, dead, here: bool?, shards: number, helpers: number? }; nil = unknown, not a failure
+function WUK.SummonFailure(ctx)
+  if not ctx.inGroup then return "not in group" end
+  if ctx.connected == false then return "offline" end
+  if ctx.dead then return "dead" end
+  if ctx.here then return "already here" end
+  if (ctx.shards or 0) < 1 then return "no shard" end
+  if ctx.helpers and ctx.helpers < 2 then return "need 2 helpers" end
+  return nil
+end
+
 function WUK.SoulstoneRemaining(rec, now)
   if type(rec) ~= "table" or not rec.expires then return nil end
   local r = rec.expires - now
