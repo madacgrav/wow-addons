@@ -32,14 +32,16 @@ local function Build()
 
   local label = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   label:SetPoint("TOPLEFT", 20, -104); label:SetText("Preferred pet")
-  local petButtons = {}
-  for i, pet in ipairs(PETS) do
-    local b = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
-    b:SetSize(64, 22); b:SetPoint("TOPLEFT", 16 + (i - 1) * 68, -122)
-    b:SetText(pet:sub(1, 1):upper() .. pet:sub(2, 5))
-    b:SetScript("OnClick", function() Run("pet " .. pet); win:Sync() end)
-    petButtons[pet] = b
-  end
+  -- Mainline 11.0+ menu API (UIDropDownMenu is deprecated)
+  local dd = CreateFrame("DropdownButton", nil, win, "WowStyle1DropdownTemplate")
+  dd:SetWidth(160); dd:SetPoint("TOPLEFT", 18, -122)
+  dd:SetupMenu(function(_, root)
+    for _, pet in ipairs(PETS) do
+      root:CreateRadio(pet:sub(1, 1):upper() .. pet:sub(2),
+        function() return WUK.char.pet == pet end,
+        function() Run("pet " .. pet) end)
+    end
+  end)
 
   local reset = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
   reset:SetSize(130, 22); reset:SetPoint("BOTTOMLEFT", 16, 16); reset:SetText("Reset positions")
@@ -47,9 +49,7 @@ local function Build()
 
   function win:Sync()
     for _, cb in ipairs(checks) do cb:Sync() end
-    for pet, b in pairs(petButtons) do
-      if WUK.char.pet == pet then b:LockHighlight() else b:UnlockHighlight() end
-    end
+    dd:GenerateMenu() -- refresh the shown selection
   end
   win:SetScript("OnShow", win.Sync)
   win:Hide()

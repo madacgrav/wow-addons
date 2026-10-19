@@ -913,6 +913,14 @@ The pet and stone buttons duplicated most of the prep chain, so the prep button 
 
 ---
 
+## Change: pet dropdown in settings (user request)
+The pet buttons in the settings window are replaced by a `WowStyle1DropdownTemplate` dropdown, which uses the Mainline 11.0+ `SetupMenu`/`CreateRadio` API. Choosing a pet runs `/wuk pet <name>`.
+
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [ ] In game: the dropdown shows the current pet, and picking one updates the pet button. If the template is missing on Forever, fall back to `UIDropDownMenuTemplate`.
+
+---
+
 ## Final checks (after Phase 7)
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 - [ ] (deferred) `/console addonCombatRestrictionsForced 1`, then exercise the strip, prep, chat "123" and whisper "hs": no Lua errors. Reset with `/console addonCombatRestrictionsForced 0`
