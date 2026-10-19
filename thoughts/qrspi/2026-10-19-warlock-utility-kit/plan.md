@@ -803,11 +803,12 @@ eq(WUK.IsHealthstoneRequest("this is it"), false, "no hs in words"); eq(WUK.IsHe
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] Another player whispers "hs" and receives "Stone ready - open a trade with me." exactly once, even if they repeat the whisper
-- [ ] With 0 healthstones, they receive "Out of stones right now, sorry." and are not queued
-- [ ] When they open a trade, a healthstone appears in trade slot 1; if `ClickTradeButton` is missing, the stone stays on the cursor and a hint is printed
-- [ ] After the trade completes they are dequeued, and another "hs" gets a fresh reply
-- [ ] A trade with someone who is not queued is left untouched
+> **DEFERRED (2026-10-19):** needs a second player; verify before release.
+- [ ] (deferred) Another player whispers "hs" and receives "Stone ready - open a trade with me." exactly once, even if they repeat the whisper
+- [ ] (deferred) With 0 healthstones, they receive "Out of stones right now, sorry." and are not queued
+- [ ] (deferred) When they open a trade, a healthstone appears in trade slot 1; if `ClickTradeButton` is missing, the stone stays on the cursor and a hint is printed
+- [ ] (deferred) After the trade completes they are dequeued, and another "hs" gets a fresh reply
+- [ ] (deferred) A trade with someone who is not queued is left untouched
 
 ---
 
@@ -838,7 +839,7 @@ local FALLBACK = {
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed` (no new pure logic)
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed` (no new pure logic)
 
 #### Manual
 - [ ] The strip shows five icons with counts; a kind with 0 count is grey

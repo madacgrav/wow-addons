@@ -16,7 +16,7 @@ events:SetScript("OnEvent", function(_, event, ...)
   for _, fn in ipairs(handlers[event]) do fn(...) end
 end)
 
-local DEFAULTS = { locked = false, shown = true, frames = {} }
+local DEFAULTS = { locked = false, shown = true, frames = {}, icons = {} }
 local CHAR_DEFAULTS = { pet = "imp" }
 
 WUK.On("ADDON_LOADED", function(name)
