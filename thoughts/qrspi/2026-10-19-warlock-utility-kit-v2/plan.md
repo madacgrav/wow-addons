@@ -70,7 +70,7 @@ Slash branch: `elseif cmd == "probe" then WUK.Probe()`. Add `probe` to the usage
 #### Manual
 - [x] `/wuk probe` with no target prints the instance/combat/lockdown/secrecy lines and "target: none", with no Lua errors
 - [x] With a mob you've cursed in the open world, out of combat and then in combat, it lists your debuffs (or SECRET)
-- [x] Inside a dungeon it runs without errors
+- [ ] (skipped: not needed after the in-combat result, see probe-results.md) Inside a dungeon it runs without errors
 - [x] Paste the output into `thoughts/qrspi/2026-10-19-warlock-utility-kit-v2/probe-results.md` for v3
 
 ---
