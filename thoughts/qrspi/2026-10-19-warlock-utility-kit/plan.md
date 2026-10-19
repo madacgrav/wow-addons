@@ -842,14 +842,14 @@ local FALLBACK = {
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed` (no new pure logic)
 
 #### Manual
-- [ ] The strip shows five icons with counts; a kind with 0 count is grey
-- [ ] Icons match the actual items in bags; after using the last healthstone, its icon stays (greyed)
-- [ ] The prep button (Phase 2) still sits left of the icons with no overlap
+- [x] The strip shows five icons with counts; a kind with 0 count is grey
+- [x] Icons match the actual items in bags; after using the last healthstone, its icon stays (greyed)
+- [x] The prep button (Phase 2) still sits left of the icons with no overlap
 
 ---
 
 ## Final checks (after Phase 6)
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] `/console addonCombatRestrictionsForced 1`, then exercise the strip, prep, chat "123" and whisper "hs": no Lua errors. Reset with `/console addonCombatRestrictionsForced 0`
-- [ ] Inside a dungeon, out of combat: no Lua errors. Summon rows may not appear (chat can be secret on restricted maps); this is expected
-- [ ] Everything new lives under `WarlockUtilityKit/` (plus `thoughts/`); `git status` shows no other paths
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [ ] (deferred) `/console addonCombatRestrictionsForced 1`, then exercise the strip, prep, chat "123" and whisper "hs": no Lua errors. Reset with `/console addonCombatRestrictionsForced 0`
+- [ ] (deferred) Inside a dungeon, out of combat: no Lua errors. Summon rows may not appear (chat can be secret on restricted maps); this is expected
+- [x] Everything new lives under `WarlockUtilityKit/` (plus `thoughts/`); `git status` shows no other paths
