@@ -848,7 +848,29 @@ local FALLBACK = {
 
 ---
 
-## Final checks (after Phase 6)
+## Phase 7: Clickable 36px stone icons (added after Phase 6 in-game review)
+The stone icons become 36px `SecureActionButtonTemplate` macro buttons, the same size as the prep button, laid out in one row.
+- The strip is 244x62. The soulstone line moves to the bottom.
+- `WUK.StoneMacro(kind, count, itemID, createSpell)` (pure, in Logic.lua) decides what a click does:
+  - If the stone is held, use it. The soulstone goes on a friendly target, or on yourself.
+  - Otherwise, cast the highest known create spell.
+  - The shard icon has no action.
+- Core `SPELLS` gains `spellstone` and `firestone` create-spell names.
+- The refresher sets `macrotext` out of combat only. Textures and counts still update in combat.
+
+### Verification
+#### Automated
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+
+#### Manual
+- [ ] The icons are the same size as the prep button, in one row with no overlap
+- [ ] Clicking healthstone uses it if you have one, or creates one if you don't; same for spellstone and firestone
+- [ ] Clicking soulstone with a friendly target soulstones them, and with no target soulstones yourself
+- [ ] Shift+drag on the strip's bottom edge (the soulstone text area) still moves it
+
+---
+
+## Final checks (after Phase 7)
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 - [ ] (deferred) `/console addonCombatRestrictionsForced 1`, then exercise the strip, prep, chat "123" and whisper "hs": no Lua errors. Reset with `/console addonCombatRestrictionsForced 0`
 - [ ] (deferred) Inside a dungeon, out of combat: no Lua errors. Summon rows may not appear (chat can be secret on restricted maps); this is expected

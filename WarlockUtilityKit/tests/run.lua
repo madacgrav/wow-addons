@@ -76,4 +76,11 @@ eq(WUK.SummonFailure(unknown), nil, "unknown helpers ok")
 eq(WUK.IsHealthstoneRequest("hs pls"), true, "hs"); eq(WUK.IsHealthstoneRequest("Healthstone?"), true, "healthstone")
 eq(WUK.IsHealthstoneRequest("this is it"), false, "no hs in words"); eq(WUK.IsHealthstoneRequest("Stone ready - open a trade with me."), false, "reply safe")
 
+-- Phase 7
+eq(WUK.StoneMacro("shard", 5, 6265, nil), nil, "shard no action")
+eq(WUK.StoneMacro("healthstone", 1, 9421, "Create Healthstone (Major)"), "/use item:9421", "use hs")
+eq(WUK.StoneMacro("healthstone", 0, nil, "Create Healthstone (Major)"), "/cast Create Healthstone (Major)", "create hs")
+eq(WUK.StoneMacro("soulstone", 1, 16893, nil), "/use [help] item:16893; [@player] item:16893", "use ss")
+eq(WUK.StoneMacro("firestone", 0, nil, nil), nil, "unknown spell")
+
 print("all tests passed")

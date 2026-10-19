@@ -24,7 +24,7 @@ end
 
 table.insert(WUK.inits, function()
   btn = CreateFrame("Button", "WUKPrepButton", WUK.strip, "SecureActionButtonTemplate,BackdropTemplate")
-  btn:SetSize(36, 36); btn:SetPoint("LEFT", 4, 0)
+  btn:SetSize(36, 36); btn:SetPoint("TOPLEFT", 4, -4)
   btn:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 2 })
   btn.icon = btn:CreateTexture(nil, "ARTWORK"); btn.icon:SetPoint("TOPLEFT", 2, -2); btn.icon:SetPoint("BOTTOMRIGHT", -2, 2)
   btn.badge = btn:CreateFontString(nil, "OVERLAY", "NumberFontNormal"); btn.badge:SetPoint("BOTTOMRIGHT", -2, 2)

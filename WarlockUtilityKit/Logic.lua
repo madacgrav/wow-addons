@@ -22,6 +22,16 @@ function WUK.MergeDefaults(sv, defaults)
   return sv
 end
 
+-- stone icon click: use the stone if held (soulstone on friendly target, else self), otherwise create one
+function WUK.StoneMacro(kind, count, itemID, createSpell)
+  if kind == "shard" then return nil end
+  if count > 0 and itemID then
+    if kind == "soulstone" then return "/use [help] item:" .. itemID .. "; [@player] item:" .. itemID end
+    return "/use item:" .. itemID
+  end
+  return createSpell and ("/cast " .. createSpell) or nil
+end
+
 function WUK.FormatTime(sec)
   return string.format("%d:%02d", math.floor(sec / 60), math.floor(sec % 60))
 end

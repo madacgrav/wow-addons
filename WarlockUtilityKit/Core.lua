@@ -55,6 +55,9 @@ local SPELLS = {
                   "Create Healthstone (Lesser)", "Create Healthstone (Minor)" },
   soulstone = { "Create Soulstone (Major)", "Create Soulstone (Greater)", "Create Soulstone",
                 "Create Soulstone (Lesser)", "Create Soulstone (Minor)" },
+  spellstone = { "Create Spellstone (Major)", "Create Spellstone (Greater)", "Create Spellstone" },
+  firestone = { "Create Firestone (Major)", "Create Firestone (Greater)", "Create Firestone",
+                "Create Firestone (Lesser)" },
 }
 
 local function SpellbookNames()
