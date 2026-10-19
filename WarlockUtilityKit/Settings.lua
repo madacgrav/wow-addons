@@ -17,7 +17,7 @@ end
 
 local function Build()
   win = CreateFrame("Frame", "WUKSettings", UIParent, "BasicFrameTemplateWithInset")
-  win:SetSize(300, 230); win:SetPoint("CENTER"); win:SetFrameStrata("DIALOG")
+  win:SetSize(320, 258); win:SetPoint("CENTER"); win:SetFrameStrata("DIALOG")
   win:SetMovable(true); win:EnableMouse(true); win:RegisterForDrag("LeftButton")
   win:SetScript("OnDragStart", win.StartMoving); win:SetScript("OnDragStop", win.StopMovingOrSizing)
   tinsert(UISpecialFrames, "WUKSettings") -- Escape closes it
@@ -28,13 +28,15 @@ local function Build()
     Check(win, "Show strip", -36, function() return WUK.db.shown end, function(on) Run(on and "show" or "hide") end),
     Check(win, "Lock frames (no Shift+drag)", -64, function() return WUK.db.locked end,
       function(on) if on ~= WUK.db.locked then Run("lock") end end),
+    Check(win, "Dock Blizzard cooldown timers under strip", -92, function() return WUK.db.dockViewers end,
+      function(on) if on ~= WUK.db.dockViewers then Run("dock") end end),
   }
 
   local label = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  label:SetPoint("TOPLEFT", 20, -104); label:SetText("Preferred pet")
+  label:SetPoint("TOPLEFT", 20, -132); label:SetText("Preferred pet")
   -- Mainline 11.0+ menu API (UIDropDownMenu is deprecated)
   local dd = CreateFrame("DropdownButton", nil, win, "WowStyle1DropdownTemplate")
-  dd:SetWidth(160); dd:SetPoint("TOPLEFT", 18, -122)
+  dd:SetWidth(160); dd:SetPoint("TOPLEFT", 18, -150)
   dd:SetupMenu(function(_, root)
     for _, pet in ipairs(PETS) do
       root:CreateRadio(pet:sub(1, 1):upper() .. pet:sub(2),
@@ -46,6 +48,10 @@ local function Build()
   local reset = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
   reset:SetSize(130, 22); reset:SetPoint("BOTTOMLEFT", 16, 16); reset:SetText("Reset positions")
   reset:SetScript("OnClick", function() Run("reset") end)
+
+  local board = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
+  board:SetSize(130, 22); board:SetPoint("BOTTOMRIGHT", -16, 16); board:SetText("Assignment board")
+  board:SetScript("OnClick", function() Run("board") end)
 
   function win:Sync()
     for _, cb in ipairs(checks) do cb:Sync() end
@@ -86,11 +92,14 @@ table.insert(WUK.inits, function()
     end)
   end)
   b:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
-  b:SetScript("OnClick", WUK.ToggleSettings)
+  b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  b:SetScript("OnClick", function(_, button)
+    if button == "RightButton" then WUK.ToggleBoard() else WUK.ToggleSettings() end
+  end)
   b:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
     GameTooltip:AddLine("Warlock Utility Kit")
-    GameTooltip:AddLine("Click: settings   Drag: move", 1, 1, 1)
+    GameTooltip:AddLine("Click: settings   Right-click: board   Drag: move", 1, 1, 1)
     GameTooltip:Show()
   end)
   b:SetScript("OnLeave", GameTooltip_Hide)

@@ -23,10 +23,13 @@ function WUK.MergeDefaults(sv, defaults)
 end
 
 -- stone icon click: use the stone if held (soulstone on friendly target, else self), otherwise create one
-function WUK.StoneMacro(kind, count, itemID, createSpell)
+function WUK.StoneMacro(kind, count, itemID, createSpell, ssTarget)
   if kind == "shard" then return nil end
   if count > 0 and itemID then
-    if kind == "soulstone" then return "/use [help] item:" .. itemID .. "; [@player] item:" .. itemID end
+    if kind == "soulstone" then
+      if ssTarget then return "/use [@" .. ssTarget .. "] item:" .. itemID end
+      return "/use [help] item:" .. itemID .. "; [@player] item:" .. itemID
+    end
     return "/use item:" .. itemID
   end
   return createSpell and ("/cast " .. createSpell) or nil
@@ -78,4 +81,80 @@ function WUK.SoulstoneRemaining(rec, now)
   local r = rec.expires - now
   if r <= 0 then return nil end
   return r
+end
+
+WUK.CURSES = {
+  { key = "elements", name = "Curse of the Elements", short = "Elements" },
+  { key = "recklessness", name = "Curse of Recklessness", short = "Recklessness" },
+  { key = "tongues", name = "Curse of Tongues", short = "Tongues" },
+  { key = "weakness", name = "Curse of Weakness", short = "Weakness" },
+  { key = "exhaustion", name = "Curse of Exhaustion", short = "Exhaustion" },
+  { key = "shadow", name = "Curse of Shadow", short = "Shadow" }, -- may not exist on Forever; board lists it only if known
+}
+local CURSE_BY_KEY = {}
+for _, c in ipairs(WUK.CURSES) do CURSE_BY_KEY[c.key] = c end
+function WUK.CurseInfo(key) return CURSE_BY_KEY[key] end
+
+function WUK.MarkToken(mark)
+  if type(mark) == "number" and mark >= 1 and mark <= 8 then return "{rt" .. mark .. "}" end
+  return ""
+end
+
+-- markFmt: MarkToken for chat, a texture-escape function for FontStrings
+function WUK.AssignmentText(row, markFmt)
+  if not row then return "No assignment" end
+  markFmt = markFmt or WUK.MarkToken
+  local parts = {}
+  if row.curse then local c = CURSE_BY_KEY[row.curse]; parts[#parts + 1] = c and c.short or row.curse end
+  if (row.mark or 0) > 0 then parts[#parts + 1] = "Banish " .. markFmt(row.mark) end
+  if row.ss then parts[#parts + 1] = "SS: " .. row.ss end
+  if #parts == 0 then return "No assignment" end
+  return table.concat(parts, "  ")
+end
+
+function WUK.NextRev(rev, now) return math.max(now, (rev or 0) + 1) end
+
+local PROTO = "1"
+local function enc(v) if v == nil or v == "" then return "-" end return tostring(v) end
+local function dec(s) if s == "-" then return nil end return s end
+
+-- 1|L|rev  1|A|rev|warlock|curse|mark|ss  1|R  1|E|rev ; "-" = nil
+function WUK.Encode(kind, ...)
+  local parts = { PROTO, kind }
+  for i = 1, select("#", ...) do parts[#parts + 1] = enc((select(i, ...))) end
+  return table.concat(parts, "|")
+end
+
+function WUK.Decode(msg)
+  if type(msg) ~= "string" then return nil end
+  local f = {}
+  for p in (msg .. "|"):gmatch("(.-)|") do f[#f + 1] = p end
+  if f[1] ~= PROTO then return nil end
+  local kind = f[2]
+  if kind == "R" and #f == 2 then return { kind = "R" } end
+  if (kind == "L" or kind == "E") and #f == 3 and tonumber(f[3]) then return { kind = kind, rev = tonumber(f[3]) } end
+  if kind == "A" and #f == 7 and tonumber(f[3]) and tonumber(f[6]) and dec(f[4]) then
+    return { kind = "A", rev = tonumber(f[3]), warlock = f[4], curse = dec(f[5]), mark = tonumber(f[6]), ss = dec(f[7]) }
+  end
+  return nil
+end
+
+function WUK.AcceptLead(board, rev) return rev > (board.rev or 0) end
+function WUK.AcceptRow(board, sender, rev) return sender == board.lead and rev >= (board.rev or 0) end
+
+function WUK.AnnounceLines(board)
+  local names = {}
+  for n, r in pairs(board.rows) do
+    if r.curse or (r.mark or 0) > 0 or r.ss then names[#names + 1] = n end
+  end
+  table.sort(names)
+  local out = {}
+  for _, n in ipairs(names) do
+    local r, parts = board.rows[n], { "WUK: " .. n }
+    if r.curse then local c = CURSE_BY_KEY[r.curse]; parts[#parts + 1] = c and c.name or r.curse end
+    if (r.mark or 0) > 0 then parts[#parts + 1] = "Banish " .. WUK.MarkToken(r.mark) end
+    if r.ss then parts[#parts + 1] = "SS: " .. r.ss end
+    out[#out + 1] = table.concat(parts, " - ")
+  end
+  return out
 end

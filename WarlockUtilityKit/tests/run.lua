@@ -56,4 +56,33 @@ eq(WUK.StoneMacro("healthstone", 0, nil, "Create Healthstone (Major)"), "/cast C
 eq(WUK.StoneMacro("soulstone", 1, 16893, nil), "/use [help] item:16893; [@player] item:16893", "use ss")
 eq(WUK.StoneMacro("firestone", 0, nil, nil), nil, "unknown spell")
 
+-- v2 Phase 2
+eq(WUK.MarkToken(1), "{rt1}", "mark 1"); eq(WUK.MarkToken(8), "{rt8}", "mark 8"); eq(WUK.MarkToken(0), "", "mark none")
+eq(WUK.AssignmentText(nil), "No assignment", "no row")
+eq(WUK.AssignmentText({ mark = 0 }), "No assignment", "empty row")
+eq(WUK.AssignmentText({ curse = "elements", mark = 1, ss = "Healbot" }), "Elements  Banish {rt1}  SS: Healbot", "full row")
+eq(WUK.AssignmentText({ curse = "mystery", mark = 0 }), "mystery", "unknown curse key shown raw")
+eq(WUK.StoneMacro("soulstone", 1, 16893, nil, "Healbot"), "/use [@Healbot] item:16893", "ss on assigned target")
+eq(WUK.NextRev(5, 3), 6, "rev bumps"); eq(WUK.NextRev(5, 100), 100, "rev uses clock")
+
+-- v2 Phase 3
+local m = WUK.Decode(WUK.Encode("A", 12, "Lockone", "elements", 3, nil))
+eq(m.kind, "A", "decode A"); eq(m.rev, 12, "rev"); eq(m.warlock, "Lockone", "warlock")
+eq(m.curse, "elements", "curse"); eq(m.mark, 3, "mark"); eq(m.ss, nil, "ss nil")
+eq(WUK.Encode("A", 12, "Lockone", nil, 0, nil), "1|A|12|Lockone|-|0|-", "encode nils")
+eq(WUK.Decode(WUK.Encode("R")).kind, "R", "decode R")
+eq(WUK.Decode(WUK.Encode("L", 7)).rev, 7, "decode L")
+eq(WUK.Decode("2|L|7"), nil, "bad version"); eq(WUK.Decode("1|A|x|a|b|0|-"), nil, "bad rev")
+eq(WUK.Decode("1|A|5|-|b|0|-"), nil, "no warlock"); eq(WUK.Decode(nil), nil, "nil msg")
+local brd = { lead = "Lead", rev = 10, rows = {} }
+eq(WUK.AcceptRow(brd, "Other", 11), false, "non-lead row"); eq(WUK.AcceptRow(brd, "Lead", 9), false, "old row")
+eq(WUK.AcceptRow(brd, "Lead", 10), true, "same rev ok")
+eq(WUK.AcceptLead(brd, 10), false, "stale claim"); eq(WUK.AcceptLead(brd, 11), true, "newer claim")
+
+-- v2 Phase 4
+local lines = WUK.AnnounceLines({ rows = {
+  Zed = { curse = "tongues", mark = 0 }, Abe = { curse = "elements", mark = 1, ss = "Healbot" }, Mia = { mark = 0 } } })
+eq(#lines, 2, "skips empty"); eq(lines[1], "WUK: Abe - Curse of the Elements - Banish {rt1} - SS: Healbot", "abe line")
+eq(lines[2], "WUK: Zed - Curse of Tongues", "zed line")
+
 print("all tests passed")

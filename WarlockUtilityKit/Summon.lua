@@ -2,18 +2,7 @@ local ADDON, WUK = ...
 local MAX, TTL = 10, 600
 local queue, rows, panel = {}, {}, nil
 
-local function GroupUnits()
-  local u = {}
-  if IsInRaid() then for i = 1, GetNumGroupMembers() do u[#u + 1] = "raid" .. i end
-  else for i = 1, GetNumSubgroupMembers() do u[#u + 1] = "party" .. i end end
-  return u
-end
-
-local function UnitFull(unit)
-  local n, realm = UnitName(unit)
-  if not n or WUK.Secret(n) then return nil end
-  return Ambiguate((realm and realm ~= "") and (n .. "-" .. realm) or n, "none")
-end
+local GroupUnits, UnitFull = WUK.GroupUnits, WUK.UnitFull
 
 local function RosterZone(name)
   if not IsInRaid() then return nil end -- ponytail: party zone unknown; add C_Map.GetBestMapForUnit name lookup if needed
