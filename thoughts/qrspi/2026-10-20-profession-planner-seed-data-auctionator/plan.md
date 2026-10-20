@@ -720,10 +720,10 @@ end
 - [x] loadfile syntax check for Core.lua and Panel.lua
 
 #### Manual
-- [ ] Deployed; clicking a step row selects that recipe in the list/schematic, and the count box shows min(step crafts, craftable)
-- [ ] Shift-click on a row with reagents crafts that many (watch the cast bar / count)
-- [ ] Shift-click with no reagents prints "Missing reagents for …" and does not craft
-- [ ] Hovering a step shows the tooltip; shopping rows and `Learn:` rows show no highlight and do nothing
+- [x] Deployed; clicking a step row selects that recipe in the list/schematic, and the count box shows min(step crafts, craftable)
+- [x] Shift-click on a row with reagents crafts that many (watch the cast bar / count)
+- [x] Shift-click with no reagents prints "Missing reagents for …" and does not craft
+- [x] Hovering a step shows the tooltip; shopping rows and `Learn:` rows show no highlight and do nothing
 
 ---
 
