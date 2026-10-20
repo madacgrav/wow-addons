@@ -6,6 +6,7 @@
 ## SavedVariables: ProfessionPlannerDB
 ## SavedVariablesPerCharacter: ProfessionPlannerCharDB
 
+Data.lua
 Logic.lua
 Core.lua
 Panel.lua

@@ -52,4 +52,21 @@ local th3 = { [2] = { green = 60, grey = 70 }, [1] = { yellow = 55, green = 65, 
 local p3 = PP.Plan(S({ thresholds = th3, prices = { [10] = 50, [11] = 100 } }))
 eq(#p3 >= 2, true, "multi-step with thresholds"); eq(p3[1].toSkill ~= nil, true, "step has toSkill")
 
+-- Seed phase 2
+local m = PP.MergeThresholds({ green = 61 }, { yellow = 50, green = 60, grey = 70 })
+eq(m.yellow, 50, "seed yellow"); eq(m.green, 61, "learned wins"); eq(m.grey, 70, "seed grey")
+eq(PP.MergeThresholds(nil, nil), nil, "no data")
+eq(PP.MergeReagents({}, { reagents = { { itemID = 9, qty = 2 } } })[1].itemID, 9, "seed fills empty scan")
+eq(PP.MergeReagents({ { itemID = 8, qty = 1 } }, { reagents = { { itemID = 9, qty = 2 } } })[1].itemID, 8, "scan wins")
+local seeded = { [2] = PP.MergeThresholds(nil, { yellow = 40, green = 60, grey = 70 }),
+  [1] = PP.MergeThresholds(nil, { yellow = 55, green = 65, grey = 75 }) }
+st = PP.Plan(S({ thresholds = seeded }))
+eq(#st >= 2, true, "seed-only plan is multi-step"); eq(st[1].toSkill, 60, "seed gives toSkill")
+assert(loadfile(dir .. "/Data.lua"))("ProfessionPlanner", PP)
+local d = PP.SEED.recipes[3755]
+eq(d.grey, 65, "Linen Bag grey"); eq(d.yellow, 30, "Linen Bag yellow"); eq(d.green, 48, "Linen Bag green"); eq(d.item, 4238, "Linen Bag item")
+eq(PP.SEED.recipes[3757].grey, 110, "Woolen Bag grey"); eq(PP.SEED.recipes[3757].green, 93, "Woolen Bag green (in game: green at 93)")
+eq(PP.SEED.recipes[7457].green, 120, "learned green 120 matches seed")
+eq(PP.SEED.price[2320], 10, "Coarse Thread base price")
+
 print("all tests passed")

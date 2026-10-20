@@ -259,9 +259,9 @@ eq(PP.SEED.price[2320], 10, "Coarse Thread base price")
 
 ### Verification
 #### Automated
-- [ ] `python -I ProfessionPlanner/tools/gen_seed.py 1.60.1.70450 ProfessionPlanner/Data.lua` completes; `ProfessionPlanner/Data.lua` < 300 KB
-- [ ] `lua -e "assert(loadfile([[ProfessionPlanner/Data.lua]]))"`, then the same for Logic.lua and Panel.lua
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [x] `python -I ProfessionPlanner/tools/gen_seed.py 1.60.1.70450 ProfessionPlanner/Data.lua` completes; `ProfessionPlanner/Data.lua` < 300 KB
+- [x] `lua -e "assert(loadfile([[ProfessionPlanner/Data.lua]]))"`, then the same for Logic.lua and Panel.lua
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] Deployed; `/reload` gives no Lua errors

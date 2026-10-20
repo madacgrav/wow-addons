@@ -54,6 +54,20 @@ local function ItemName(id, onLoad)
   return name or ("item:" .. id), icon or C_Item.GetItemIconByID(id)
 end
 
+local function copy(t) local c = {}; for k, v in pairs(t) do c[k] = v end; return c end
+
+-- scanned recipes annotated with seed data, in memory only (never saved)
+local function View(prof)
+  local recipes, thresholds, seed = {}, {}, PP.SEED and PP.SEED.recipes or {}
+  for id, r in pairs(PP.char.recipes[prof] or {}) do
+    local v = copy(r)
+    v.reagents = PP.MergeReagents(r.reagents, seed[id])
+    recipes[id] = v
+    thresholds[id] = PP.MergeThresholds(PP.db.thresholds[id], seed[id])
+  end
+  return recipes, thresholds
+end
+
 local pending = false
 local function Rerender() if not pending then pending = true; C_Timer.After(0.1, function() pending = false; PP.Refresh() end) end end
 
@@ -61,9 +75,10 @@ table.insert(PP.refreshers, function()
   if not PP.current or not (ProfessionsFrame and ProfessionsFrame:IsShown()) then return PP.RenderPanel(nil) end
   local s = PP.char.skill[PP.current]
   local target = PP.NextBracket(s.skill, s.max)
-  local recipes, have = PP.char.recipes[PP.current], PP.Have()
+  local recipes, thresholds = View(PP.current)
+  local have = PP.Have()
   local steps = PP.Plan({ skill = s.skill, target = target, recipes = recipes, have = have,
-    prices = PP.db.prices, thresholds = PP.db.thresholds, unknownCost = UNKNOWN_COST })
+    prices = PP.db.prices, thresholds = thresholds, unknownCost = UNKNOWN_COST })
   local rows = {}
   for _, st in ipairs(steps) do
     -- * marks a step length taken from a learned threshold
@@ -83,5 +98,5 @@ table.insert(PP.refreshers, function()
     if th and (th.yellow or th.green) then known = known + 1 end
   end
   PP.RenderPanel({ header = PP.PROFESSIONS[PP.current] .. "  " .. s.skill .. " -> " .. target
-    .. "\n|cff999999" .. known .. " color thresholds learned|r", rows = rows })
+    .. "\n|cff999999" .. known .. " thresholds learned  |  seed " .. (PP.SEED and PP.SEED.build or "none") .. "|r", rows = rows })
 end)

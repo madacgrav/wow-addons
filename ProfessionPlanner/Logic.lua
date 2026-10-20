@@ -46,6 +46,20 @@ function PP.NextThreshold(th, color, skill)
   return nil
 end
 
+-- per color, an in-game learned threshold wins over the seed
+function PP.MergeThresholds(learned, seed)
+  if not seed then return learned end
+  local th = { yellow = seed.yellow, green = seed.green, grey = seed.grey }
+  for k, v in pairs(learned or {}) do th[k] = v end
+  return th
+end
+
+-- the scanned schematic wins; seed reagents only fill a recipe the scan couldn't read
+function PP.MergeReagents(scanned, seed)
+  if scanned and #scanned > 0 then return scanned end
+  return seed and seed.reagents or scanned or {}
+end
+
 -- cost of `crafts` crafts; owned reagents are free and consumed from `have` (mutated)
 local function CraftCost(r, crafts, have, prices, unknownCost)
   local cost = 0

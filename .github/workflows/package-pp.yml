@@ -28,7 +28,7 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Build zip
-        run: zip -r "ProfessionPlanner-${{ steps.version.outputs.version }}.zip" ProfessionPlanner -x 'ProfessionPlanner/tests/*'
+        run: zip -r "ProfessionPlanner-${{ steps.version.outputs.version }}.zip" ProfessionPlanner -x 'ProfessionPlanner/tests/*' 'ProfessionPlanner/tools/*'
 
       - name: Publish release
         env:
