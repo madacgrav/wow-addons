@@ -112,3 +112,25 @@ function PP.FormatMoney(copper)
   if c > 0 or #parts == 0 then parts[#parts + 1] = "|cffeda55f" .. c .. "c|r" end
   return table.concat(parts, " ")
 end
+
+-- record the skill at which a recipe moved to a worse color; keep the lowest observation
+function PP.LearnThresholds(th, prev, cur, skill)
+  local changed = false
+  for id, c in pairs(cur) do
+    local p = prev[id]
+    if p and PP.RANK[c] and PP.RANK[p] and PP.RANK[c] > PP.RANK[p] then
+      th[id] = th[id] or {}
+      if not th[id][c] or skill < th[id][c] then th[id][c] = skill; changed = true end
+    end
+  end
+  return changed
+end
+
+-- Forever fills maxTrivialLevel: the skill where the recipe turns grey
+function PP.LearnGrey(th, id, maxTrivial)
+  if type(maxTrivial) == "number" and maxTrivial > 0 then
+    th[id] = th[id] or {}
+    if not th[id].grey or maxTrivial < th[id].grey then th[id].grey = maxTrivial; return true end
+  end
+  return false
+end

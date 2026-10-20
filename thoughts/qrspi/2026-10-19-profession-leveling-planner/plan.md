@@ -557,6 +557,7 @@ eq(list[1].need, 5, "sums steps"); eq(list[1].buy, 4, "minus have"); eq(list[1].
 - [x] Every `.lua` file passes the syntax check
 
 #### Manual
+> **DEFERRED (2026-10-20):** bank, vendor-price and post-craft checks postponed by user; verify before release.
 - [x] Deployed to AddOns with robocopy
 - [x] (verified on Enchanting) Tailoring shows "×N Recipe (until color changes)" plus a cost, and shopping rows with have/need matching your bags
 - [ ] After visiting the bank, the "have" counts include bank items
@@ -628,11 +629,11 @@ eq(#p3 >= 2, true, "multi-step with thresholds"); eq(p3[1].toSkill ~= nil, true,
 
 ### Verification
 #### Automated
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
-- [ ] Every `.lua` file passes the syntax check
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [x] Every `.lua` file passes the syntax check
 
 #### Manual
-- [ ] Deployed to AddOns with robocopy
+- [x] Deployed to AddOns with robocopy
 - [ ] Craft an orange recipe until it turns yellow; that step then shows "→ S ✓" for the yellow→green transition once that is learned too, and the header count increases
 - [ ] Thresholds survive `/reload`, and an alt with the same recipe sees them
 - [ ] If the probe showed `maxTrivial` populated, grey thresholds appear immediately for all learned recipes

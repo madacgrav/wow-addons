@@ -40,4 +40,16 @@ eq(list[1].need, 5, "sums steps"); eq(list[1].buy, 4, "minus have"); eq(list[1].
 eq(PP.FormatMoney(0), "|cffeda55f0c|r", "zero"); eq(PP.FormatMoney(12345), "|cffffd7001g|r |cffc7c7cf23s|r |cffeda55f45c|r", "gsc")
 eq(PP.FormatMoney(166.7), "|cffc7c7cf1s|r |cffeda55f66c|r", "floors fractions")
 
+-- Phase 4
+local T = {}
+eq(PP.LearnThresholds(T, { [5] = "orange" }, { [5] = "yellow" }, 112), true, "learn yellow"); eq(T[5].yellow, 112, "yellow=112")
+PP.LearnThresholds(T, { [5] = "orange" }, { [5] = "yellow" }, 110); eq(T[5].yellow, 110, "lower replaces")
+PP.LearnThresholds(T, { [5] = "orange" }, { [5] = "yellow" }, 120); eq(T[5].yellow, 110, "higher ignored")
+eq(PP.LearnThresholds(T, { [5] = "yellow" }, { [5] = "yellow" }, 130), false, "same color no change")
+eq(PP.LearnThresholds(T, { [6] = nil }, { [6] = "green" }, 130), false, "first sighting no change")
+eq(PP.LearnGrey(T, 7, 150), true, "grey from maxTrivial"); eq(T[7].grey, 150, "grey=150"); eq(PP.LearnGrey(T, 8, 0), false, "zero ignored")
+local th3 = { [2] = { green = 60, grey = 70 }, [1] = { yellow = 55, green = 65, grey = 75 } }
+local p3 = PP.Plan(S({ thresholds = th3, prices = { [10] = 50, [11] = 100 } }))
+eq(#p3 >= 2, true, "multi-step with thresholds"); eq(p3[1].toSkill ~= nil, true, "step has toSkill")
+
 print("all tests passed")

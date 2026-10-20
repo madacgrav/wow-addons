@@ -73,7 +73,8 @@ function PP.ScanProfession()
   end
   PP.retries = 0
   PP.char.recipes[prof] = cache
-  PP.lastScan = { prof = prof, skill = info.skillLevel, prev = prevColors, cur = curColors } -- Phase 4 learns from this
+  PP.LearnThresholds(PP.db.thresholds, prevColors, curColors, info.skillLevel)
+  for id, r in pairs(cache) do PP.LearnGrey(PP.db.thresholds, id, r.maxTrivial) end
 end
 
 local function ScanContainers(first, last, into)

@@ -14,7 +14,7 @@ local function Build()
   panel.rows = {}
   for i = 1, MAX_ROWS do
     local row = CreateFrame("Frame", nil, panel)
-    row:SetSize(236, 28); row:SetPoint("TOPLEFT", 12, -50 - (i - 1) * 30)
+    row:SetSize(236, 28); row:SetPoint("TOPLEFT", 12, -64 - (i - 1) * 30)
     row.icon = row:CreateTexture(nil, "ARTWORK"); row.icon:SetSize(24, 24); row.icon:SetPoint("LEFT")
     row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     row.text:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, 0); row.text:SetWidth(200); row.text:SetJustifyH("LEFT")
@@ -43,7 +43,7 @@ function PP.RenderPanel(view)
       row.sub:SetText(v.sub or "")
     end
   end
-  panel:SetHeight(60 + n * 30)
+  panel:SetHeight(74 + n * 30)
   panel:Show()
 end
 
@@ -66,7 +66,8 @@ table.insert(PP.refreshers, function()
     prices = PP.db.prices, thresholds = PP.db.thresholds, unknownCost = UNKNOWN_COST })
   local rows = {}
   for _, st in ipairs(steps) do
-    local goal = st.toSkill and ("-> " .. st.toSkill) or (st.untilColorChange and "(until color changes)") or ("-> " .. target)
+    -- * marks a step length taken from a learned threshold
+    local goal = st.toSkill and ("-> " .. st.toSkill .. (st.toSkill < target and " *" or "")) or (st.untilColorChange and "(until color changes)") or ("-> " .. target)
     rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. PP.FormatMoney(st.cost), color = st.color }
   end
   if #steps == 0 then rows[#rows + 1] = { text = "No recipe gives skill-ups here", sub = "train new recipes" } end
@@ -76,5 +77,11 @@ table.insert(PP.refreshers, function()
     if it.buy > 0 then sub = sub .. "   buy " .. it.buy .. (it.unitPrice and (" @ " .. PP.FormatMoney(it.unitPrice)) or "") end
     rows[#rows + 1] = { icon = icon, text = name, sub = sub }
   end
-  PP.RenderPanel({ header = PP.PROFESSIONS[PP.current] .. "  " .. s.skill .. " -> " .. target, rows = rows })
+  local known = 0
+  for id in pairs(recipes) do
+    local th = PP.db.thresholds[id]
+    if th and (th.yellow or th.green) then known = known + 1 end
+  end
+  PP.RenderPanel({ header = PP.PROFESSIONS[PP.current] .. "  " .. s.skill .. " -> " .. target
+    .. "\n|cff999999" .. known .. " color thresholds learned|r", rows = rows })
 end)
