@@ -727,7 +727,9 @@ end
 
 ---
 
-## Phase 8: Route hints
+## Phase 8: Route hints — DROPPED (2026-10-20)
+
+> Dropped by the user. Forever reworked the professions: Alchemy recipes were renamed (e.g. "Minor Discolored Healing Potion"), dozens of Forever-only recipes stay useful for only ~5 points, and Classic routes break at Tailoring 85 / Leatherworking 115 under Forever thresholds. The live planner already routes from Forever data. Only the version bump (0.2.0) from this phase was done. Nothing below was implemented.
 
 ### Changes
 

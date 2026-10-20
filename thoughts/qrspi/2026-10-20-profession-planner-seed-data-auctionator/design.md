@@ -134,6 +134,8 @@
    - Clicking a plan step selects the recipe with the count filled in; shift-click crafts.
    - `C_TradeSkillUI.CraftRecipe` is called inside the click handler (hardware event).
 
+10. **Route hints dropped** (2026-10-20): Classic guide routes don't fit Forever's reworked professions (renamed Alchemy recipes, short-range Forever-only recipes, moved thresholds); the live planner covers routing.
+
 ## What We're NOT Doing
 - **Other professions.** No Blacksmithing, Engineering, Cooking, First Aid etc. `PP.PROFESSIONS` stays the same 4.
 - **Era/Anniversary/other-client data.** The seed targets Forever only.
