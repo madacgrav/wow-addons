@@ -44,6 +44,18 @@ function WUK.LayoutRing()
   local any = false
   for _, kind in ipairs(ORBIT) do any = any or s.icons[kind].alerting end
   WUK.SetAlert(s.icons.shard, any and s.radius < R / 2)
+  -- summoning circle closes with the ring
+  local d = 2 * (s.radius + BTN / 2) + 8
+  s.rim:SetSize(d + 6, d + 6); s.disc:SetSize(d, d); s.swirl:SetSize(d - 6, d - 6)
+end
+
+-- circular texture centered on the ring (portrait mask cuts it round)
+local function Disc(f, layer, sub)
+  local t = f:CreateTexture(nil, layer, nil, sub); t:SetPoint("CENTER", 0, LABELS / 2)
+  local m = f:CreateMaskTexture(); m:SetAllPoints(t)
+  m:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+  t:AddMaskTexture(m)
+  return t
 end
 
 local SPIN, BLOOM = 6, 0.2 -- deg/sec (one turn per minute), seconds for a full bloom/collapse
@@ -98,13 +110,19 @@ function WUK.SetAlert(b, on)
 end
 
 table.insert(WUK.inits, function()
-  local f = CreateFrame("Frame", "WUKStrip", UIParent, "BackdropTemplate")
+  local f = CreateFrame("Frame", "WUKStrip", UIParent)
   -- ring of 6 orbit buttons around the shard core; soulstone + assignment lines underneath
   local SIZE = 2 * (R + BTN / 2) + 8
   f:SetSize(SIZE, SIZE + LABELS)
   f.angle, f.radius, f.targetRadius = 0, R, R
-  f:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
-  f:SetBackdropColor(0, 0, 0, 0.6); f:SetBackdropBorderColor(0.58, 0.51, 0.79, 1)
+  -- summoning circle instead of a box: purple rim, dark disc, shadow swirl turning against the spin
+  f.rim = Disc(f, "BACKGROUND", 0); f.rim:SetColorTexture(0.58, 0.51, 0.79, 0.55)
+  f.disc = Disc(f, "BACKGROUND", 1); f.disc:SetColorTexture(0.04, 0, 0.07, 0.7)
+  f.swirl = Disc(f, "BORDER", 0); f.swirl:SetTexture("Interface\\Icons\\Spell_Shadow_Twilight")
+  f.swirl:SetBlendMode("ADD"); f.swirl:SetAlpha(0.35)
+  local turn = f.swirl:CreateAnimationGroup(); turn:SetLooping("REPEAT")
+  local rot = turn:CreateAnimation("Rotation"); rot:SetDegrees(360); rot:SetDuration(90) -- positive = counter-clockwise
+  turn:Play()
   f.icons = {}
   for _, kind in ipairs(KINDS) do
     local b = CreateFrame("Button", "WUKStone_" .. kind, f, "SecureActionButtonTemplate")
