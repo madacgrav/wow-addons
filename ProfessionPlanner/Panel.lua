@@ -56,11 +56,14 @@ end
 local function copy(t) local c = {}; for k, v in pairs(t) do c[k] = v end; return c end
 
 -- scanned recipes annotated with seed data, in memory only (never saved)
-local function View(prof)
+local function View(prof, skill)
   local recipes, thresholds, seed = {}, {}, PP.SEED and PP.SEED.recipes or {}
   for id, r in pairs(PP.char.recipes[prof] or {}) do
     local v = copy(r)
     v.reagents = PP.MergeReagents(r.reagents, seed[id])
+    local sd = seed[id]
+    if sd then v.learnAt, v.taughtBy = sd.learnAt, sd.taughtBy end
+    v.learnable = PP.Learnable(r, sd, skill)
     recipes[id] = v
     thresholds[id] = PP.MergeThresholds(PP.db.thresholds[id], seed[id])
   end
@@ -75,7 +78,12 @@ local function Prices(recipes)
     prices[id], sources[id] = PP.PickPrice(PP.db.prices[id], PP.AHPrice(id), PP.SEED and PP.SEED.price[id], PP.VendorFor(id) ~= nil)
     sources[id] = sources[id] or false
   end
-  for _, r in pairs(recipes) do for _, rg in ipairs(r.reagents) do add(rg.itemID) end end
+  for _, r in pairs(recipes) do
+    if r.learned or r.learnable then -- only what Plan can pick; unlearned-and-unreachable recipes cost no lookups
+      for _, rg in ipairs(r.reagents) do add(rg.itemID) end
+      for _, it in ipairs(r.learnable and r.taughtBy or {}) do add(it) end
+    end
+  end
   return prices, sources, add
 end
 
@@ -86,14 +94,32 @@ table.insert(PP.refreshers, function()
   if not PP.current or not (ProfessionsFrame and ProfessionsFrame:IsShown()) then return PP.RenderPanel(nil) end
   local s = PP.char.skill[PP.current]
   local target = PP.NextBracket(s.skill, s.max)
-  local recipes, thresholds = View(PP.current)
+  local recipes, thresholds = View(PP.current, s.skill)
   local prices, sources = Prices(recipes)
+  -- a pattern recipe is only plannable when one of its patterns has a price (vendor/AH/est.)
+  for _, v in pairs(recipes) do
+    if v.learnable and v.taughtBy then
+      local bestItem
+      for _, it in ipairs(v.taughtBy) do
+        if prices[it] and (not bestItem or prices[it] < prices[bestItem]) then bestItem = it end
+      end
+      v.learnable, v.learnItem, v.learnCost = bestItem ~= nil, bestItem, bestItem and prices[bestItem]
+    end
+  end
   local have = PP.Have()
   local steps = PP.Plan({ skill = s.skill, target = target, recipes = recipes, have = have,
     prices = prices, thresholds = thresholds, unknownCost = PP.UNKNOWN_COST })
   local rows = {}
   for _, st in ipairs(steps) do
     -- * marks a step length taken from a learned threshold
+    if st.learn then
+      local learnName, learnIcon = "Trainer", nil
+      if st.learn.item then learnName, learnIcon = ItemName(st.learn.item, Rerender) end
+      local where = st.learn.item and PP.VendorFor(st.learn.item)
+      rows[#rows + 1] = { icon = learnIcon or st.icon, text = "Learn: " .. learnName,
+        sub = (where and (where.name .. (where.zone and (" (" .. where.zone .. ")") or "")))
+          or (st.learn.source and st.learn.source:match("^[^\n]*")) or "" }
+    end
     local goal = st.toSkill and ("-> " .. st.toSkill .. (st.toSkill < target and " *" or "")) or (st.untilColorChange and "(until color changes)") or ("-> " .. target)
     rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. (st.estimated and "~" or "") .. PP.FormatMoney(st.cost), color = st.color }
   end
@@ -108,11 +134,13 @@ table.insert(PP.refreshers, function()
     end
     rows[#rows + 1] = { icon = icon, text = name, sub = sub }
   end
-  local known = 0
-  for id in pairs(recipes) do
+  local known, atTrainer = 0, 0
+  for id, v in pairs(recipes) do
     local th = PP.db.thresholds[id]
     if th and (th.yellow or th.green) then known = known + 1 end
+    if not v.learned and not v.taughtBy then atTrainer = atTrainer + 1 end
   end
   PP.RenderPanel({ header = PP.PROFESSIONS[PP.current] .. "  " .. s.skill .. " -> " .. target
-    .. "\n|cff999999" .. known .. " thresholds learned  |  seed " .. (PP.SEED and PP.SEED.build or "none") .. "|r", rows = rows })
+    .. "\n|cff999999" .. known .. " learned  |  " .. atTrainer .. " at trainer  |  seed "
+    .. (PP.SEED and PP.SEED.build or "none") .. "|r", rows = rows })
 end)

@@ -39,7 +39,7 @@ function PP.ScanProfession()
     -- right after switching professions the recipe list can still hold the old profession's recipes
     local pi = C_TradeSkillUI.GetProfessionInfoByRecipeID and C_TradeSkillUI.GetProfessionInfoByRecipeID(id)
     local ours = not pi or pi.professionID == prof or pi.parentProfessionID == prof
-    if ri and ri.learned and ours then
+    if ri and ours then
       local r = old[id]
       if not r then -- reagents never change: fetch the schematic once
         r = { name = ri.name, icon = ri.icon, reagents = {} }
@@ -55,11 +55,18 @@ function PP.ScanProfession()
         end
       end
       cache[id] = r
-      prevColors[id] = r.color
-      r.learned = true
-      r.color = PP.COLOR[ri.relativeDifficulty] or "grey"
-      curColors[id] = r.color
-      r.maxTrivial = ri.maxTrivialLevel -- used in Phase 4
+      local wasLearned = r.learned
+      r.learned = ri.learned and true or false
+      if r.learned then
+        prevColors[id] = wasLearned and r.color or nil -- a just-learned recipe has no previous color
+        r.color = PP.COLOR[ri.relativeDifficulty] or "grey"
+        curColors[id] = r.color
+        r.maxTrivial = ri.maxTrivialLevel
+      else
+        -- Forever gives no trainer/learnability signal for unlearned recipes (probe: Rule B);
+        -- their relativeDifficulty is just a threshold color, so it is not stored
+        r.source = C_TradeSkillUI.GetRecipeSourceText and C_TradeSkillUI.GetRecipeSourceText(id) or nil
+      end
     end
   end
   -- right after switching, the list can still be the previous profession's (all filtered out):
@@ -74,7 +81,7 @@ function PP.ScanProfession()
   PP.retries = 0
   PP.char.recipes[prof] = cache
   PP.LearnThresholds(PP.db.thresholds, prevColors, curColors, info.skillLevel)
-  for id, r in pairs(cache) do PP.LearnGrey(PP.db.thresholds, id, r.maxTrivial) end
+  for id, r in pairs(cache) do if r.learned then PP.LearnGrey(PP.db.thresholds, id, r.maxTrivial) end end
 end
 
 local function ScanContainers(first, last, into)

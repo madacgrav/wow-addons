@@ -448,9 +448,9 @@ end
 - [x] loadfile syntax check for Core.lua and Panel.lua
 
 #### Manual
-- [ ] Deployed; a plan needing Coarse Thread shows a vendor of the player's faction with a zone
-- [ ] A vendor reagent never bought from a merchant shows a price with `est.`
-- [ ] Disable QuestieDB, `/reload`: no vendor text, no `est.` prices, no errors
+- [x] Deployed; a plan needing Coarse Thread shows a vendor of the player's faction with a zone
+- [x] A vendor reagent never bought from a merchant shows a price with `est.`
+- [x] Disable QuestieDB, `/reload`: no vendor text, no `est.` prices, no errors
 
 ---
 
@@ -590,8 +590,8 @@ eq(st[1].recipeID, 5, "learned preferred on tie")
 
 ### Verification
 #### Automated
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`, and the existing Phase 3/4 tests still pass (learned recipes unchanged)
-- [ ] loadfile syntax check for Core.lua, Logic.lua and Panel.lua
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`, and the existing Phase 3/4 tests still pass (learned recipes unchanged)
+- [x] loadfile syntax check for Core.lua, Logic.lua and Panel.lua
 
 #### Manual
 - [ ] Deployed; `/pp debug` lists `(unlearned)` counts, and no thresholds are learned from unlearned recipes

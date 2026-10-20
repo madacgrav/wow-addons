@@ -79,4 +79,24 @@ st = PP.Plan(S({ recipes = { [2] = R[2] }, prices = {} })); eq(st[1].estimated, 
 st = PP.Plan(S({ recipes = { [2] = R[2] } })); eq(st[1].estimated, nil, "priced not estimated")
 list = PP.ShoppingList({ { recipeID = 2, crafts = 1 } }, R, {}, { [11] = 100 }, { [11] = "AH" }); eq(list[1].source, "AH", "source passed")
 
+-- Unlearned phase 5
+eq(PP.Learnable({ learned = false }, { learnAt = 60 }, 50), false, "learnAt above skill")
+eq(PP.Learnable({ learned = false }, { learnAt = 40 }, 50), true, "learnAt reached")
+eq(PP.Learnable({ learned = false }, nil, 50), false, "trainer without signal")
+eq(PP.Learnable({ learned = false, trainerLearnable = true }, nil, 50), true, "trainer signal")
+eq(PP.Learnable({ learned = true }, { learnAt = 1 }, 50), false, "already learned")
+local NEW = { learned = false, learnable = true, learnAt = 40, learnCost = 500, learnItem = 99, name = "New", reagents = { { itemID = 13, qty = 1 } } }
+local thU = { [4] = { yellow = 70, green = 80, grey = 90 } }
+st = PP.Plan(S({ recipes = { [1] = R[1], [4] = NEW }, thresholds = thU, prices = { [10] = 1000, [13] = 10 } }))
+eq(st[1].recipeID, 4, "cheaper unlearned chosen"); eq(st[1].learn.item, 99, "learn step")
+eq(st[1].toSkill, 70, "orange until yellow 70"); eq(st[1].cost, 20 * 10 + 500, "pattern cost included once")
+eq(st[2] and st[2].recipeID == 4 and st[2].learn, nil, "no second learn for same recipe")
+local NOPE = { learned = false, learnable = false, learnAt = 60, name = "Later", reagents = { { itemID = 13, qty = 1 } } }
+st = PP.Plan(S({ recipes = { [1] = R[1], [4] = NOPE }, thresholds = thU, prices = { [10] = 1000, [13] = 10 } }))
+eq(st[1].recipeID, 1, "unlearnable excluded")
+local TWIN = { learned = false, learnable = true, learnAt = 40, learnCost = 0, name = "Twin", reagents = { { itemID = 13, qty = 1 } } }
+st = PP.Plan(S({ recipes = { [4] = TWIN, [5] = { learned = true, color = "orange", name = "Known", reagents = { { itemID = 13, qty = 1 } } } },
+  thresholds = { [4] = thU[4], [5] = thU[4] }, prices = { [13] = 10 } }))
+eq(st[1].recipeID, 5, "learned preferred on tie")
+
 print("all tests passed")

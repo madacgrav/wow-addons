@@ -63,6 +63,13 @@ function PP.MergeThresholds(learned, seed)
   return th
 end
 
+-- an unlearned recipe is a candidate once its pattern's skill is reached, or the game says a trainer can teach it now
+function PP.Learnable(r, seed, skill)
+  if r.learned then return false end
+  if seed and seed.learnAt then return seed.learnAt <= skill end
+  return r.trainerLearnable == true
+end
+
 -- the scanned schematic wins; seed reagents only fill a recipe the scan couldn't read
 function PP.MergeReagents(scanned, seed)
   if scanned and #scanned > 0 then return scanned end
@@ -87,14 +94,28 @@ end
 -- ponytail: greedy cheapest-per-point, 3 steps; DP over skill points if plans look poor
 function PP.Plan(s)
   local steps, skill, have = {}, s.skill, copy(s.have)
+  local learnedNow = {} -- unlearned recipes an earlier step already learns; their learn cost is paid once
+  local function isLearned(id, r) return r.learned or learnedNow[id] or false end
   while #steps < 3 and skill < s.target do
     local best, bestScore, bestColor
     for pass = 1, 2 do -- pass 1 orange/yellow, pass 2 green only if nothing else
       for id, r in pairs(s.recipes) do
-        local c = r.learned and PP.ProjectColor(s.thresholds[id], r.color, s.skill, skill)
+        local c
+        if r.learned or r.learnable or learnedNow[id] then
+          -- unlearned without a game color: orange from its learn skill, projected with (seed) thresholds
+          local base, baseSkill = r.color, s.skill
+          if not r.learned and not r.color then base, baseSkill = "orange", r.learnAt end
+          c = base and baseSkill and PP.ProjectColor(s.thresholds[id], base, baseSkill, skill)
+        end
         if c and ((pass == 1 and (c == "orange" or c == "yellow")) or (pass == 2 and c == "green")) then
-          local score = CraftCost(r, 1, copy(have), s.prices, s.unknownCost) / PP.CHANCE[c]
-          if not best or score < bestScore or (score == bestScore and id < best) then best, bestScore, bestColor = id, score, c end
+          local reach = math.min(PP.NextThreshold(s.thresholds[id], c, skill) or s.target, s.target)
+          local learn = isLearned(id, r) and 0 or (r.learnCost or 0) / math.max(1, reach - skill) -- one-time cost per point
+          local score = CraftCost(r, 1, copy(have), s.prices, s.unknownCost) / PP.CHANCE[c] + learn
+          local b = best and s.recipes[best]
+          if not best or score < bestScore
+            or (score == bestScore and ((isLearned(id, r) and not isLearned(best, b)) or (isLearned(id, r) == isLearned(best, b) and id < best))) then
+            best, bestScore, bestColor = id, score, c
+          end
         end
       end
       if best then break end
@@ -105,8 +126,12 @@ function PP.Plan(s)
     local toSkill = math.min(nextT or s.target, s.target)
     local crafts = math.ceil((toSkill - skill) / PP.CHANCE[bestColor])
     local cost, est = CraftCost(r, crafts, have, s.prices, s.unknownCost)
+    local learning = not isLearned(best, r)
+    learnedNow[best] = true
     steps[#steps + 1] = { recipeID = best, name = r.name, icon = r.icon, color = bestColor, crafts = crafts,
-      toSkill = nextT and toSkill or nil, untilColorChange = (not nextT) or nil, cost = cost, estimated = est or nil }
+      toSkill = nextT and toSkill or nil, untilColorChange = (not nextT) or nil,
+      cost = cost + (learning and (r.learnCost or 0) or 0), estimated = est or nil,
+      learn = learning and { item = r.learnItem, source = r.source } or nil }
     if not nextT then break end -- unknown how long this color lasts; stop projecting
     skill = toSkill
   end
