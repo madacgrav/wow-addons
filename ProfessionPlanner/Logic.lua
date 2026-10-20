@@ -15,6 +15,15 @@ PP.RANK = { orange = 0, yellow = 1, green = 2, grey = 3 }
 -- ponytail: guessed skill-up odds (no official formula); only used to rank recipes, plan re-runs every craft
 PP.CHANCE = { orange = 1, yellow = 0.6, green = 0.25, grey = 0 }
 PP.BRACKETS = { 75, 150, 225, 300 }
+PP.UNKNOWN_COST = 10000 -- 1g per unpriced reagent; such costs are flagged `estimated`
+
+-- cheapest of vendor scan and AH; the seed base price only for items a vendor is known to sell
+function PP.PickPrice(vendor, ah, seed, vendorSold)
+  if vendor and (not ah or vendor <= ah) then return vendor, "vendor" end
+  if ah then return ah, "AH" end
+  if vendorSold and seed then return seed, "est." end
+  return nil
+end
 
 function PP.NextBracket(skill, maxSkill)
   for _, b in ipairs(PP.BRACKETS) do
@@ -62,14 +71,16 @@ end
 
 -- cost of `crafts` crafts; owned reagents are free and consumed from `have` (mutated)
 local function CraftCost(r, crafts, have, prices, unknownCost)
-  local cost = 0
+  local cost, est = 0, false
   for _, rg in ipairs(r.reagents) do
     local need = rg.qty * crafts
     local use = math.min(have[rg.itemID] or 0, need)
     have[rg.itemID] = (have[rg.itemID] or 0) - use
-    cost = cost + (need - use) * (prices[rg.itemID] or unknownCost)
+    local p = prices[rg.itemID]
+    if need > use and not p then est = true end
+    cost = cost + (need - use) * (p or unknownCost)
   end
-  return cost
+  return cost, est
 end
 
 -- s = { skill, target, recipes={[id]=r}, have={[itemID]=n}, prices={[itemID]=copper}, thresholds={[id]=th}, unknownCost }
@@ -93,16 +104,16 @@ function PP.Plan(s)
     local nextT = PP.NextThreshold(s.thresholds[best], bestColor, skill)
     local toSkill = math.min(nextT or s.target, s.target)
     local crafts = math.ceil((toSkill - skill) / PP.CHANCE[bestColor])
+    local cost, est = CraftCost(r, crafts, have, s.prices, s.unknownCost)
     steps[#steps + 1] = { recipeID = best, name = r.name, icon = r.icon, color = bestColor, crafts = crafts,
-      toSkill = nextT and toSkill or nil, untilColorChange = (not nextT) or nil,
-      cost = CraftCost(r, crafts, have, s.prices, s.unknownCost) }
+      toSkill = nextT and toSkill or nil, untilColorChange = (not nextT) or nil, cost = cost, estimated = est or nil }
     if not nextT then break end -- unknown how long this color lasts; stop projecting
     skill = toSkill
   end
   return steps
 end
 
-function PP.ShoppingList(steps, recipes, have, prices)
+function PP.ShoppingList(steps, recipes, have, prices, sources)
   local need = {}
   for _, st in ipairs(steps) do
     for _, rg in ipairs(recipes[st.recipeID].reagents) do need[rg.itemID] = (need[rg.itemID] or 0) + rg.qty * st.crafts end
@@ -110,7 +121,8 @@ function PP.ShoppingList(steps, recipes, have, prices)
   local out = {}
   for id, n in pairs(need) do
     local h = have[id] or 0
-    out[#out + 1] = { itemID = id, need = n, have = h, buy = math.max(0, n - h), unitPrice = prices[id] }
+    out[#out + 1] = { itemID = id, need = n, have = h, buy = math.max(0, n - h), unitPrice = prices[id],
+      source = sources and sources[id] or nil }
   end
   table.sort(out, function(a, b) if a.buy ~= b.buy then return a.buy > b.buy end return a.itemID < b.itemID end)
   return out

@@ -47,7 +47,6 @@ function PP.RenderPanel(view)
   panel:Show()
 end
 
-local UNKNOWN_COST = 10000
 local function ItemName(id, onLoad)
   local name, _, _, _, _, _, _, _, _, icon = C_Item.GetItemInfo(id)
   if not name then Item:CreateFromItemID(id):ContinueOnItemLoad(onLoad) end
@@ -68,6 +67,18 @@ local function View(prof)
   return recipes, thresholds
 end
 
+-- per-refresh price table for every reagent in view; AH prices are read live, never saved
+local function Prices(recipes)
+  local prices, sources = {}, {}
+  local function add(id)
+    if sources[id] ~= nil then return end
+    prices[id], sources[id] = PP.PickPrice(PP.db.prices[id], PP.AHPrice(id), nil, false)
+    sources[id] = sources[id] or false
+  end
+  for _, r in pairs(recipes) do for _, rg in ipairs(r.reagents) do add(rg.itemID) end end
+  return prices, sources, add
+end
+
 local pending = false
 local function Rerender() if not pending then pending = true; C_Timer.After(0.1, function() pending = false; PP.Refresh() end) end end
 
@@ -76,20 +87,21 @@ table.insert(PP.refreshers, function()
   local s = PP.char.skill[PP.current]
   local target = PP.NextBracket(s.skill, s.max)
   local recipes, thresholds = View(PP.current)
+  local prices, sources = Prices(recipes)
   local have = PP.Have()
   local steps = PP.Plan({ skill = s.skill, target = target, recipes = recipes, have = have,
-    prices = PP.db.prices, thresholds = thresholds, unknownCost = UNKNOWN_COST })
+    prices = prices, thresholds = thresholds, unknownCost = PP.UNKNOWN_COST })
   local rows = {}
   for _, st in ipairs(steps) do
     -- * marks a step length taken from a learned threshold
     local goal = st.toSkill and ("-> " .. st.toSkill .. (st.toSkill < target and " *" or "")) or (st.untilColorChange and "(until color changes)") or ("-> " .. target)
-    rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. PP.FormatMoney(st.cost), color = st.color }
+    rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. (st.estimated and "~" or "") .. PP.FormatMoney(st.cost), color = st.color }
   end
   if #steps == 0 then rows[#rows + 1] = { text = "No recipe gives skill-ups here", sub = "train new recipes" } end
-  for _, it in ipairs(PP.ShoppingList(steps, recipes, have, PP.db.prices)) do
+  for _, it in ipairs(PP.ShoppingList(steps, recipes, have, prices, sources)) do
     local name, icon = ItemName(it.itemID, Rerender)
     local sub = it.have .. "/" .. it.need
-    if it.buy > 0 then sub = sub .. "   buy " .. it.buy .. (it.unitPrice and (" @ " .. PP.FormatMoney(it.unitPrice)) or "") end
+    if it.buy > 0 then sub = sub .. "   buy " .. it.buy .. (it.unitPrice and (" @ " .. PP.FormatMoney(it.unitPrice) .. " " .. it.source) or "") end
     rows[#rows + 1] = { icon = icon, text = name, sub = sub }
   end
   local known = 0

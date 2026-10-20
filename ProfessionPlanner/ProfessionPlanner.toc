@@ -5,6 +5,7 @@
 ## IconTexture: Interface\Icons\Trade_Tailoring
 ## SavedVariables: ProfessionPlannerDB
 ## SavedVariablesPerCharacter: ProfessionPlannerCharDB
+## OptionalDeps: Auctionator, QuestieDB
 
 Data.lua
 Logic.lua

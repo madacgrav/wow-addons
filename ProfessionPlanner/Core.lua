@@ -113,6 +113,19 @@ local function ScanMerchant()
   end
 end
 
+-- Auctionator's last-seen buyout in copper; nil when absent, not scanned or the API errors
+function PP.AHPrice(id)
+  local api = Auctionator and Auctionator.API and Auctionator.API.v1
+  if not (api and api.GetAuctionPriceByItemID) then return nil end
+  local ok, p = pcall(api.GetAuctionPriceByItemID, ADDON, id)
+  if ok and type(p) == "number" and p > 0 then return p end
+end
+
+table.insert(PP.inits, function()
+  local api = Auctionator and Auctionator.API and Auctionator.API.v1
+  if api and api.RegisterForDBUpdate then pcall(api.RegisterForDBUpdate, ADDON, PP.Refresh) end
+end)
+
 table.insert(PP.inits, function()
   PP.On("BANKFRAME_OPENED", function() bankOpen = true; ScanBank(); PP.Refresh() end)
   PP.On("BANKFRAME_CLOSED", function() bankOpen = false end)

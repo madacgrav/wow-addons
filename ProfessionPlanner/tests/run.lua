@@ -69,4 +69,14 @@ eq(PP.SEED.recipes[3757].grey, 110, "Woolen Bag grey"); eq(PP.SEED.recipes[3757]
 eq(PP.SEED.recipes[7457].green, 120, "learned green 120 matches seed")
 eq(PP.SEED.price[2320], 10, "Coarse Thread base price")
 
+-- Prices phase 3
+local pr, src = PP.PickPrice(90, 120, 100, true); eq(pr, 90, "vendor cheaper"); eq(src, "vendor", "vendor src")
+pr, src = PP.PickPrice(90, 50); eq(pr, 50, "AH cheaper"); eq(src, "AH", "AH src")
+eq(PP.PickPrice(nil, 70), 70, "AH only")
+pr, src = PP.PickPrice(nil, nil, 100, true); eq(pr, 100, "seed fallback"); eq(src, "est.", "est src")
+eq(PP.PickPrice(nil, nil, 100, false), nil, "seed needs a known vendor")
+st = PP.Plan(S({ recipes = { [2] = R[2] }, prices = {} })); eq(st[1].estimated, true, "unpriced reagent is estimated")
+st = PP.Plan(S({ recipes = { [2] = R[2] } })); eq(st[1].estimated, nil, "priced not estimated")
+list = PP.ShoppingList({ { recipeID = 2, crafts = 1 } }, R, {}, { [11] = 100 }, { [11] = "AH" }); eq(list[1].source, "AH", "source passed")
+
 print("all tests passed")

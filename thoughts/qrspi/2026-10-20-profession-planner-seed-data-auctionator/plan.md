@@ -264,10 +264,10 @@ eq(PP.SEED.price[2320], 10, "Coarse Thread base price")
 - [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] Deployed; `/reload` gives no Lua errors
-- [ ] A profession on a character with few learned thresholds shows ≥2 plan rows with `-> N` targets
-- [ ] The footer shows `seed 1.60.1.70450`
-- [ ] Fill in the trainer/pattern classification in `probe-results.md` (Phase 1, change 2)
+- [x] Deployed; `/reload` gives no Lua errors
+- [x] A profession on a character with few learned thresholds shows ≥2 plan rows with `-> N` targets
+- [x] The footer shows `seed 1.60.1.70450`
+- [x] Fill in the trainer/pattern classification in `probe-results.md` (Phase 1, change 2)
 
 ---
 
@@ -387,8 +387,8 @@ list = PP.ShoppingList({ { recipeID = 2, crafts = 1 } }, R, {}, { [11] = 100 }, 
 
 ### Verification
 #### Automated
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
-- [ ] loadfile syntax check for Logic.lua, Core.lua and Panel.lua
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [x] loadfile syntax check for Logic.lua, Core.lua and Panel.lua
 
 #### Manual
 - [ ] Deployed; at the AH, run an Auctionator full scan, and the panel refreshes by itself afterwards
