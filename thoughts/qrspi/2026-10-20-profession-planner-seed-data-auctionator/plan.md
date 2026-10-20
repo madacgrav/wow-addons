@@ -606,7 +606,7 @@ eq(st[1].recipeID, 5, "learned preferred on tie")
 
 #### 1. Saved state
 **File**: `ProfessionPlanner/Core.lua`
-**Action**: the `ProfessionPlannerDB` defaults become `{ thresholds = {}, prices = {}, panelOpen = true }`.
+**Action**: the `ProfessionPlannerDB` defaults become `{ thresholds = {}, prices = {}, panelOpen = false }` (closed by default, per user).
 
 #### 2. Edge tab and toggle
 **File**: `ProfessionPlanner/Panel.lua`
@@ -661,11 +661,11 @@ end
 - [x] loadfile syntax check for Core.lua and Panel.lua
 
 #### Manual
-- [ ] Deployed; with Tailoring open, a book-icon tab sits under the side profession tabs and its tooltip reads Hide/Show
-- [ ] Clicking the tab hides the panel, and clicking again shows it
-- [ ] The state survives `/reload` and reopening the window
-- [ ] The panel's X closes it; the tab reopens it
-- [ ] With a non-supported profession (e.g. Cooking) open, no tab and no panel
+- [x] Deployed; with Tailoring open, a book-icon tab sits under the side profession tabs and its tooltip reads Hide/Show
+- [x] Clicking the tab hides the panel, and clicking again shows it
+- [x] The state survives `/reload` and reopening the window
+- [x] The panel's X closes it; the tab reopens it
+- [x] With a non-supported profession (e.g. Cooking) open, no tab and no panel
 
 ---
 

@@ -16,7 +16,7 @@ function PP.Refresh() for _, fn in ipairs(PP.refreshers) do fn() end end
 PP.On("ADDON_LOADED", function(name)
   if name ~= ADDON then return end
   -- nil-safe: the Forever beta loader bug can leave these nil
-  ProfessionPlannerDB = PP.MergeDefaults(ProfessionPlannerDB, { thresholds = {}, prices = {}, panelOpen = true })
+  ProfessionPlannerDB = PP.MergeDefaults(ProfessionPlannerDB, { thresholds = {}, prices = {}, panelOpen = false })
   ProfessionPlannerCharDB = PP.MergeDefaults(ProfessionPlannerCharDB, { recipes = {}, bank = {}, skill = {} })
   PP.db, PP.char = ProfessionPlannerDB, ProfessionPlannerCharDB
 end)
