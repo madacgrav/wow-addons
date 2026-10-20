@@ -81,8 +81,8 @@ After the `if ready then ... end` block (before the bank lines), add:
 - [x] `lua -e "assert(loadfile([[ProfessionPlanner/Core.lua]]))"` succeeds
 
 #### Manual
-- [ ] Deployed; in game with Tailoring open, `/pp probe` prints `unlearned` lines, `Auctionator API true` with a numeric or nil price and no error, and the `LibQuestieDB true contract3=true` line
-- [ ] Output saved to `probe-results.md`
+- [x] Deployed; in game with Tailoring open, `/pp probe` prints `unlearned` lines, `Auctionator API true` with a numeric or nil price and no error, and the `LibQuestieDB true contract3=true` line
+- [x] Output saved to `probe-results.md` (Rule B)
 
 ---
 
