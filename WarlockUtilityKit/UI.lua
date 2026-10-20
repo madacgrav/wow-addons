@@ -75,6 +75,10 @@ table.insert(WUK.inits, function()
     b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetAttribute("type", "macro")
     b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints()
+    local sh = b.icon:CreateAnimationGroup() -- one-shot pop when a stone becomes available
+    local up = sh:CreateAnimation("Scale"); up:SetScale(1.3, 1.3); up:SetDuration(0.15); up:SetOrder(1)
+    local down = sh:CreateAnimation("Scale"); down:SetScale(1 / 1.3, 1 / 1.3); down:SetDuration(0.2); down:SetOrder(2)
+    b.shine = sh
     b.count = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
     b.count:SetPoint("BOTTOMRIGHT", -2, 2)
     b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
@@ -99,6 +103,8 @@ table.insert(WUK.refreshers, function()
     b.icon:SetDesaturated(c[kind] == 0)
     WUK.SetAlert(b, (kind == "healthstone" or kind == "soulstone") and c[kind] == 0 and WUK.known[kind] ~= nil)
     b.count:SetText(c[kind])
+    if b.lastCount == 0 and c[kind] > 0 then b.shine:Play() end -- nil on first refresh: no shine at login
+    b.lastCount = c[kind]
     if not InCombatLockdown() then
       local ss = kind == "soulstone" and WUK.MySoulstoneTarget and WUK.MySoulstoneTarget() or nil
       b:SetAttribute("macrotext", WUK.StoneMacro(kind, c[kind], id, WUK.known[kind], ss) or "")

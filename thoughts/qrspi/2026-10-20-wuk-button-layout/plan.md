@@ -160,11 +160,11 @@ end
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] **Probe:** a button pulses at all. If you get `CreateAnimationGroup`/`SetFromAlpha` errors, STOP and report back. This is the design's top risk
-- [ ] Cancel the armor buff: the armor button pulses. Recast it: the pulse stops
-- [ ] Dismiss the pet: the pet button pulses. Summon the chosen pet: it stops
-- [ ] With 0 healthstones and Create Healthstone known: the healthstone button pulses
-- [ ] Pulses keep running in combat, with no Lua errors or "action blocked" messages
+- [x] **Probe:** a button pulses at all. If you get `CreateAnimationGroup`/`SetFromAlpha` errors, STOP and report back. This is the design's top risk
+- [x] Cancel the armor buff: the armor button pulses. Recast it: the pulse stops
+- [x] Dismiss the pet: the pet button pulses. Summon the chosen pet: it stops
+- [x] With 0 healthstones and Create Healthstone known: the healthstone button pulses
+- [x] Pulses keep running in combat, with no Lua errors or "action blocked" messages
 
 ---
 
@@ -190,7 +190,7 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] Starting from 0 healthstones, cast Create Healthstone: the button pops once
