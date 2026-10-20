@@ -193,9 +193,9 @@ end
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] Starting from 0 healthstones, cast Create Healthstone: the button pops once
-- [ ] `/reload` with stones in your bags: no shine
-- [ ] A soul shard count going from 1 to 2: no shine
+- [x] Starting from 0 healthstones, cast Create Healthstone: the button pops once
+- [x] `/reload` with stones in your bags: no shine
+- [x] A soul shard count going from 1 to 2: no shine
 
 ---
 
@@ -262,7 +262,7 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] The ring rotates about one full turn per minute, smoothly

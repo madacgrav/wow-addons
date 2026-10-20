@@ -41,6 +41,33 @@ function WUK.LayoutRing()
   end
 end
 
+local SPIN, BLOOM = 6, 0.2 -- deg/sec (one turn per minute), seconds for a full bloom/collapse
+local function Step(s, elapsed)
+  if InCombatLockdown() then s:SetScript("OnUpdate", nil); return end
+  local moving = WUK.db.spin
+  if moving then s.angle = (s.angle + SPIN * elapsed) % 360 end
+  if s.radius ~= s.targetRadius then
+    local d = R / BLOOM * elapsed
+    s.radius = s.radius < s.targetRadius and math.min(s.targetRadius, s.radius + d) or math.max(s.targetRadius, s.radius - d)
+    moving = true
+  end
+  WUK.LayoutRing()
+  if not moving then s:SetScript("OnUpdate", nil) end
+end
+
+-- (re)start the ring animator; it removes itself when idle
+function WUK.Animate()
+  if not InCombatLockdown() then WUK.strip:SetScript("OnUpdate", Step) end
+end
+
+-- PLAYER_REGEN_DISABLED fires before lockdown: last chance to move secure buttons
+function WUK.CombatFreeze()
+  local s = WUK.strip
+  s:SetScript("OnUpdate", nil)
+  s.radius, s.targetRadius = R, R
+  WUK.LayoutRing()
+end
+
 -- pulsing purple border on a button; textures only, so safe in combat
 function WUK.AddGlow(b)
   local g = b:CreateTexture(nil, "OVERLAY")
@@ -91,6 +118,7 @@ table.insert(WUK.inits, function()
   WUK.strip = f
   WUK.MakeMovable(f, "strip", 0, -220)
   WUK.ApplyShown()
+  WUK.On("PLAYER_REGEN_DISABLED", WUK.CombatFreeze)
 end)
 
 table.insert(WUK.refreshers, function()
@@ -110,5 +138,5 @@ table.insert(WUK.refreshers, function()
       b:SetAttribute("macrotext", WUK.StoneMacro(kind, c[kind], id, WUK.known[kind], ss) or "")
     end
   end
-  WUK.LayoutRing()
+  WUK.LayoutRing(); WUK.Animate()
 end)
