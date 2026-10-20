@@ -174,11 +174,11 @@ print("all tests passed")
 
 #### Manual
 - [x] Deployed to AddOns with robocopy
-- [ ] The addon list shows "Profession Planner"; no Lua errors at login
-- [ ] With Tailoring open, `/pp probe` prints the profession ID (expect 197), 5 recipes with `diff`, `maxTrivial`, `reagent` and `type`, and bag/bank counts
-- [ ] Repeat for Enchanting (expect 333), Leatherworking (165) and Alchemy (171)
-- [ ] With the bank open, the `CharacterBankTab_1` line shows slots > 0
-- [ ] Save the output to `thoughts/qrspi/2026-10-19-profession-leveling-planner/probe-results.md`. Correct `PP.PROFESSIONS` IDs and the Basic reagent type in Phase 2 if they differ.
+- [x] The addon list shows "Profession Planner"; no Lua errors at login
+- [x] With Tailoring open, `/pp probe` prints the profession ID (expect 197), 5 recipes with `diff`, `maxTrivial`, `reagent` and `type`, and bag/bank counts
+- [x] (Enchanting 333 confirmed; LW/Alchemy not owned, unverified) Repeat for Enchanting (expect 333), Leatherworking (165) and Alchemy (171)
+- [x] With the bank open, the `CharacterBankTab_1` line shows slots > 0
+- [x] Save the output to `thoughts/qrspi/2026-10-19-profession-leveling-planner/probe-results.md`. Correct `PP.PROFESSIONS` IDs and the Basic reagent type in Phase 2 if they differ.
 
 ---
 
