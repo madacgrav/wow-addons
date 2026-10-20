@@ -169,7 +169,9 @@ table.insert(PP.refreshers, function()
           or (st.learn.source and st.learn.source:match("^[^\n]*")) or "" }
     end
     local goal = st.toSkill and ("-> " .. st.toSkill .. (st.toSkill < target and " *" or "")) or (st.untilColorChange and "(until color changes)") or ("-> " .. target)
-    rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. (st.estimated and "~" or "") .. PP.FormatMoney(st.cost), color = st.color,
+    local stations = recipes[st.recipeID].stations
+    local needs = stations and #stations > 0 and ("   needs " .. table.concat(stations, ", ")) or ""
+    rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. (st.estimated and "~" or "") .. PP.FormatMoney(st.cost) .. needs, color = st.color,
       -- clickable only once actually learned (a planned learn step is not yet)
       recipeID = recipes[st.recipeID].learned and st.recipeID or nil, crafts = st.crafts }
   end
