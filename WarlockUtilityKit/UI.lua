@@ -47,9 +47,16 @@ function WUK.LayoutRing()
 end
 
 local SPIN, BLOOM = 6, 0.2 -- deg/sec (one turn per minute), seconds for a full bloom/collapse
+
+-- collapsed unless the mouse is over the strip rect (polled: enter/leave events miss child-to-outside moves)
+local function Target(s)
+  return (WUK.db.collapse and not InCombatLockdown() and not MouseIsOver(s)) and 0 or R
+end
+
 local function Step(s, elapsed)
   if InCombatLockdown() then s:SetScript("OnUpdate", nil); return end
-  local moving = WUK.db.spin
+  s.targetRadius = Target(s)
+  local moving = WUK.db.spin or WUK.db.collapse -- collapse keeps polling the mouse
   if moving then s.angle = (s.angle + SPIN * elapsed) % 360 end
   if s.radius ~= s.targetRadius then
     local d = R / BLOOM * elapsed
@@ -64,12 +71,6 @@ end
 function WUK.Animate()
   if not InCombatLockdown() then WUK.strip:SetScript("OnUpdate", Step) end
 end
-
-local function Target(s)
-  return (WUK.db.collapse and not InCombatLockdown() and not MouseIsOver(s)) and 0 or R
-end
--- strip and every button share this: OnLeave of the strip fires on entering a child, so check the rect
-local function Hover() local s = WUK.strip; s.targetRadius = Target(s); WUK.Animate() end
 
 -- PLAYER_REGEN_DISABLED fires before lockdown: last chance to move secure buttons
 function WUK.CombatFreeze()
@@ -149,13 +150,5 @@ table.insert(WUK.refreshers, function()
       b:SetAttribute("macrotext", WUK.StoneMacro(kind, c[kind], id, WUK.known[kind], ss) or "")
     end
   end
-  -- hooked here, not in the init: Prep registers armor/pet after UI's init runs
-  local s = WUK.strip
-  if not s.hooked then
-    s.hooked = true
-    s:HookScript("OnEnter", Hover); s:HookScript("OnLeave", Hover)
-    for _, b in pairs(s.icons) do b:HookScript("OnEnter", Hover); b:HookScript("OnLeave", Hover) end
-  end
-  if not InCombatLockdown() then s.targetRadius = Target(s) end
   WUK.LayoutRing(); WUK.Animate()
 end)
