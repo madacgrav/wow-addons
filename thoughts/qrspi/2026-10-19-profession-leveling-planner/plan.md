@@ -168,12 +168,12 @@ print("all tests passed")
 
 ### Verification
 #### Automated
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
-- [ ] Every `.lua` file passes the syntax check
-- [ ] `package-pp.yml` contains no `WarlockUtilityKit` or `wuk` strings (`grep -ci "warlock\|wuk" .github/workflows/package-pp.yml` prints 0)
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [x] Every `.lua` file passes the syntax check
+- [x] `package-pp.yml` contains no `WarlockUtilityKit` or `wuk` strings (`grep -ci "warlock\|wuk" .github/workflows/package-pp.yml` prints 0)
 
 #### Manual
-- [ ] Deployed to AddOns with robocopy
+- [x] Deployed to AddOns with robocopy
 - [ ] The addon list shows "Profession Planner"; no Lua errors at login
 - [ ] With Tailoring open, `/pp probe` prints the profession ID (expect 197), 5 recipes with `diff`, `maxTrivial`, `reagent` and `type`, and bag/bank counts
 - [ ] Repeat for Enchanting (expect 333), Leatherworking (165) and Alchemy (171)
