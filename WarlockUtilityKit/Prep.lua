@@ -3,7 +3,7 @@ local ADDON, WUK = ...
 local armorBtn
 table.insert(WUK.inits, function()
   armorBtn = CreateFrame("Button", "WUKArmorButton", WUK.strip, "SecureActionButtonTemplate")
-  armorBtn:SetSize(36, 36); WUK.strip.icons.armor = armorBtn
+  armorBtn:SetSize(36, 36); WUK.strip.icons.armor = armorBtn; WUK.AddGlow(armorBtn)
   armorBtn:RegisterForClicks("AnyUp", "AnyDown")
   armorBtn:SetAttribute("type", "macro")
   armorBtn.icon = armorBtn:CreateTexture(nil, "ARTWORK"); armorBtn.icon:SetAllPoints()
@@ -12,7 +12,9 @@ end)
 table.insert(WUK.refreshers, function()
   local spell = WUK.known.armor
   armorBtn.icon:SetTexture(spell and C_Spell.GetSpellTexture(spell) or 134400)
-  armorBtn.icon:SetDesaturated(spell ~= nil and WUK.ReadPlayerBuffs()[spell] == true)
+  local up = spell ~= nil and WUK.ReadPlayerBuffs()[spell] == true
+  armorBtn.icon:SetDesaturated(up)
+  WUK.SetAlert(armorBtn, spell ~= nil and not up)
   if not InCombatLockdown() then armorBtn:SetAttribute("macrotext", spell and ("/cast " .. spell) or "") end
 end)
 
@@ -20,7 +22,7 @@ end)
 local petBtn
 table.insert(WUK.inits, function()
   petBtn = CreateFrame("Button", "WUKPetButton", WUK.strip, "SecureActionButtonTemplate")
-  petBtn:SetSize(36, 36); WUK.strip.icons.pet = petBtn
+  petBtn:SetSize(36, 36); WUK.strip.icons.pet = petBtn; WUK.AddGlow(petBtn)
   petBtn:RegisterForClicks("AnyUp", "AnyDown")
   petBtn:SetAttribute("type", "macro")
   petBtn.icon = petBtn:CreateTexture(nil, "ARTWORK"); petBtn.icon:SetAllPoints()
@@ -30,7 +32,9 @@ table.insert(WUK.refreshers, function()
   local pet = WUK.known[WUK.char.pet] and WUK.char.pet or "imp"
   local spell = WUK.known[pet]
   petBtn.icon:SetTexture(spell and C_Spell.GetSpellTexture(spell) or 134400)
-  petBtn.icon:SetDesaturated(WUK.PetFamily() ~= pet)
+  local out = WUK.PetFamily() == pet
+  petBtn.icon:SetDesaturated(not out)
+  WUK.SetAlert(petBtn, spell ~= nil and not out)
   if not InCombatLockdown() then petBtn:SetAttribute("macrotext", spell and ("/cast " .. spell) or "") end
 end)
 

@@ -98,12 +98,12 @@ x, y = WUK.RingPoint(3, 6, 0, 45); near(x, 0, "collapsed x"); near(y, 0, "collap
 - [x] `grep -n "TOPLEFT" WarlockUtilityKit/Prep.lua WarlockUtilityKit/UI.lua` returns no button anchors
 
 #### Manual (after deploy + `/reload`)
-- [ ] The ring shows: shard at the center, larger; healthstone at the top, then clockwise soulstone, spellstone, firestone, armor and pet
-- [ ] Every button casts or uses its item. Counts and desaturation still work
-- [ ] The soulstone timer and assignment lines are centered under the ring
-- [ ] Shift-drag moves the frame and the position persists after `/reload`
-- [ ] `/wuk dock` puts the cooldown viewers under the frame. `/wuk hide` and `/wuk show` work
-- [ ] No Lua errors
+- [x] The ring shows: shard at the center, larger; healthstone at the top, then clockwise soulstone, spellstone, firestone, armor and pet
+- [x] Every button casts or uses its item. Counts and desaturation still work
+- [x] The soulstone timer and assignment lines are centered under the ring
+- [x] Shift-drag moves the frame and the position persists after `/reload`
+- [x] `/wuk dock` puts the cooldown viewers under the frame. `/wuk hide` and `/wuk show` work
+- [x] No Lua errors
 
 ---
 
@@ -157,7 +157,7 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] **Probe:** a button pulses at all. If you get `CreateAnimationGroup`/`SetFromAlpha` errors, STOP and report back. This is the design's top risk

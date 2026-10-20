@@ -41,6 +41,23 @@ function WUK.LayoutRing()
   end
 end
 
+-- pulsing purple border on a button; textures only, so safe in combat
+function WUK.AddGlow(b)
+  local g = b:CreateTexture(nil, "OVERLAY")
+  g:SetTexture("Interface\\Buttons\\UI-ActionButton-Border"); g:SetBlendMode("ADD")
+  g:SetVertexColor(0.7, 0.3, 1); g:SetPoint("CENTER"); g:SetSize(b:GetWidth() * 1.8, b:GetHeight() * 1.8); g:Hide()
+  local ag = g:CreateAnimationGroup(); ag:SetLooping("BOUNCE")
+  local a = ag:CreateAnimation("Alpha"); a:SetFromAlpha(0.15); a:SetToAlpha(1); a:SetDuration(0.6)
+  b.glow, b.pulse = g, ag
+end
+
+function WUK.SetAlert(b, on)
+  on = on and true or false
+  if b.alerting == on then return end
+  b.alerting = on
+  if on then b.glow:Show(); b.pulse:Play() else b.pulse:Stop(); b.glow:Hide() end
+end
+
 table.insert(WUK.inits, function()
   local f = CreateFrame("Frame", "WUKStrip", UIParent, "BackdropTemplate")
   -- ring of 6 orbit buttons around the shard core; soulstone + assignment lines underneath
@@ -53,7 +70,7 @@ table.insert(WUK.inits, function()
   for _, kind in ipairs(KINDS) do
     local b = CreateFrame("Button", "WUKStone_" .. kind, f, "SecureActionButtonTemplate")
     local size = kind == "shard" and CORE or BTN
-    b:SetSize(size, size)
+    b:SetSize(size, size); WUK.AddGlow(b)
     b:SetFrameLevel(f:GetFrameLevel() + (kind == "shard" and 3 or 1)) -- core above orbit so collapsed buttons hide under it
     b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetAttribute("type", "macro")
@@ -80,6 +97,7 @@ table.insert(WUK.refreshers, function()
     if icon then WUK.db.icons[kind] = icon end -- keep the real icon once the last stone is used
     b.icon:SetTexture(WUK.db.icons[kind] or FALLBACK[kind])
     b.icon:SetDesaturated(c[kind] == 0)
+    WUK.SetAlert(b, (kind == "healthstone" or kind == "soulstone") and c[kind] == 0 and WUK.known[kind] ~= nil)
     b.count:SetText(c[kind])
     if not InCombatLockdown() then
       local ss = kind == "soulstone" and WUK.MySoulstoneTarget and WUK.MySoulstoneTarget() or nil
