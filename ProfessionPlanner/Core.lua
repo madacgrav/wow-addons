@@ -22,6 +22,53 @@ PP.On("ADDON_LOADED", function(name)
 end)
 PP.On("PLAYER_LOGIN", function() for _, init in ipairs(PP.inits) do init() end end)
 
+local BASIC = (Enum.CraftingReagentType and Enum.CraftingReagentType.Basic) or 1
+
+function PP.ScanProfession()
+  if not C_TradeSkillUI.IsTradeSkillReady() then return end
+  local info = C_TradeSkillUI.GetBaseProfessionInfo()
+  local prof = info and info.professionID
+  if not prof or not PP.PROFESSIONS[prof] then PP.current = nil; return end
+  PP.current = prof
+  PP.char.skill[prof] = { skill = info.skillLevel, max = info.maxSkillLevel }
+  local cache = PP.char.recipes[prof] or {}
+  PP.char.recipes[prof] = cache
+  local prevColors, curColors = {}, {}
+  for _, id in ipairs(C_TradeSkillUI.GetAllRecipeIDs()) do
+    local ri = C_TradeSkillUI.GetRecipeInfo(id)
+    if ri and ri.learned then
+      local r = cache[id]
+      if not r then -- reagents never change: fetch the schematic once
+        r = { name = ri.name, icon = ri.icon, reagents = {} }
+        local sch = C_TradeSkillUI.GetRecipeSchematic(id, false)
+        if sch then
+          r.qtyMin = sch.quantityMin
+          for _, slot in ipairs(sch.reagentSlotSchematics or {}) do
+            local rg = slot.reagents and slot.reagents[1]
+            if slot.reagentType == BASIC and rg and rg.itemID then
+              r.reagents[#r.reagents + 1] = { itemID = rg.itemID, qty = slot.quantityRequired }
+            end
+          end
+        end
+        cache[id] = r
+      end
+      prevColors[id] = r.color
+      r.learned = true
+      r.color = PP.COLOR[ri.relativeDifficulty] or "grey"
+      curColors[id] = r.color
+      r.maxTrivial = ri.maxTrivialLevel -- used in Phase 4
+    end
+  end
+  PP.lastScan = { prof = prof, skill = info.skillLevel, prev = prevColors, cur = curColors } -- Phase 4 learns from this
+end
+
+table.insert(PP.inits, function()
+  local function Update() PP.ScanProfession(); PP.Refresh() end
+  PP.On("TRADE_SKILL_SHOW", Update)
+  PP.On("TRADE_SKILL_LIST_UPDATE", Update)
+  PP.On("TRADE_SKILL_CLOSE", function() PP.current = nil; PP.Refresh() end)
+end)
+
 -- prints API facts for the open profession window; output decides Phase 2+ details
 function PP.Probe()
   local function P(k, v) PP.Print(k .. ": " .. tostring(v)) end

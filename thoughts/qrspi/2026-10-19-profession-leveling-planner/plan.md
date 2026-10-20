@@ -339,11 +339,11 @@ eq(PP.COLOR[0], "orange", "color 0"); eq(PP.CHANCE.yellow, 0.6, "yellow chance")
 
 ### Verification
 #### Automated
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
-- [ ] Every `.lua` file passes the syntax check
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [x] Every `.lua` file passes the syntax check
 
 #### Manual
-- [ ] Deployed to AddOns with robocopy
+- [x] Deployed to AddOns with robocopy
 - [ ] Opening Tailoring shows the panel at the right edge of the profession window, with header "Tailoring N → bracket" and orange recipes listed first
 - [ ] After a craft, colors and order update
 - [ ] Cooking or First Aid show no panel; closing the window hides the panel
