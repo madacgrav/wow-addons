@@ -265,12 +265,12 @@ end
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] The ring rotates about one full turn per minute, smoothly
-- [ ] Shift-drag while it spins works, and the position persists
-- [ ] Attack a mob: the spin stops at once, every button works in combat, no "action blocked" or taint errors
-- [ ] After combat the spin resumes
-- [ ] `/wuk spin` toggles it, the Settings "Spin ring" checkbox matches, and the state persists after `/reload`
-- [ ] `/wuk spin` in combat prints "not in combat"
+- [x] The ring rotates about one full turn per minute, smoothly
+- [x] Shift-drag while it spins works, and the position persists
+- [x] Attack a mob: the spin stops at once, every button works in combat, no "action blocked" or taint errors
+- [x] After combat the spin resumes
+- [x] `/wuk spin` toggles it, the Settings "Spin ring" checkbox matches, and the state persists after `/reload`
+- [x] `/wuk spin` in combat prints "not in combat"
 
 ---
 
@@ -336,7 +336,7 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] Out of combat with the mouse away, the ring folds into the core and only the core is visible

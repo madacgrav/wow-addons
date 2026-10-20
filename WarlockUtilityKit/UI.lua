@@ -38,7 +38,12 @@ function WUK.LayoutRing()
   for i, kind in ipairs(ORBIT) do
     local b, x, y = s.icons[kind], WUK.RingPoint(i, #ORBIT, s.radius, s.angle)
     b:ClearAllPoints(); b:SetPoint("CENTER", s, "CENTER", x, y + cy)
+    b:SetAlpha(s.radius / R); b:EnableMouse(s.radius > 0)
   end
+  -- collapsed: the core pulses on behalf of hidden alerts
+  local any = false
+  for _, kind in ipairs(ORBIT) do any = any or s.icons[kind].alerting end
+  WUK.SetAlert(s.icons.shard, any and s.radius < R / 2)
 end
 
 local SPIN, BLOOM = 6, 0.2 -- deg/sec (one turn per minute), seconds for a full bloom/collapse
@@ -59,6 +64,12 @@ end
 function WUK.Animate()
   if not InCombatLockdown() then WUK.strip:SetScript("OnUpdate", Step) end
 end
+
+local function Target(s)
+  return (WUK.db.collapse and not InCombatLockdown() and not MouseIsOver(s)) and 0 or R
+end
+-- strip and every button share this: OnLeave of the strip fires on entering a child, so check the rect
+local function Hover() local s = WUK.strip; s.targetRadius = Target(s); WUK.Animate() end
 
 -- PLAYER_REGEN_DISABLED fires before lockdown: last chance to move secure buttons
 function WUK.CombatFreeze()
@@ -138,5 +149,13 @@ table.insert(WUK.refreshers, function()
       b:SetAttribute("macrotext", WUK.StoneMacro(kind, c[kind], id, WUK.known[kind], ss) or "")
     end
   end
+  -- hooked here, not in the init: Prep registers armor/pet after UI's init runs
+  local s = WUK.strip
+  if not s.hooked then
+    s.hooked = true
+    s:HookScript("OnEnter", Hover); s:HookScript("OnLeave", Hover)
+    for _, b in pairs(s.icons) do b:HookScript("OnEnter", Hover); b:HookScript("OnLeave", Hover) end
+  end
+  if not InCombatLockdown() then s.targetRadius = Target(s) end
   WUK.LayoutRing(); WUK.Animate()
 end)
