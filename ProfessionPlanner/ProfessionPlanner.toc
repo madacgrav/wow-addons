@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Profession Planner
 ## Notes: Docked leveling planner and shopping list for the profession window.
-## Version: 0.2.0
+## Version: 0.2.1
 ## IconTexture: Interface\Icons\Trade_Tailoring
 ## SavedVariables: ProfessionPlannerDB
 ## SavedVariablesPerCharacter: ProfessionPlannerCharDB

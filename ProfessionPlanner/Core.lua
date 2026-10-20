@@ -54,6 +54,10 @@ function PP.ScanProfession()
           end
         end
       end
+      if r.stations == nil and C_TradeSkillUI.GetRecipeRequirements then -- static too; also fills recipes cached by older versions
+        local ok, reqs = pcall(C_TradeSkillUI.GetRecipeRequirements, id)
+        if ok then r.stations = PP.StationNames(reqs) end
+      end
       cache[id] = r
       local wasLearned = r.learned
       r.learned = ri.learned and true or false
@@ -219,6 +223,10 @@ function PP.Probe()
             .. " skillUps=" .. tostring(ri.numSkillUps) .. " qtyMin=" .. tostring(sch and sch.quantityMin)
             .. " reagent=" .. tostring(rg and rg.itemID) .. "x" .. tostring(slot and slot.quantityRequired)
             .. " type=" .. tostring(slot and slot.reagentType))
+          local ok, reqs = pcall(C_TradeSkillUI.GetRecipeRequirements, id)
+          for _, rq in ipairs(ok and reqs or {}) do
+            P("    req", tostring(rq.name) .. " met=" .. tostring(rq.met) .. " type=" .. tostring(rq.type))
+          end
           if shown == 1 and rg and rg.itemID then
             P("  count bags/bank", C_Item.GetItemCount(rg.itemID) .. "/" .. C_Item.GetItemCount(rg.itemID, true))
           end

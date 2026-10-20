@@ -99,4 +99,9 @@ st = PP.Plan(S({ recipes = { [4] = TWIN, [5] = { learned = true, color = "orange
   thresholds = { [4] = thU[4], [5] = thU[4] }, prices = { [13] = 10 } }))
 eq(st[1].recipeID, 5, "learned preferred on tie")
 
+-- Stations
+local stn = PP.StationNames({ { type = 0, name = "Loom", met = false }, { type = 1, name = "Other" }, { type = 0, name = "Moonwell", met = true } })
+eq(#stn, 2, "only type 0"); eq(stn[1], "Loom", "Loom"); eq(stn[2], "Moonwell", "Moonwell")
+eq(#PP.StationNames(nil), 0, "nil reqs")
+
 print("all tests passed")

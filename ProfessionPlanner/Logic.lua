@@ -76,6 +76,15 @@ function PP.MergeReagents(scanned, seed)
   return seed and seed.reagents or scanned or {}
 end
 
+-- Forever reports crafting stations (Loom, Spinning Wheel, ...) as GetRecipeRequirements entries with type 0
+function PP.StationNames(reqs)
+  local out = {}
+  for _, rq in ipairs(reqs or {}) do
+    if rq.type == 0 and rq.name then out[#out + 1] = rq.name end
+  end
+  return out
+end
+
 -- cost of `crafts` crafts; owned reagents are free and consumed from `have` (mutated)
 local function CraftCost(r, crafts, have, prices, unknownCost)
   local cost, est = 0, false
