@@ -7,6 +7,8 @@ local FALLBACK = {
   soulstone = "Interface\\Icons\\Spell_Shadow_SoulGem", spellstone = "Interface\\Icons\\INV_Misc_Gem_Sapphire_01",
   firestone = "Interface\\Icons\\INV_Ammo_FireTar",
 }
+local R, CORE, BTN, LABELS = 58, 44, 36, 30   -- ring radius, core size, orbit size, label band height
+local ORBIT = { "healthstone", "soulstone", "spellstone", "firestone", "armor", "pet" } -- clockwise from 12
 
 function WUK.MakeMovable(f, key, x, y)
   f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
@@ -27,16 +29,32 @@ function WUK.ApplyShown()
   if WUK.db.shown then WUK.strip:Show() else WUK.strip:Hide() end
 end
 
+-- places core + orbit from strip.radius/angle; out of combat only (secure buttons)
+function WUK.LayoutRing()
+  local s = WUK.strip
+  if InCombatLockdown() then return end
+  local cy = LABELS / 2
+  s.icons.shard:ClearAllPoints(); s.icons.shard:SetPoint("CENTER", s, "CENTER", 0, cy)
+  for i, kind in ipairs(ORBIT) do
+    local b, x, y = s.icons[kind], WUK.RingPoint(i, #ORBIT, s.radius, s.angle)
+    b:ClearAllPoints(); b:SetPoint("CENTER", s, "CENTER", x, y + cy)
+  end
+end
+
 table.insert(WUK.inits, function()
   local f = CreateFrame("Frame", "WUKStrip", UIParent, "BackdropTemplate")
-  -- prep + pet + 5 stone buttons, 36px each with 4px gaps; soulstone line underneath
-  f:SetSize(4 + 7 * 40, 76)
+  -- ring of 6 orbit buttons around the shard core; soulstone + assignment lines underneath
+  local SIZE = 2 * (R + BTN / 2) + 8
+  f:SetSize(SIZE, SIZE + LABELS)
+  f.angle, f.radius, f.targetRadius = 0, R, R
   f:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
   f:SetBackdropColor(0, 0, 0, 0.6); f:SetBackdropBorderColor(0.58, 0.51, 0.79, 1)
   f.icons = {}
-  for i, kind in ipairs(KINDS) do
+  for _, kind in ipairs(KINDS) do
     local b = CreateFrame("Button", "WUKStone_" .. kind, f, "SecureActionButtonTemplate")
-    b:SetSize(36, 36); b:SetPoint("TOPLEFT", 4 + (i + 1) * 40, -4)
+    local size = kind == "shard" and CORE or BTN
+    b:SetSize(size, size)
+    b:SetFrameLevel(f:GetFrameLevel() + (kind == "shard" and 3 or 1)) -- core above orbit so collapsed buttons hide under it
     b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetAttribute("type", "macro")
     b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints()
@@ -46,9 +64,9 @@ table.insert(WUK.inits, function()
     f.icons[kind] = b
   end
   f.stone = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-  f.stone:SetPoint("BOTTOMLEFT", 6, 20)
+  f.stone:SetPoint("BOTTOM", 0, 20)
   f.assign = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  f.assign:SetPoint("BOTTOMLEFT", 6, 6)
+  f.assign:SetPoint("BOTTOM", 0, 6)
   WUK.strip = f
   WUK.MakeMovable(f, "strip", 0, -220)
   WUK.ApplyShown()
@@ -68,4 +86,5 @@ table.insert(WUK.refreshers, function()
       b:SetAttribute("macrotext", WUK.StoneMacro(kind, c[kind], id, WUK.known[kind], ss) or "")
     end
   end
+  WUK.LayoutRing()
 end)

@@ -85,4 +85,14 @@ local lines = WUK.AnnounceLines({ rows = {
 eq(#lines, 2, "skips empty"); eq(lines[1], "WUK: Abe - Curse of the Elements - Banish {rt1} - SS: Healbot", "abe line")
 eq(lines[2], "WUK: Zed - Curse of Tongues", "zed line")
 
+-- Ring layout
+local function near(got, want, label)
+  if math.abs(got - want) > 1e-9 then error(label .. ": expected " .. want .. ", got " .. got, 2) end
+end
+local x, y = WUK.RingPoint(1, 6, 58, 0); near(x, 0, "ring top x"); near(y, 58, "ring top y")
+x, y = WUK.RingPoint(4, 6, 58, 0); near(x, 0, "ring bottom x"); near(y, -58, "ring bottom y")
+x = WUK.RingPoint(2, 6, 58, 0); assert(x > 0, "ring goes clockwise")
+x, y = WUK.RingPoint(1, 6, 58, 90); near(x, 58, "offset rotates x"); near(y, 0, "offset rotates y")
+x, y = WUK.RingPoint(3, 6, 0, 45); near(x, 0, "collapsed x"); near(y, 0, "collapsed y")
+
 print("all tests passed")

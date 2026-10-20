@@ -3,7 +3,7 @@ local ADDON, WUK = ...
 local armorBtn
 table.insert(WUK.inits, function()
   armorBtn = CreateFrame("Button", "WUKArmorButton", WUK.strip, "SecureActionButtonTemplate")
-  armorBtn:SetSize(36, 36); armorBtn:SetPoint("TOPLEFT", 4, -4)
+  armorBtn:SetSize(36, 36); WUK.strip.icons.armor = armorBtn
   armorBtn:RegisterForClicks("AnyUp", "AnyDown")
   armorBtn:SetAttribute("type", "macro")
   armorBtn.icon = armorBtn:CreateTexture(nil, "ARTWORK"); armorBtn.icon:SetAllPoints()
@@ -20,7 +20,7 @@ end)
 local petBtn
 table.insert(WUK.inits, function()
   petBtn = CreateFrame("Button", "WUKPetButton", WUK.strip, "SecureActionButtonTemplate")
-  petBtn:SetSize(36, 36); petBtn:SetPoint("TOPLEFT", 44, -4)
+  petBtn:SetSize(36, 36); WUK.strip.icons.pet = petBtn
   petBtn:RegisterForClicks("AnyUp", "AnyDown")
   petBtn:SetAttribute("type", "macro")
   petBtn.icon = petBtn:CreateTexture(nil, "ARTWORK"); petBtn.icon:SetAllPoints()
