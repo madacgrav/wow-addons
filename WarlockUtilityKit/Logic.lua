@@ -158,3 +158,9 @@ function WUK.AnnounceLines(board)
   end
   return out
 end
+
+-- slot i of n on a circle, clockwise from 12 o'clock, rotated by offsetDeg; returns CENTER offsets
+function WUK.RingPoint(i, n, radius, offsetDeg)
+  local a = math.rad(offsetDeg + (i - 1) * 360 / n)
+  return radius * math.sin(a), radius * math.cos(a)
+end
