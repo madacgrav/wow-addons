@@ -716,8 +716,8 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
-- [ ] loadfile syntax check for Core.lua and Panel.lua
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [x] loadfile syntax check for Core.lua and Panel.lua
 
 #### Manual
 - [ ] Deployed; clicking a step row selects that recipe in the list/schematic, and the count box shows min(step crafts, craftable)

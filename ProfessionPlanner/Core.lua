@@ -154,6 +154,21 @@ function PP.VendorFor(id)
   return list[1]
 end
 
+-- select a recipe in the profession window with the craft count filled in; with `now`, craft immediately
+-- (must run inside the click handler: crafting needs the hardware event)
+function PP.SelectRecipe(id, crafts, now)
+  local n = math.min(crafts, C_TradeSkillUI.GetCraftableCount(id) or 0)
+  local page = ProfessionsFrame and ProfessionsFrame.CraftingPage
+  local info = C_TradeSkillUI.GetRecipeInfo(id)
+  if page and page.SelectRecipe and info then page:SelectRecipe(info) else C_TradeSkillUI.OpenRecipe(id) end
+  if now then
+    if n > 0 then C_TradeSkillUI.CraftRecipe(id, n) else PP.Print("Missing reagents for " .. tostring(info and info.name)) end
+    return
+  end
+  local box = page and page.CreateMultipleInputBox
+  if box and n > 0 then C_Timer.After(0, function() box:SetValue(n) end) end -- after Blizzard's own count reset
+end
+
 table.insert(PP.inits, function()
   local api = Auctionator and Auctionator.API and Auctionator.API.v1
   if api and api.RegisterForDBUpdate then pcall(api.RegisterForDBUpdate, ADDON, PP.Refresh) end

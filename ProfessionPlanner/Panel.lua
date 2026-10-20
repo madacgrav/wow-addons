@@ -21,6 +21,17 @@ local function Build()
     row.text:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, 0); row.text:SetWidth(300); row.text:SetJustifyH("LEFT"); row.text:SetWordWrap(false) -- long names truncate instead of spilling into the next row
     row.sub = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     row.sub:SetPoint("TOPLEFT", row.text, "BOTTOMLEFT", 0, -2); row.sub:SetWidth(300); row.sub:SetJustifyH("LEFT"); row.sub:SetWordWrap(false)
+    row:EnableMouse(true)
+    row.hl = row:CreateTexture(nil, "HIGHLIGHT"); row.hl:SetAllPoints(); row.hl:SetColorTexture(1, 1, 1, 0.08)
+    row:SetScript("OnMouseUp", function(self) if self.recipeID then PP.SelectRecipe(self.recipeID, self.crafts, IsShiftKeyDown()) end end)
+    row:SetScript("OnEnter", function(self)
+      if not self.recipeID then return end
+      GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+      GameTooltip:SetText("Click: select recipe")
+      GameTooltip:AddLine("Shift-click: craft " .. self.crafts, 1, 1, 1)
+      GameTooltip:Show()
+    end)
+    row:SetScript("OnLeave", GameTooltip_Hide)
     panel.rows[i] = row
   end
 end
@@ -74,6 +85,8 @@ function PP.RenderPanel(view)
       local c = COLORS[v.color] or { 1, 1, 1 }
       row.text:SetTextColor(c[1], c[2], c[3])
       row.sub:SetText(v.sub or "")
+      row.recipeID, row.crafts = v.recipeID, v.crafts
+      row.hl:SetShown(v.recipeID ~= nil)
     end
   end
   panel:SetHeight(74 + n * 30)
@@ -156,7 +169,9 @@ table.insert(PP.refreshers, function()
           or (st.learn.source and st.learn.source:match("^[^\n]*")) or "" }
     end
     local goal = st.toSkill and ("-> " .. st.toSkill .. (st.toSkill < target and " *" or "")) or (st.untilColorChange and "(until color changes)") or ("-> " .. target)
-    rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. (st.estimated and "~" or "") .. PP.FormatMoney(st.cost), color = st.color }
+    rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. (st.estimated and "~" or "") .. PP.FormatMoney(st.cost), color = st.color,
+      -- clickable only once actually learned (a planned learn step is not yet)
+      recipeID = recipes[st.recipeID].learned and st.recipeID or nil, crafts = st.crafts }
   end
   if #steps == 0 then rows[#rows + 1] = { text = "No recipe gives skill-ups here", sub = "train new recipes" } end
   for _, it in ipairs(PP.ShoppingList(steps, recipes, have, prices, sources)) do
