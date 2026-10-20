@@ -641,7 +641,7 @@ eq(#p3 >= 2, true, "multi-step with thresholds"); eq(p3[1].toSkill ~= nil, true,
 ---
 
 ## Final checks
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
-- [ ] `lua WarlockUtilityKit/tests/run.lua` still passes (untouched)
-- [ ] `git status` shows changes only under `ProfessionPlanner/`, `.github/workflows/package-pp.yml` and `thoughts/`
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [x] `lua WarlockUtilityKit/tests/run.lua` still passes (untouched)
+- [x] `git status` shows changes only under `ProfessionPlanner/`, `.github/workflows/package-pp.yml` and `thoughts/`
 - [ ] Open a PR from `profession-planner`; after merge, CI publishes `pp-v0.1.0`, and the WUK workflow does not run (its paths filter)
