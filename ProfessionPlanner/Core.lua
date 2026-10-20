@@ -128,27 +128,30 @@ function PP.AHPrice(id)
   if ok and type(p) == "number" and p > 0 then return p end
 end
 
--- first vendor (QuestieDB) friendly to the player's faction: { name, zone? }; nil without QuestieDB
+-- vendors (QuestieDB) friendly to the player's faction: a vendor in the current zone, else the first; nil without QuestieDB
+-- ponytail: same-zone match only; use QuestieDB spawn coords for true nearest if this isn't enough
 local vendorCache = {}
-local function FindVendor(q, id)
-  local my = (UnitFactionGroup("player") or ""):sub(1, 1) -- "A" / "H"
+local function FindVendors(q, id)
+  local my, out = (UnitFactionGroup("player") or ""):sub(1, 1), {} -- "A" / "H"
   for _, npc in ipairs(q.Item.vendors(id) or {}) do
     local f = q.Npc.friendlyToFaction(npc)
     if not f or f:find(my, 1, true) then
       local area = q.Npc.zoneID(npc)
-      return { name = q.Npc.name(npc), zone = area and C_Map.GetAreaInfo(area) or nil }
+      out[#out + 1] = { name = q.Npc.name(npc), zone = area and C_Map.GetAreaInfo(area) or nil }
     end
   end
-  return false
+  return out
 end
 function PP.VendorFor(id)
   local q = LibQuestieDB
   if not (q and q.RequireContract and q.RequireContract(3)) then return nil end
   if vendorCache[id] == nil then
-    local ok, v = pcall(FindVendor, q, id)
-    vendorCache[id] = ok and v or false -- static data: cache misses too
+    local ok, list = pcall(FindVendors, q, id)
+    vendorCache[id] = ok and list or {} -- static data: cache misses too
   end
-  return vendorCache[id] or nil
+  local list, here = vendorCache[id], GetRealZoneText()
+  for _, v in ipairs(list) do if v.zone == here then return v end end
+  return list[1]
 end
 
 table.insert(PP.inits, function()

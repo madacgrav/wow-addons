@@ -594,8 +594,8 @@ eq(st[1].recipeID, 5, "learned preferred on tie")
 - [x] loadfile syntax check for Core.lua, Logic.lua and Panel.lua
 
 #### Manual
-- [ ] Deployed; `/pp debug` lists `(unlearned)` counts, and no thresholds are learned from unlearned recipes
-- [ ] Tailoring around skill 90–110 can show `Learn: Pattern: Red Woolen Bag` with a vendor and zone, followed by an `xN Red Woolen Bag` row whose cost includes the pattern
+- [x] Deployed; `/pp debug` lists `(unlearned)` counts, and no thresholds are learned from unlearned recipes
+- [x] Tailoring around skill 90–110 can show `Learn: Pattern: Red Woolen Bag` with a vendor and zone, followed by an `xN Red Woolen Bag` row whose cost includes the pattern
 - [ ] Rule A only: an unlearned trainer recipe can appear with `Learn: Trainer`
 
 ---
