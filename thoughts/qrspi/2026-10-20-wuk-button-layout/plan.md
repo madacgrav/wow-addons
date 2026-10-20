@@ -339,13 +339,13 @@ end
 - [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] Out of combat with the mouse away, the ring folds into the core and only the core is visible
-- [ ] Hovering the frame blooms the ring in about 0.2s. Moving across the orbit buttons keeps it open
-- [ ] Moving the mouse off a button straight out of the frame collapses it
-- [ ] Collapsed, then attacking a mob: the ring snaps open and every button is clickable in combat
-- [ ] Collapsed with the armor buff missing: the core pulses. Opened: the armor button pulses instead
-- [ ] `/wuk collapse` off keeps the ring open. The Settings checkbox matches and the state persists after `/reload`
-- [ ] Spin and collapse together: the ring spins while open and while blooming
+- [x] Out of combat with the mouse away, the ring folds into the core and only the core is visible
+- [x] Hovering the frame blooms the ring in about 0.2s. Moving across the orbit buttons keeps it open
+- [x] Moving the mouse off a button straight out of the frame collapses it
+- [x] Collapsed, then attacking a mob: the ring snaps open and every button is clickable in combat
+- [x] Collapsed with the armor buff missing: the core pulses. Opened: the armor button pulses instead
+- [x] `/wuk collapse` off keeps the ring open. The Settings checkbox matches and the state persists after `/reload`
+- [x] Spin and collapse together: the ring spins while open and while blooming
 
 ---
 
@@ -361,9 +361,12 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] `sed -n 's/^## Version: *\([^[:space:]]*\).*/\1/p' WarlockUtilityKit/WarlockUtilityKit.toc` prints `0.3.0`
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] `sed -n 's/^## Version: *\([^[:space:]]*\).*/\1/p' WarlockUtilityKit/WarlockUtilityKit.toc` prints `0.3.0`
 
 #### Manual
 - [ ] `/wuk` with no args lists `spin` and `collapse`
 - [ ] Settings window: all checkboxes, the pet dropdown and the buttons fit with no overlap
+
+## Implementation Notes
+- Phase 5 deviated: the enter/leave hover hooks were replaced by polling `s:IsMouseOver()` in the animator `Step` every frame while collapse is on. `MouseIsOver` (FrameXML) is nil on the Forever client (Interface 16001), and enter/leave events missed child-to-outside mouse moves (commits 3b29850, c64a618).
