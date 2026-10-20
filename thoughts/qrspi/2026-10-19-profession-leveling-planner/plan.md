@@ -344,9 +344,9 @@ eq(PP.COLOR[0], "orange", "color 0"); eq(PP.CHANCE.yellow, 0.6, "yellow chance")
 
 #### Manual
 - [x] Deployed to AddOns with robocopy
-- [ ] Opening Tailoring shows the panel at the right edge of the profession window, with header "Tailoring N → bracket" and orange recipes listed first
-- [ ] After a craft, colors and order update
-- [ ] Cooking or First Aid show no panel; closing the window hides the panel
+- [x] Opening Tailoring shows the panel at the right edge of the profession window, with header "Tailoring N → bracket" and orange recipes listed first
+- [x] After a craft, colors and order update
+- [x] Cooking or First Aid show no panel; closing the window hides the panel
 
 ---
 
@@ -553,11 +553,11 @@ eq(list[1].need, 5, "sums steps"); eq(list[1].buy, 4, "minus have"); eq(list[1].
 
 ### Verification
 #### Automated
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
-- [ ] Every `.lua` file passes the syntax check
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [x] Every `.lua` file passes the syntax check
 
 #### Manual
-- [ ] Deployed to AddOns with robocopy
+- [x] Deployed to AddOns with robocopy
 - [ ] Tailoring shows "×N Recipe (until color changes)" plus a cost, and shopping rows with have/need matching your bags
 - [ ] After visiting the bank, the "have" counts include bank items
 - [ ] After visiting a trade-goods vendor, thread/dye prices appear and the step ranking accounts for them

@@ -66,6 +66,50 @@ function PP.ScanProfession()
   PP.lastScan = { prof = prof, skill = info.skillLevel, prev = prevColors, cur = curColors } -- Phase 4 learns from this
 end
 
+local function ScanContainers(first, last, into)
+  for bag = first, last do
+    for slot = 1, C_Container.GetContainerNumSlots(bag) do
+      local info = C_Container.GetContainerItemInfo(bag, slot)
+      if info and info.itemID then into[info.itemID] = (into[info.itemID] or 0) + (info.stackCount or 1) end
+    end
+  end
+  return into
+end
+
+function PP.Have()
+  local have = ScanContainers(0, (Enum.BagIndex and Enum.BagIndex.ReagentBag) or NUM_BAG_SLOTS or 4, {})
+  for id, n in pairs(PP.char.bank) do have[id] = (have[id] or 0) + n end
+  return have
+end
+
+local bankOpen = false
+local function ScanBank()
+  if not bankOpen or not Enum.BagIndex then return end
+  local bank = {}
+  for i = 1, 9 do
+    local bag = Enum.BagIndex["CharacterBankTab_" .. i]
+    if bag then ScanContainers(bag, bag, bank) end
+  end
+  PP.char.bank = bank
+end
+
+local function ScanMerchant()
+  for i = 1, GetMerchantNumItems() do
+    local id, info = GetMerchantItemID(i), C_MerchantFrame.GetItemInfo(i)
+    if id and info and info.price and info.price > 0 and not info.hasExtendedCost then
+      PP.db.prices[id] = info.price / math.max(1, info.stackCount or 1)
+    end
+  end
+end
+
+table.insert(PP.inits, function()
+  PP.On("BANKFRAME_OPENED", function() bankOpen = true; ScanBank(); PP.Refresh() end)
+  PP.On("BANKFRAME_CLOSED", function() bankOpen = false end)
+  PP.On("PLAYERBANKSLOTS_CHANGED", function() ScanBank(); PP.Refresh() end)
+  PP.On("BAG_UPDATE_DELAYED", function() ScanBank(); PP.Refresh() end)
+  PP.On("MERCHANT_SHOW", function() ScanMerchant(); PP.Refresh() end)
+end)
+
 table.insert(PP.inits, function()
   local function Update() PP.ScanProfession(); PP.Refresh() end
   PP.On("TRADE_SKILL_SHOW", Update)
