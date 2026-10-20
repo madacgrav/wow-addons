@@ -31,13 +31,17 @@ function PP.ScanProfession()
   if not prof or not PP.PROFESSIONS[prof] then PP.current = nil; return end
   PP.current = prof
   PP.char.skill[prof] = { skill = info.skillLevel, max = info.maxSkillLevel }
-  local cache = PP.char.recipes[prof] or {}
+  -- rebuild each scan (reusing cached schematics) so recipes from a previously open profession can't linger
+  local old, cache = PP.char.recipes[prof] or {}, {}
   PP.char.recipes[prof] = cache
   local prevColors, curColors = {}, {}
   for _, id in ipairs(C_TradeSkillUI.GetAllRecipeIDs()) do
     local ri = C_TradeSkillUI.GetRecipeInfo(id)
-    if ri and ri.learned then
-      local r = cache[id]
+    -- right after switching professions the recipe list can still hold the old profession's recipes
+    local pi = C_TradeSkillUI.GetProfessionInfoByRecipeID and C_TradeSkillUI.GetProfessionInfoByRecipeID(id)
+    local ours = not pi or pi.professionID == prof or pi.parentProfessionID == prof
+    if ri and ri.learned and ours then
+      local r = old[id]
       if not r then -- reagents never change: fetch the schematic once
         r = { name = ri.name, icon = ri.icon, reagents = {} }
         local sch = C_TradeSkillUI.GetRecipeSchematic(id, false)
@@ -50,8 +54,8 @@ function PP.ScanProfession()
             end
           end
         end
-        cache[id] = r
       end
+      cache[id] = r
       prevColors[id] = r.color
       r.learned = true
       r.color = PP.COLOR[ri.relativeDifficulty] or "grey"

@@ -5,7 +5,8 @@ local panel
 local function Build()
   panel = CreateFrame("Frame", "PPPanel", ProfessionsFrame, "BasicFrameTemplateWithInset")
   panel:SetWidth(260)
-  panel:SetPoint("TOPLEFT", ProfessionsFrame, "TOPRIGHT", 2, 0)
+  -- Forever's profession window has a column of side tabs past its right edge; sit beyond them
+  panel:SetPoint("TOPLEFT", ProfessionsFrame, "TOPRIGHT", 60, 0)
   panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   panel.title:SetPoint("TOP", 0, -5); panel.title:SetText("Profession Planner")
   panel.header = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -53,5 +54,5 @@ table.insert(PP.refreshers, function()
     if r.learned and r.color ~= "grey" then rows[#rows + 1] = { icon = r.icon, text = r.name, sub = r.color, color = r.color } end
   end
   table.sort(rows, function(a, b) if a.color ~= b.color then return PP.RANK[a.color] < PP.RANK[b.color] end return a.text < b.text end)
-  PP.RenderPanel({ header = PP.PROFESSIONS[PP.current] .. "  " .. s.skill .. " → " .. PP.NextBracket(s.skill, s.max), rows = rows })
+  PP.RenderPanel({ header = PP.PROFESSIONS[PP.current] .. "  " .. s.skill .. " -> " .. PP.NextBracket(s.skill, s.max), rows = rows })
 end)
