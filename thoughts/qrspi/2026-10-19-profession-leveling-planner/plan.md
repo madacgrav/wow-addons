@@ -634,7 +634,7 @@ eq(#p3 >= 2, true, "multi-step with thresholds"); eq(p3[1].toSkill ~= nil, true,
 
 #### Manual
 - [x] Deployed to AddOns with robocopy
-- [ ] Craft an orange recipe until it turns yellow; that step then shows "→ S ✓" for the yellow→green transition once that is learned too, and the header count increases
+- [x] (thresholds learned: header showed 2 after 116->120; a "-> S *" step not yet seen) Craft an orange recipe until it turns yellow; that step then shows "→ S ✓" for the yellow→green transition once that is learned too, and the header count increases
 - [ ] Thresholds survive `/reload`, and an alt with the same recipe sees them
 - [ ] If the probe showed `maxTrivial` populated, grey thresholds appear immediately for all learned recipes
 

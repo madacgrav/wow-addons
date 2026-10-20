@@ -17,9 +17,9 @@ local function Build()
     row:SetSize(236, 28); row:SetPoint("TOPLEFT", 12, -64 - (i - 1) * 30)
     row.icon = row:CreateTexture(nil, "ARTWORK"); row.icon:SetSize(24, 24); row.icon:SetPoint("LEFT")
     row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.text:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, 0); row.text:SetWidth(200); row.text:SetJustifyH("LEFT")
+    row.text:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, 0); row.text:SetWidth(200); row.text:SetJustifyH("LEFT"); row.text:SetWordWrap(false) -- long names truncate instead of spilling into the next row
     row.sub = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.sub:SetPoint("TOPLEFT", row.text, "BOTTOMLEFT", 0, -2); row.sub:SetWidth(200); row.sub:SetJustifyH("LEFT")
+    row.sub:SetPoint("TOPLEFT", row.text, "BOTTOMLEFT", 0, -2); row.sub:SetWidth(200); row.sub:SetJustifyH("LEFT"); row.sub:SetWordWrap(false)
     panel.rows[i] = row
   end
 end
