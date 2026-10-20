@@ -130,7 +130,14 @@ end)
 
 -- prints API facts for the open profession window; output decides Phase 2+ details
 function PP.Probe()
-  local function P(k, v) PP.Print(k .. ": " .. tostring(v)) end
+  -- also kept in SavedVariables (ProfessionPlannerDB.lastProbe) so the full output survives a /reload
+  local log = {}
+  PP.db.lastProbe = log
+  local function P(k, v, quiet)
+    local line = k .. ": " .. tostring(v)
+    log[#log + 1] = line
+    if not quiet then PP.Print(line) end
+  end
   local ready = C_TradeSkillUI.IsTradeSkillReady()
   P("tradeskill ready", ready)
   if ready then
@@ -160,16 +167,22 @@ function PP.Probe()
     local unl = 0
     for _, id in ipairs(ids) do
       local ri = C_TradeSkillUI.GetRecipeInfo(id)
-      if ri and not ri.learned and unl < 10 then
+      if ri and not ri.learned then
         unl = unl + 1
+        local quiet = unl > 5 -- chat shows 5; the saved log keeps every unlearned recipe
         P("  unlearned " .. id .. " " .. tostring(ri.name), "diff=" .. tostring(ri.relativeDifficulty)
           .. " maxTrivial=" .. tostring(ri.maxTrivialLevel) .. " sourceType=" .. tostring(ri.sourceType)
-          .. " disabled=" .. tostring(ri.disabled) .. " reason=" .. tostring(ri.disabledReason))
+          .. " disabled=" .. tostring(ri.disabled) .. " reason=" .. tostring(ri.disabledReason), quiet)
         if C_TradeSkillUI.GetRecipeSourceText then
-          P("    source", (tostring(C_TradeSkillUI.GetRecipeSourceText(id)):gsub("\n", " | ")))
+          local ok, txt = pcall(C_TradeSkillUI.GetRecipeSourceText, id)
+          P("    source", ok and (tostring(txt):gsub("\n", " | ")) or ("ERROR " .. tostring(txt)), quiet)
         end
-        for _, rq in ipairs(C_TradeSkillUI.GetRecipeRequirements and C_TradeSkillUI.GetRecipeRequirements(id) or {}) do
-          P("    req", tostring(rq.name) .. " met=" .. tostring(rq.met) .. " type=" .. tostring(rq.type))
+        if C_TradeSkillUI.GetRecipeRequirements then
+          local ok, reqs = pcall(C_TradeSkillUI.GetRecipeRequirements, id)
+          if not ok then P("    req", "ERROR " .. tostring(reqs), quiet) end
+          for _, rq in ipairs(ok and reqs or {}) do
+            P("    req", tostring(rq.name) .. " met=" .. tostring(rq.met) .. " type=" .. tostring(rq.type), quiet)
+          end
         end
       end
     end
