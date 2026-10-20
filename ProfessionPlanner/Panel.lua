@@ -4,7 +4,7 @@ local panel
 
 local function Build()
   panel = CreateFrame("Frame", "PPPanel", ProfessionsFrame, "BasicFrameTemplateWithInset")
-  panel:SetWidth(260)
+  panel:SetWidth(360)
   -- Forever's profession window has a column of side tabs past its right edge; sit beyond them
   panel:SetPoint("TOPLEFT", ProfessionsFrame, "TOPRIGHT", 60, 0)
   panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
@@ -14,12 +14,12 @@ local function Build()
   panel.rows = {}
   for i = 1, MAX_ROWS do
     local row = CreateFrame("Frame", nil, panel)
-    row:SetSize(236, 28); row:SetPoint("TOPLEFT", 12, -64 - (i - 1) * 30)
+    row:SetSize(336, 28); row:SetPoint("TOPLEFT", 12, -64 - (i - 1) * 30)
     row.icon = row:CreateTexture(nil, "ARTWORK"); row.icon:SetSize(24, 24); row.icon:SetPoint("LEFT")
     row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.text:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, 0); row.text:SetWidth(200); row.text:SetJustifyH("LEFT"); row.text:SetWordWrap(false) -- long names truncate instead of spilling into the next row
+    row.text:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, 0); row.text:SetWidth(300); row.text:SetJustifyH("LEFT"); row.text:SetWordWrap(false) -- long names truncate instead of spilling into the next row
     row.sub = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.sub:SetPoint("TOPLEFT", row.text, "BOTTOMLEFT", 0, -2); row.sub:SetWidth(200); row.sub:SetJustifyH("LEFT"); row.sub:SetWordWrap(false)
+    row.sub:SetPoint("TOPLEFT", row.text, "BOTTOMLEFT", 0, -2); row.sub:SetWidth(300); row.sub:SetJustifyH("LEFT"); row.sub:SetWordWrap(false)
     panel.rows[i] = row
   end
 end
