@@ -444,8 +444,8 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed` (PickPrice fallback already covered)
-- [ ] loadfile syntax check for Core.lua and Panel.lua
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed` (PickPrice fallback already covered)
+- [x] loadfile syntax check for Core.lua and Panel.lua
 
 #### Manual
 - [ ] Deployed; a plan needing Coarse Thread shows a vendor of the player's faction with a zone

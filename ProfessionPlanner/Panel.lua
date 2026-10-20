@@ -72,7 +72,7 @@ local function Prices(recipes)
   local prices, sources = {}, {}
   local function add(id)
     if sources[id] ~= nil then return end
-    prices[id], sources[id] = PP.PickPrice(PP.db.prices[id], PP.AHPrice(id), nil, false)
+    prices[id], sources[id] = PP.PickPrice(PP.db.prices[id], PP.AHPrice(id), PP.SEED and PP.SEED.price[id], PP.VendorFor(id) ~= nil)
     sources[id] = sources[id] or false
   end
   for _, r in pairs(recipes) do for _, rg in ipairs(r.reagents) do add(rg.itemID) end end
@@ -101,7 +101,11 @@ table.insert(PP.refreshers, function()
   for _, it in ipairs(PP.ShoppingList(steps, recipes, have, prices, sources)) do
     local name, icon = ItemName(it.itemID, Rerender)
     local sub = it.have .. "/" .. it.need
-    if it.buy > 0 then sub = sub .. "   buy " .. it.buy .. (it.unitPrice and (" @ " .. PP.FormatMoney(it.unitPrice) .. " " .. it.source) or "") end
+    if it.buy > 0 then
+      sub = sub .. "   buy " .. it.buy .. (it.unitPrice and (" @ " .. PP.FormatMoney(it.unitPrice) .. " " .. it.source) or "")
+      local v = PP.VendorFor(it.itemID)
+      if v then sub = sub .. " - " .. v.name .. (v.zone and (" (" .. v.zone .. ")") or "") end
+    end
     rows[#rows + 1] = { icon = icon, text = name, sub = sub }
   end
   local known = 0
