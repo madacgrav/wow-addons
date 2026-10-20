@@ -129,6 +129,11 @@
    - The same lookup supplies `vendorSold` for Decision 6.
    - All of this lives in Core.lua behind one function, so Panel stays dumb.
 
+9. **Flyout and click-to-craft** (added 2026-10-20 at the user's request):
+   - The panel becomes a flyout toggled by an edge tab under Forever's side profession tabs. Open/closed is remembered account-wide.
+   - Clicking a plan step selects the recipe with the count filled in; shift-click crafts.
+   - `C_TradeSkillUI.CraftRecipe` is called inside the click handler (hardware event).
+
 ## What We're NOT Doing
 - **Other professions.** No Blacksmithing, Engineering, Cooking, First Aid etc. `PP.PROFESSIONS` stays the same 4.
 - **Era/Anniversary/other-client data.** The seed targets Forever only.

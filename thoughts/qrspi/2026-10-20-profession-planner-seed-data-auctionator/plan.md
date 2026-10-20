@@ -391,9 +391,9 @@ list = PP.ShoppingList({ { recipeID = 2, crafts = 1 } }, R, {}, { [11] = 100 }, 
 - [x] loadfile syntax check for Logic.lua, Core.lua and Panel.lua
 
 #### Manual
-- [ ] Deployed; at the AH, run an Auctionator full scan, and the panel refreshes by itself afterwards
-- [ ] Shopping rows show `vendor` or `AH` after the price; costs that use an unknown price show a `~` prefix
-- [ ] Disable Auctionator (AddOns list), `/reload`: the panel works, there are no errors, and only `vendor` sources appear
+- [x] Deployed; at the AH, run an Auctionator full scan, and the panel refreshes by itself afterwards
+- [x] Shopping rows show `vendor` or `AH` after the price; costs that use an unknown price show a `~` prefix
+- [x] Disable Auctionator (AddOns list), `/reload`: the panel works, there are no errors, and only `vendor` sources appear
 
 ---
 
@@ -600,7 +600,134 @@ eq(st[1].recipeID, 5, "learned preferred on tie")
 
 ---
 
-## Phase 6: Route hints
+## Phase 6: Flyout toggle on the profession window
+
+### Changes
+
+#### 1. Saved state
+**File**: `ProfessionPlanner/Core.lua`
+**Action**: the `ProfessionPlannerDB` defaults become `{ thresholds = {}, prices = {}, panelOpen = true }`.
+
+#### 2. Edge tab and toggle
+**File**: `ProfessionPlanner/Panel.lua`
+**Action**: add above `PP.RenderPanel`:
+```lua
+local tab
+-- below the last shown side profession tab; fixed offset if Blizzard's tab list isn't there
+local function AnchorTab()
+  local last
+  for _, t in ipairs(ProfessionsFrame.rightProfessionTabs or {}) do if t:IsShown() then last = t end end
+  tab:ClearAllPoints()
+  if last then tab:SetPoint("TOP", last, "BOTTOM", 0, -12)
+  else tab:SetPoint("TOPLEFT", ProfessionsFrame, "TOPRIGHT", 8, -420) end -- ponytail: tune if the fallback is ever used
+end
+
+local function BuildTab()
+  tab = CreateFrame("Button", "PPToggleTab", ProfessionsFrame)
+  tab:SetSize(36, 36)
+  tab.icon = tab:CreateTexture(nil, "ARTWORK"); tab.icon:SetAllPoints(); tab.icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
+  tab:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+  tab:SetScript("OnClick", function() PP.db.panelOpen = not PP.db.panelOpen; PP.Refresh() end)
+  tab:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetText(PP.db.panelOpen and "Hide Profession Planner" or "Show Profession Planner")
+    GameTooltip:Show()
+  end)
+  tab:SetScript("OnLeave", GameTooltip_Hide)
+end
+
+-- the tab shows whenever a supported profession window is open
+function PP.RenderTab(shown)
+  if not shown then if tab then tab:Hide() end return end
+  if not tab then BuildTab() end
+  AnchorTab()
+  tab:Show()
+end
+```
+- In `Build()`, after creating `panel`:
+  ```lua
+  if panel.CloseButton then panel.CloseButton:HookScript("OnClick", function() PP.db.panelOpen = false; PP.Refresh() end) end
+  ```
+- In the refresher, replace the first line with:
+  ```lua
+  local open = PP.current and ProfessionsFrame and ProfessionsFrame:IsShown()
+  PP.RenderTab(open)
+  if not open or not PP.db.panelOpen then return PP.RenderPanel(nil) end
+  ```
+
+### Verification
+#### Automated
+- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [ ] loadfile syntax check for Core.lua and Panel.lua
+
+#### Manual
+- [ ] Deployed; with Tailoring open, a book-icon tab sits under the side profession tabs and its tooltip reads Hide/Show
+- [ ] Clicking the tab hides the panel, and clicking again shows it
+- [ ] The state survives `/reload` and reopening the window
+- [ ] The panel's X closes it; the tab reopens it
+- [ ] With a non-supported profession (e.g. Cooking) open, no tab and no panel
+
+---
+
+## Phase 7: Click a plan step to craft
+
+### Changes
+
+#### 1. Select / craft
+**File**: `ProfessionPlanner/Core.lua`
+**Action**: add after `PP.VendorFor`:
+```lua
+-- select a recipe in the profession window with the craft count filled in; with `now`, craft immediately
+-- (must run inside the click handler: crafting needs the hardware event)
+function PP.SelectRecipe(id, crafts, now)
+  local n = math.min(crafts, C_TradeSkillUI.GetCraftableCount(id) or 0)
+  local page = ProfessionsFrame and ProfessionsFrame.CraftingPage
+  local info = C_TradeSkillUI.GetRecipeInfo(id)
+  if page and page.SelectRecipe and info then page:SelectRecipe(info) else C_TradeSkillUI.OpenRecipe(id) end
+  if now then
+    if n > 0 then C_TradeSkillUI.CraftRecipe(id, n) else PP.Print("Missing reagents for " .. tostring(info and info.name)) end
+    return
+  end
+  local box = page and page.CreateMultipleInputBox
+  if box and n > 0 then C_Timer.After(0, function() box:SetValue(n) end) end -- after Blizzard's own count reset
+end
+```
+
+#### 2. Clickable rows
+**File**: `ProfessionPlanner/Panel.lua`
+**Action**: modify.
+- In `Build()`, for each row:
+  ```lua
+  row:EnableMouse(true)
+  row.hl = row:CreateTexture(nil, "HIGHLIGHT"); row.hl:SetAllPoints(); row.hl:SetColorTexture(1, 1, 1, 0.08)
+  row:SetScript("OnMouseUp", function(self) if self.recipeID then PP.SelectRecipe(self.recipeID, self.crafts, IsShiftKeyDown()) end end)
+  row:SetScript("OnEnter", function(self)
+    if not self.recipeID then return end
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+    GameTooltip:SetText("Click: select recipe")
+    GameTooltip:AddLine("Shift-click: craft " .. self.crafts, 1, 1, 1)
+    GameTooltip:Show()
+  end)
+  row:SetScript("OnLeave", GameTooltip_Hide)
+  ```
+- In `PP.RenderPanel`, for each shown row: `row.recipeID, row.crafts = v.recipeID, v.crafts`.
+- In the refresher, a craft step row (not `Learn:` rows or shopping rows) adds `recipeID = (not st.learn) and st.recipeID or nil, crafts = st.crafts`. A step that starts with a `Learn:` row is not craftable until learned.
+- The `HIGHLIGHT` layer only shows on mouse-enabled frames. Shopping rows are mouse-enabled too but do nothing, so set `row.hl:SetShown(v.recipeID ~= nil)` in `RenderPanel`.
+
+### Verification
+#### Automated
+- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [ ] loadfile syntax check for Core.lua and Panel.lua
+
+#### Manual
+- [ ] Deployed; clicking a step row selects that recipe in the list/schematic, and the count box shows min(step crafts, craftable)
+- [ ] Shift-click on a row with reagents crafts that many (watch the cast bar / count)
+- [ ] Shift-click with no reagents prints "Missing reagents for …" and does not craft
+- [ ] Hovering a step shows the tooltip; shopping rows and `Learn:` rows show no highlight and do nothing
+
+---
+
+## Phase 8: Route hints
 
 ### Changes
 

@@ -140,7 +140,41 @@ The planner can pick a recipe you haven't learned yet and tells you where to lea
 
 ---
 
-## Phase 6: Route hints
+## Phase 6: Flyout toggle on the profession window
+The planner becomes a flyout. A tab on the profession window's right edge, under Forever's side profession tabs, shows or hides the panel. Open/closed is remembered account-wide.
+
+**Files**: `Core.lua` (SV default), `Panel.lua`
+
+**Key changes**:
+- `ProfessionPlannerDB.panelOpen` (bool, default `true`).
+- `BuildTab()` / `AnchorTab()` (new, Panel):
+  - A 36px icon button parented to `ProfessionsFrame`.
+  - Anchored below the last shown `ProfessionsFrame.rightProfessionTabs[i]`, falling back to a fixed offset.
+  - Clicking it toggles `panelOpen`; it has a tooltip.
+- The panel's close button also sets `panelOpen = false`.
+- The refresher shows the tab whenever a supported profession is open. When the panel is closed it skips the plan work.
+
+**Verify**: tests still pass. In game: the tab appears under the side tabs; clicking it hides and shows the panel; the state survives `/reload`; the X button closes and the tab reopens.
+
+---
+
+## Phase 7: Click a plan step to craft
+Clicking a craft step row selects that recipe in the profession window and fills the craft count. Shift-click starts crafting right away.
+
+**Files**: `Core.lua`, `Panel.lua`
+
+**Key changes**:
+- `PP.SelectRecipe(recipeID, crafts, now)` (new, Core):
+  - Selects the recipe via `ProfessionsFrame.CraftingPage:SelectRecipe(GetRecipeInfo(id))`, or `C_TradeSkillUI.OpenRecipe(id)` as a fallback.
+  - The count is `min(crafts, GetCraftableCount(id))`, set on `CreateMultipleInputBox`.
+  - With `now`, it calls `C_TradeSkillUI.CraftRecipe(id, n)` directly in the click handler, which needs the hardware event.
+- Panel view rows gain `recipeID` and `crafts` (only for craftable steps, not `Learn:` rows). Rows get mouse handling, a hover highlight and a tooltip ("Click: select · Shift-click: craft N").
+
+**Verify**: tests still pass. In game: clicking a step selects the recipe with the count filled in; shift-click crafts up to that many; with missing reagents, shift-click prints a message and crafts nothing; the `Learn:` row does nothing.
+
+---
+
+## Phase 8: Route hints
 A short bracket hint is written by us and checked against the seed. It shows under the header, and it is the fallback text when the plan is empty.
 
 **Files**: `ProfessionPlanner/Hints.lua` (new, in .toc after Data.lua), `Panel.lua`, `tests/run.lua`
@@ -165,6 +199,8 @@ A short bracket hint is written by us and checked against the seed. It shows und
 | Phase 3 | Prices are the cheapest of vendor and AH, with source tags. Estimates are flagged. Works without Auctionator. |
 | Phase 4 | Vendor names and zones from QuestieDB. Seed base price is used as `est.` for vendor-sold items. Works without QuestieDB. |
 | Phase 5 | The plan can include learn-then-craft steps with pattern cost. Trainer recipes are handled per the Phase 1 findings. |
-| Phase 6 | Route hints are shown and verified against seed data by tests. |
+| Phase 6 | The planner is a flyout toggled by an edge tab; the state is remembered. |
+| Phase 7 | Plan steps are clickable: select with count, or shift-click to craft. |
+| Phase 8 | Route hints are shown and verified against seed data by tests. |
 
 After each phase: run the tests, deploy with robocopy to `_classic_beta_\Interface\AddOns\ProfessionPlanner`, then do the in-game check.
