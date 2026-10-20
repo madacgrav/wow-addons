@@ -657,8 +657,8 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
-- [ ] loadfile syntax check for Core.lua and Panel.lua
+- [x] `lua ProfessionPlanner/tests/run.lua` prints `all tests passed`
+- [x] loadfile syntax check for Core.lua and Panel.lua
 
 #### Manual
 - [ ] Deployed; with Tailoring open, a book-icon tab sits under the side profession tabs and its tooltip reads Hide/Show

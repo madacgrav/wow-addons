@@ -7,6 +7,7 @@ local function Build()
   panel:SetWidth(360)
   -- Forever's profession window has a column of side tabs past its right edge; sit beyond them
   panel:SetPoint("TOPLEFT", ProfessionsFrame, "TOPRIGHT", 60, 0)
+  if panel.CloseButton then panel.CloseButton:HookScript("OnClick", function() PP.db.panelOpen = false; PP.Refresh() end) end
   panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   panel.title:SetPoint("TOP", 0, -5); panel.title:SetText("Profession Planner")
   panel.header = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -22,6 +23,38 @@ local function Build()
     row.sub:SetPoint("TOPLEFT", row.text, "BOTTOMLEFT", 0, -2); row.sub:SetWidth(300); row.sub:SetJustifyH("LEFT"); row.sub:SetWordWrap(false)
     panel.rows[i] = row
   end
+end
+
+local tab
+-- below the last shown side profession tab; fixed offset if Blizzard's tab list isn't there
+local function AnchorTab()
+  local last
+  for _, t in ipairs(ProfessionsFrame.rightProfessionTabs or {}) do if t:IsShown() then last = t end end
+  tab:ClearAllPoints()
+  if last then tab:SetPoint("TOP", last, "BOTTOM", 0, -12)
+  else tab:SetPoint("TOPLEFT", ProfessionsFrame, "TOPRIGHT", 8, -420) end -- ponytail: tune if the fallback is ever used
+end
+
+local function BuildTab()
+  tab = CreateFrame("Button", "PPToggleTab", ProfessionsFrame)
+  tab:SetSize(36, 36)
+  tab.icon = tab:CreateTexture(nil, "ARTWORK"); tab.icon:SetAllPoints(); tab.icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
+  tab:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+  tab:SetScript("OnClick", function() PP.db.panelOpen = not PP.db.panelOpen; PP.Refresh() end)
+  tab:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetText(PP.db.panelOpen and "Hide Profession Planner" or "Show Profession Planner")
+    GameTooltip:Show()
+  end)
+  tab:SetScript("OnLeave", GameTooltip_Hide)
+end
+
+-- the tab shows whenever a supported profession window is open
+function PP.RenderTab(shown)
+  if not shown then if tab then tab:Hide() end return end
+  if not tab then BuildTab() end
+  AnchorTab()
+  tab:Show()
 end
 
 local COLORS = { orange = { 1, 0.5, 0.25 }, yellow = { 1, 1, 0 }, green = { 0.25, 0.75, 0.25 }, grey = { 0.5, 0.5, 0.5 } }
@@ -91,7 +124,9 @@ local pending = false
 local function Rerender() if not pending then pending = true; C_Timer.After(0.1, function() pending = false; PP.Refresh() end) end end
 
 table.insert(PP.refreshers, function()
-  if not PP.current or not (ProfessionsFrame and ProfessionsFrame:IsShown()) then return PP.RenderPanel(nil) end
+  local open = PP.current and ProfessionsFrame and ProfessionsFrame:IsShown()
+  PP.RenderTab(open)
+  if not open or not PP.db.panelOpen then return PP.RenderPanel(nil) end
   local s = PP.char.skill[PP.current]
   local target = PP.NextBracket(s.skill, s.max)
   local recipes, thresholds = View(PP.current, s.skill)
