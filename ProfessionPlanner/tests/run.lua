@@ -52,4 +52,51 @@ local th3 = { [2] = { green = 60, grey = 70 }, [1] = { yellow = 55, green = 65, 
 local p3 = PP.Plan(S({ thresholds = th3, prices = { [10] = 50, [11] = 100 } }))
 eq(#p3 >= 2, true, "multi-step with thresholds"); eq(p3[1].toSkill ~= nil, true, "step has toSkill")
 
+-- Seed phase 2
+local m = PP.MergeThresholds({ green = 61 }, { yellow = 50, green = 60, grey = 70 })
+eq(m.yellow, 50, "seed yellow"); eq(m.green, 61, "learned wins"); eq(m.grey, 70, "seed grey")
+eq(PP.MergeThresholds(nil, nil), nil, "no data")
+eq(PP.MergeReagents({}, { reagents = { { itemID = 9, qty = 2 } } })[1].itemID, 9, "seed fills empty scan")
+eq(PP.MergeReagents({ { itemID = 8, qty = 1 } }, { reagents = { { itemID = 9, qty = 2 } } })[1].itemID, 8, "scan wins")
+local seeded = { [2] = PP.MergeThresholds(nil, { yellow = 40, green = 60, grey = 70 }),
+  [1] = PP.MergeThresholds(nil, { yellow = 55, green = 65, grey = 75 }) }
+st = PP.Plan(S({ thresholds = seeded }))
+eq(#st >= 2, true, "seed-only plan is multi-step"); eq(st[1].toSkill, 60, "seed gives toSkill")
+assert(loadfile(dir .. "/Data.lua"))("ProfessionPlanner", PP)
+local d = PP.SEED.recipes[3755]
+eq(d.grey, 65, "Linen Bag grey"); eq(d.yellow, 30, "Linen Bag yellow"); eq(d.green, 48, "Linen Bag green"); eq(d.item, 4238, "Linen Bag item")
+eq(PP.SEED.recipes[3757].grey, 110, "Woolen Bag grey"); eq(PP.SEED.recipes[3757].green, 93, "Woolen Bag green (in game: green at 93)")
+eq(PP.SEED.recipes[7457].green, 120, "learned green 120 matches seed")
+eq(PP.SEED.price[2320], 10, "Coarse Thread base price")
+
+-- Prices phase 3
+local pr, src = PP.PickPrice(90, 120, 100, true); eq(pr, 90, "vendor cheaper"); eq(src, "vendor", "vendor src")
+pr, src = PP.PickPrice(90, 50); eq(pr, 50, "AH cheaper"); eq(src, "AH", "AH src")
+eq(PP.PickPrice(nil, 70), 70, "AH only")
+pr, src = PP.PickPrice(nil, nil, 100, true); eq(pr, 100, "seed fallback"); eq(src, "est.", "est src")
+eq(PP.PickPrice(nil, nil, 100, false), nil, "seed needs a known vendor")
+st = PP.Plan(S({ recipes = { [2] = R[2] }, prices = {} })); eq(st[1].estimated, true, "unpriced reagent is estimated")
+st = PP.Plan(S({ recipes = { [2] = R[2] } })); eq(st[1].estimated, nil, "priced not estimated")
+list = PP.ShoppingList({ { recipeID = 2, crafts = 1 } }, R, {}, { [11] = 100 }, { [11] = "AH" }); eq(list[1].source, "AH", "source passed")
+
+-- Unlearned phase 5
+eq(PP.Learnable({ learned = false }, { learnAt = 60 }, 50), false, "learnAt above skill")
+eq(PP.Learnable({ learned = false }, { learnAt = 40 }, 50), true, "learnAt reached")
+eq(PP.Learnable({ learned = false }, nil, 50), false, "trainer without signal")
+eq(PP.Learnable({ learned = false, trainerLearnable = true }, nil, 50), true, "trainer signal")
+eq(PP.Learnable({ learned = true }, { learnAt = 1 }, 50), false, "already learned")
+local NEW = { learned = false, learnable = true, learnAt = 40, learnCost = 500, learnItem = 99, name = "New", reagents = { { itemID = 13, qty = 1 } } }
+local thU = { [4] = { yellow = 70, green = 80, grey = 90 } }
+st = PP.Plan(S({ recipes = { [1] = R[1], [4] = NEW }, thresholds = thU, prices = { [10] = 1000, [13] = 10 } }))
+eq(st[1].recipeID, 4, "cheaper unlearned chosen"); eq(st[1].learn.item, 99, "learn step")
+eq(st[1].toSkill, 70, "orange until yellow 70"); eq(st[1].cost, 20 * 10 + 500, "pattern cost included once")
+eq(st[2] and st[2].recipeID == 4 and st[2].learn, nil, "no second learn for same recipe")
+local NOPE = { learned = false, learnable = false, learnAt = 60, name = "Later", reagents = { { itemID = 13, qty = 1 } } }
+st = PP.Plan(S({ recipes = { [1] = R[1], [4] = NOPE }, thresholds = thU, prices = { [10] = 1000, [13] = 10 } }))
+eq(st[1].recipeID, 1, "unlearnable excluded")
+local TWIN = { learned = false, learnable = true, learnAt = 40, learnCost = 0, name = "Twin", reagents = { { itemID = 13, qty = 1 } } }
+st = PP.Plan(S({ recipes = { [4] = TWIN, [5] = { learned = true, color = "orange", name = "Known", reagents = { { itemID = 13, qty = 1 } } } },
+  thresholds = { [4] = thU[4], [5] = thU[4] }, prices = { [13] = 10 } }))
+eq(st[1].recipeID, 5, "learned preferred on tie")
+
 print("all tests passed")

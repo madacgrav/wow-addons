@@ -16,7 +16,7 @@ function PP.Refresh() for _, fn in ipairs(PP.refreshers) do fn() end end
 PP.On("ADDON_LOADED", function(name)
   if name ~= ADDON then return end
   -- nil-safe: the Forever beta loader bug can leave these nil
-  ProfessionPlannerDB = PP.MergeDefaults(ProfessionPlannerDB, { thresholds = {}, prices = {} })
+  ProfessionPlannerDB = PP.MergeDefaults(ProfessionPlannerDB, { thresholds = {}, prices = {}, panelOpen = false })
   ProfessionPlannerCharDB = PP.MergeDefaults(ProfessionPlannerCharDB, { recipes = {}, bank = {}, skill = {} })
   PP.db, PP.char = ProfessionPlannerDB, ProfessionPlannerCharDB
 end)
@@ -39,7 +39,7 @@ function PP.ScanProfession()
     -- right after switching professions the recipe list can still hold the old profession's recipes
     local pi = C_TradeSkillUI.GetProfessionInfoByRecipeID and C_TradeSkillUI.GetProfessionInfoByRecipeID(id)
     local ours = not pi or pi.professionID == prof or pi.parentProfessionID == prof
-    if ri and ri.learned and ours then
+    if ri and ours then
       local r = old[id]
       if not r then -- reagents never change: fetch the schematic once
         r = { name = ri.name, icon = ri.icon, reagents = {} }
@@ -55,11 +55,18 @@ function PP.ScanProfession()
         end
       end
       cache[id] = r
-      prevColors[id] = r.color
-      r.learned = true
-      r.color = PP.COLOR[ri.relativeDifficulty] or "grey"
-      curColors[id] = r.color
-      r.maxTrivial = ri.maxTrivialLevel -- used in Phase 4
+      local wasLearned = r.learned
+      r.learned = ri.learned and true or false
+      if r.learned then
+        prevColors[id] = wasLearned and r.color or nil -- a just-learned recipe has no previous color
+        r.color = PP.COLOR[ri.relativeDifficulty] or "grey"
+        curColors[id] = r.color
+        r.maxTrivial = ri.maxTrivialLevel
+      else
+        -- Forever gives no trainer/learnability signal for unlearned recipes (probe: Rule B);
+        -- their relativeDifficulty is just a threshold color, so it is not stored
+        r.source = C_TradeSkillUI.GetRecipeSourceText and C_TradeSkillUI.GetRecipeSourceText(id) or nil
+      end
     end
   end
   -- right after switching, the list can still be the previous profession's (all filtered out):
@@ -74,7 +81,7 @@ function PP.ScanProfession()
   PP.retries = 0
   PP.char.recipes[prof] = cache
   PP.LearnThresholds(PP.db.thresholds, prevColors, curColors, info.skillLevel)
-  for id, r in pairs(cache) do PP.LearnGrey(PP.db.thresholds, id, r.maxTrivial) end
+  for id, r in pairs(cache) do if r.learned then PP.LearnGrey(PP.db.thresholds, id, r.maxTrivial) end end
 end
 
 local function ScanContainers(first, last, into)
@@ -113,6 +120,60 @@ local function ScanMerchant()
   end
 end
 
+-- Auctionator's last-seen buyout in copper; nil when absent, not scanned or the API errors
+function PP.AHPrice(id)
+  local api = Auctionator and Auctionator.API and Auctionator.API.v1
+  if not (api and api.GetAuctionPriceByItemID) then return nil end
+  local ok, p = pcall(api.GetAuctionPriceByItemID, ADDON, id)
+  if ok and type(p) == "number" and p > 0 then return p end
+end
+
+-- vendors (QuestieDB) friendly to the player's faction: a vendor in the current zone, else the first; nil without QuestieDB
+-- ponytail: same-zone match only; use QuestieDB spawn coords for true nearest if this isn't enough
+local vendorCache = {}
+local function FindVendors(q, id)
+  local my, out = (UnitFactionGroup("player") or ""):sub(1, 1), {} -- "A" / "H"
+  for _, npc in ipairs(q.Item.vendors(id) or {}) do
+    local f = q.Npc.friendlyToFaction(npc)
+    if not f or f:find(my, 1, true) then
+      local area = q.Npc.zoneID(npc)
+      out[#out + 1] = { name = q.Npc.name(npc), zone = area and C_Map.GetAreaInfo(area) or nil }
+    end
+  end
+  return out
+end
+function PP.VendorFor(id)
+  local q = LibQuestieDB
+  if not (q and q.RequireContract and q.RequireContract(3)) then return nil end
+  if vendorCache[id] == nil then
+    local ok, list = pcall(FindVendors, q, id)
+    vendorCache[id] = ok and list or {} -- static data: cache misses too
+  end
+  local list, here = vendorCache[id], GetRealZoneText()
+  for _, v in ipairs(list) do if v.zone == here then return v end end
+  return list[1]
+end
+
+-- select a recipe in the profession window with the craft count filled in; with `now`, craft immediately
+-- (must run inside the click handler: crafting needs the hardware event)
+function PP.SelectRecipe(id, crafts, now)
+  local n = math.min(crafts, C_TradeSkillUI.GetCraftableCount(id) or 0)
+  local page = ProfessionsFrame and ProfessionsFrame.CraftingPage
+  local info = C_TradeSkillUI.GetRecipeInfo(id)
+  if page and page.SelectRecipe and info then page:SelectRecipe(info) else C_TradeSkillUI.OpenRecipe(id) end
+  if now then
+    if n > 0 then C_TradeSkillUI.CraftRecipe(id, n) else PP.Print("Missing reagents for " .. tostring(info and info.name)) end
+    return
+  end
+  local box = page and page.CreateMultipleInputBox
+  if box and n > 0 then C_Timer.After(0, function() box:SetValue(n) end) end -- after Blizzard's own count reset
+end
+
+table.insert(PP.inits, function()
+  local api = Auctionator and Auctionator.API and Auctionator.API.v1
+  if api and api.RegisterForDBUpdate then pcall(api.RegisterForDBUpdate, ADDON, PP.Refresh) end
+end)
+
 table.insert(PP.inits, function()
   PP.On("BANKFRAME_OPENED", function() bankOpen = true; ScanBank(); PP.Refresh() end)
   PP.On("BANKFRAME_CLOSED", function() bankOpen = false end)
@@ -130,7 +191,14 @@ end)
 
 -- prints API facts for the open profession window; output decides Phase 2+ details
 function PP.Probe()
-  local function P(k, v) PP.Print(k .. ": " .. tostring(v)) end
+  -- also kept in SavedVariables (ProfessionPlannerDB.lastProbe) so the full output survives a /reload
+  local log = {}
+  PP.db.lastProbe = log
+  local function P(k, v, quiet)
+    local line = k .. ": " .. tostring(v)
+    log[#log + 1] = line
+    if not quiet then PP.Print(line) end
+  end
   local ready = C_TradeSkillUI.IsTradeSkillReady()
   P("tradeskill ready", ready)
   if ready then
@@ -157,8 +225,38 @@ function PP.Probe()
         end
       end
     end
+    local unl = 0
+    for _, id in ipairs(ids) do
+      local ri = C_TradeSkillUI.GetRecipeInfo(id)
+      if ri and not ri.learned then
+        unl = unl + 1
+        local quiet = unl > 5 -- chat shows 5; the saved log keeps every unlearned recipe
+        P("  unlearned " .. id .. " " .. tostring(ri.name), "diff=" .. tostring(ri.relativeDifficulty)
+          .. " maxTrivial=" .. tostring(ri.maxTrivialLevel) .. " sourceType=" .. tostring(ri.sourceType)
+          .. " disabled=" .. tostring(ri.disabled) .. " reason=" .. tostring(ri.disabledReason), quiet)
+        if C_TradeSkillUI.GetRecipeSourceText then
+          local ok, txt = pcall(C_TradeSkillUI.GetRecipeSourceText, id)
+          P("    source", ok and (tostring(txt):gsub("\n", " | ")) or ("ERROR " .. tostring(txt)), quiet)
+        end
+        if C_TradeSkillUI.GetRecipeRequirements then
+          local ok, reqs = pcall(C_TradeSkillUI.GetRecipeRequirements, id)
+          if not ok then P("    req", "ERROR " .. tostring(reqs), quiet) end
+          for _, rq in ipairs(ok and reqs or {}) do
+            P("    req", tostring(rq.name) .. " met=" .. tostring(rq.met) .. " type=" .. tostring(rq.type), quiet)
+          end
+        end
+      end
+    end
     P("recipes", #ids .. " total, " .. learned .. " learned")
   end
+  local api = Auctionator and Auctionator.API and Auctionator.API.v1
+  P("Auctionator API", tostring(api ~= nil))
+  if api then
+    local ok, p = pcall(api.GetAuctionPriceByItemID, ADDON, 2589) -- Linen Cloth
+    P("  AH price 2589", tostring(ok) .. " " .. tostring(p))
+  end
+  local q = LibQuestieDB
+  P("LibQuestieDB", tostring(q ~= nil) .. " contract3=" .. tostring(q and q.RequireContract and q.RequireContract(3)))
   local tab = Enum.BagIndex and Enum.BagIndex.CharacterBankTab_1
   P("CharacterBankTab_1", tostring(tab) .. " slots=" .. tostring(tab and C_Container.GetContainerNumSlots(tab)))
   P("ReagentBag", tostring(Enum.BagIndex and Enum.BagIndex.ReagentBag))
