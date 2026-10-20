@@ -157,8 +157,32 @@ function PP.Probe()
         end
       end
     end
+    local unl = 0
+    for _, id in ipairs(ids) do
+      local ri = C_TradeSkillUI.GetRecipeInfo(id)
+      if ri and not ri.learned and unl < 10 then
+        unl = unl + 1
+        P("  unlearned " .. id .. " " .. tostring(ri.name), "diff=" .. tostring(ri.relativeDifficulty)
+          .. " maxTrivial=" .. tostring(ri.maxTrivialLevel) .. " sourceType=" .. tostring(ri.sourceType)
+          .. " disabled=" .. tostring(ri.disabled) .. " reason=" .. tostring(ri.disabledReason))
+        if C_TradeSkillUI.GetRecipeSourceText then
+          P("    source", (tostring(C_TradeSkillUI.GetRecipeSourceText(id)):gsub("\n", " | ")))
+        end
+        for _, rq in ipairs(C_TradeSkillUI.GetRecipeRequirements and C_TradeSkillUI.GetRecipeRequirements(id) or {}) do
+          P("    req", tostring(rq.name) .. " met=" .. tostring(rq.met) .. " type=" .. tostring(rq.type))
+        end
+      end
+    end
     P("recipes", #ids .. " total, " .. learned .. " learned")
   end
+  local api = Auctionator and Auctionator.API and Auctionator.API.v1
+  P("Auctionator API", tostring(api ~= nil))
+  if api then
+    local ok, p = pcall(api.GetAuctionPriceByItemID, ADDON, 2589) -- Linen Cloth
+    P("  AH price 2589", tostring(ok) .. " " .. tostring(p))
+  end
+  local q = LibQuestieDB
+  P("LibQuestieDB", tostring(q ~= nil) .. " contract3=" .. tostring(q and q.RequireContract and q.RequireContract(3)))
   local tab = Enum.BagIndex and Enum.BagIndex.CharacterBankTab_1
   P("CharacterBankTab_1", tostring(tab) .. " slots=" .. tostring(tab and C_Container.GetContainerNumSlots(tab)))
   P("ReagentBag", tostring(Enum.BagIndex and Enum.BagIndex.ReagentBag))
