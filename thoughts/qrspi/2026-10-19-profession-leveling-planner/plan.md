@@ -558,10 +558,10 @@ eq(list[1].need, 5, "sums steps"); eq(list[1].buy, 4, "minus have"); eq(list[1].
 
 #### Manual
 - [x] Deployed to AddOns with robocopy
-- [ ] Tailoring shows "×N Recipe (until color changes)" plus a cost, and shopping rows with have/need matching your bags
+- [x] (verified on Enchanting) Tailoring shows "×N Recipe (until color changes)" plus a cost, and shopping rows with have/need matching your bags
 - [ ] After visiting the bank, the "have" counts include bank items
 - [ ] After visiting a trade-goods vendor, thread/dye prices appear and the step ranking accounts for them
-- [ ] Crafting updates the plan
+- [ ] (not yet confirmed) Crafting updates the plan
 
 ---
 

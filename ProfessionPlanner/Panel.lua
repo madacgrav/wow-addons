@@ -67,13 +67,13 @@ table.insert(PP.refreshers, function()
   local rows = {}
   for _, st in ipairs(steps) do
     local goal = st.toSkill and ("-> " .. st.toSkill) or (st.untilColorChange and "(until color changes)") or ("-> " .. target)
-    rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. GetCoinTextureString(math.floor(st.cost)), color = st.color }
+    rows[#rows + 1] = { icon = st.icon, text = "x" .. st.crafts .. " " .. st.name, sub = goal .. "   " .. PP.FormatMoney(st.cost), color = st.color }
   end
   if #steps == 0 then rows[#rows + 1] = { text = "No recipe gives skill-ups here", sub = "train new recipes" } end
   for _, it in ipairs(PP.ShoppingList(steps, recipes, have, PP.db.prices)) do
     local name, icon = ItemName(it.itemID, Rerender)
     local sub = it.have .. "/" .. it.need
-    if it.buy > 0 then sub = sub .. "   buy " .. it.buy .. (it.unitPrice and (" @ " .. GetCoinTextureString(math.floor(it.unitPrice))) or "") end
+    if it.buy > 0 then sub = sub .. "   buy " .. it.buy .. (it.unitPrice and (" @ " .. PP.FormatMoney(it.unitPrice)) or "") end
     rows[#rows + 1] = { icon = icon, text = name, sub = sub }
   end
   PP.RenderPanel({ header = PP.PROFESSIONS[PP.current] .. "  " .. s.skill .. " -> " .. target, rows = rows })

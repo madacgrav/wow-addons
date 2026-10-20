@@ -101,3 +101,14 @@ function PP.ShoppingList(steps, recipes, have, prices)
   table.sort(out, function(a, b) if a.buy ~= b.buy then return a.buy > b.buy end return a.itemID < b.itemID end)
   return out
 end
+
+-- "1g 2s 3c"; pure so it doesn't depend on GetCoinTextureString (moved under C_CurrencyInfo on Mainline)
+function PP.FormatMoney(copper)
+  copper = math.floor(copper or 0)
+  local g, s, c = math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100
+  local parts = {}
+  if g > 0 then parts[#parts + 1] = "|cffffd700" .. g .. "g|r" end
+  if s > 0 then parts[#parts + 1] = "|cffc7c7cf" .. s .. "s|r" end
+  if c > 0 or #parts == 0 then parts[#parts + 1] = "|cffeda55f" .. c .. "c|r" end
+  return table.concat(parts, " ")
+end

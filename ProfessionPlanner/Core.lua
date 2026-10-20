@@ -33,7 +33,6 @@ function PP.ScanProfession()
   PP.char.skill[prof] = { skill = info.skillLevel, max = info.maxSkillLevel }
   -- rebuild each scan (reusing cached schematics) so recipes from a previously open profession can't linger
   local old, cache = PP.char.recipes[prof] or {}, {}
-  PP.char.recipes[prof] = cache
   local prevColors, curColors = {}, {}
   for _, id in ipairs(C_TradeSkillUI.GetAllRecipeIDs()) do
     local ri = C_TradeSkillUI.GetRecipeInfo(id)
@@ -63,6 +62,17 @@ function PP.ScanProfession()
       r.maxTrivial = ri.maxTrivialLevel -- used in Phase 4
     end
   end
+  -- right after switching, the list can still be the previous profession's (all filtered out):
+  -- keep the old cache and try again once the window settles
+  if next(cache) == nil then
+    if (PP.retries or 0) < 5 then
+      PP.retries = (PP.retries or 0) + 1
+      C_Timer.After(0.5, function() PP.ScanProfession(); PP.Refresh() end)
+    end
+    return
+  end
+  PP.retries = 0
+  PP.char.recipes[prof] = cache
   PP.lastScan = { prof = prof, skill = info.skillLevel, prev = prevColors, cur = curColors } -- Phase 4 learns from this
 end
 
@@ -157,5 +167,26 @@ SLASH_PROFESSIONPLANNER1 = "/pp"
 SlashCmdList.PROFESSIONPLANNER = function(msg)
   local cmd = (msg or ""):lower():match("^(%S*)")
   if cmd == "probe" then PP.Probe()
+  elseif cmd == "debug" then
+    local prof = PP.current
+    PP.Print("current=" .. tostring(prof) .. " ready=" .. tostring(C_TradeSkillUI.IsTradeSkillReady()))
+    local byColor, n = {}, 0
+    for id, r in pairs(prof and PP.char.recipes[prof] or {}) do
+      n = n + 1
+      local k = tostring(r.color) .. (r.learned and "" or "(unlearned)")
+      byColor[k] = (byColor[k] or 0) + 1
+      if r.color == "orange" and (byColor.shown or 0) < 2 then
+        byColor.shown = (byColor.shown or 0) + 1
+        PP.Print("  " .. tostring(r.name) .. " id=" .. id .. " reagents=" .. #(r.reagents or {}))
+      end
+    end
+    local parts = {}
+    for k, v in pairs(byColor) do if k ~= "shown" then parts[#parts + 1] = k .. "=" .. v end end
+    PP.Print("recipes " .. n .. ": " .. table.concat(parts, " "))
+    if prof then
+      local id = next(PP.char.recipes[prof] or {})
+      local pi = id and C_TradeSkillUI.GetProfessionInfoByRecipeID and C_TradeSkillUI.GetProfessionInfoByRecipeID(id)
+      PP.Print("sample recipe prof: " .. tostring(pi and pi.professionID) .. " parent=" .. tostring(pi and pi.parentProfessionID))
+    end
   else PP.Print("/pp probe") end
 end

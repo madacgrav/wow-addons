@@ -37,5 +37,7 @@ eq(PP.ProjectColor(th[2], "yellow", 50, 65), "green", "project green"); eq(PP.Pr
 eq(PP.NextThreshold(th[2], "green", 60), 70, "green->grey at 70")
 local list = PP.ShoppingList({ { recipeID = 2, crafts = 3 }, { recipeID = 2, crafts = 2 } }, R, { [11] = 1 }, { [11] = 100 })
 eq(list[1].need, 5, "sums steps"); eq(list[1].buy, 4, "minus have"); eq(list[1].unitPrice, 100, "price")
+eq(PP.FormatMoney(0), "|cffeda55f0c|r", "zero"); eq(PP.FormatMoney(12345), "|cffffd7001g|r |cffc7c7cf23s|r |cffeda55f45c|r", "gsc")
+eq(PP.FormatMoney(166.7), "|cffc7c7cf1s|r |cffeda55f66c|r", "floors fractions")
 
 print("all tests passed")
