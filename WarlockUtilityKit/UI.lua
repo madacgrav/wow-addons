@@ -50,7 +50,7 @@ local SPIN, BLOOM = 6, 0.2 -- deg/sec (one turn per minute), seconds for a full 
 
 -- collapsed unless the mouse is over the strip rect (polled: enter/leave events miss child-to-outside moves)
 local function Target(s)
-  return (WUK.db.collapse and not InCombatLockdown() and not MouseIsOver(s)) and 0 or R
+  return (WUK.db.collapse and not InCombatLockdown() and not s:IsMouseOver()) and 0 or R
 end
 
 local function Step(s, elapsed)
