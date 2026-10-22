@@ -525,8 +525,8 @@ eq(WCK.RowHasCC({ icons = { { kind = "dot", age = 1, stale = 20 } } }), false, "
 - [x] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
 
 #### Manual
-- [ ] Fear one mob. Its row pulses purple until about 20s after the cast, then stops. DoT-only rows never pulse.
-- [ ] With the plate toggle off, no markers appear anywhere.
+- [x] Fear one mob. Its row pulses purple until about 20s after the cast, then stops. DoT-only rows never pulse.
+- [x] With the plate toggle off, no markers appear anywhere.
 - [ ] In the open world, with the toggle on, a feared mob (GUID-keyed) shows the Fear icon above its nameplate, and the icon hides when the CC goes stale.
 - [ ] In a dungeon with the toggle on, there are no Lua errors and no `ADDON_ACTION_BLOCKED`. Markers are suppressed unless Phase 1 showed instanced plates allow textures.
 
