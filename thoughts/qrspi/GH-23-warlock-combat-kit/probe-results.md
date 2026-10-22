@@ -185,6 +185,10 @@ trace: +10.12 SENT/SUCCEEDED 6217 tgt=Nak; REGEN_DISABLED; UNIT_ADDED nameplate1
 - `ctx ... combat true`; `castTime Shadow Bolt: 3000`; `aura 17941: nil`.
 - **Confirmed:** castTime is not forced to 0 in combat. **Shadow Bolt castTime 0 means Nightfall is up.** It is non-secret in combat.
 
+## Phase 2 check — death clearing (realm 6783)
+- **Nameplates off:** with enemy nameplates hidden, no `NAME_PLATE_*` events fire at all. Rows then clear mid-fight only through the dead-target check (corpse still targeted), or at combat end.
+- **Nameplates on:** the trace showed `UNIT_REMOVED nameplate1 …5B24A194FC dead=true` immediately followed by `CLR_PLATE …5B24A194FC rows=1`, mid-combat, with two same-named Razormane Warfrenzy mobs. Clearing by GUID on a nameplate death works.
+
 ## Pending runs
 - [x] Kill one mob while still fighting another (Run 5): does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [x] After a Nightfall proc (Runs 7-12): no overlay event; castTime signal works.
