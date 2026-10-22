@@ -21,6 +21,7 @@ local k, l = WCK.EnemyKey("G1", "Boar"); eq(k, "guid:G1", "guid wins"); eq(l, "B
 eq((WCK.EnemyKey(nil, "Boar")), "name:Boar", "name next"); eq((WCK.EnemyKey(nil, nil)), "target", "all secret")
 eq(WCK.PickUnit("Boar", { target = "Wolf", mouseover = "Boar" }), "mouseover", "mouseover match")
 eq(WCK.PickUnit("Wolf", { target = "Wolf" }), "target", "target match")
+eq(WCK.PickUnit("Boar", { target = "Boar", mouseover = "Boar" }), "target", "same name prefers target")
 eq(WCK.PickUnit(nil, { target = "Wolf" }), "target", "secret name")
 local map = WCK.NewCastMap()
 WCK.CastSent(map, "c1", "Corruption", "guid:G1", "Boar", "G1", 100)

@@ -20,7 +20,8 @@ function WCK.EnemyKey(guid, name)
 end
 
 -- which unit token the SENT target name refers to (names = {token = non-secret name or nil})
-local TOKENS = { "mouseover", "target", "focus" }
+-- target first: in a pack of same-named mobs the hovered one is usually not the one being cast on
+local TOKENS = { "target", "mouseover", "focus" }
 function WCK.PickUnit(sentName, names)
   if sentName then
     for _, u in ipairs(TOKENS) do if names[u] == sentName then return u end end

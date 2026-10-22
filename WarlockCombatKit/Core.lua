@@ -125,6 +125,12 @@ function WCK.Identify(unit)
   return key, label, guid, okM and (WCK.Secret(m) or m ~= nil) or false
 end
 
+-- true only for a readable "dead"; a secret or erroring read counts as alive (comparing a secret errors)
+function WCK.IsDead(unit)
+  local ok, d = pcall(UnitIsDead, unit)
+  return ok and not WCK.Secret(d) and d == true
+end
+
 table.insert(WCK.inits, function()
   WCK.map = WCK.NewCastMap()
   WCK.On("UNIT_SPELLCAST_SENT", function(unit, target, castGUID, spellID)
@@ -153,12 +159,15 @@ table.insert(WCK.inits, function()
   -- probe: removal on a kill reads dead=true; a leash/evade reads dead=false and keeps the row
   WCK.On("NAME_PLATE_UNIT_REMOVED", function(unit)
     local guid = NonSecret(UnitGUID(unit))
-    if guid and UnitIsDead(unit) == true then WCK.ClearGUID(WCK.map, guid); WCK.Refresh() end
+    if guid and WCK.IsDead(unit) then WCK.ClearGUID(WCK.map, guid); WCK.Refresh() end
   end)
   WCK.On("PLAYER_REGEN_ENABLED", function() WCK.ClearAll(WCK.map) end) -- Refresh is debounced 0.1s, so this clear lands before the redraw
   C_Timer.NewTicker(0.5, function()
     if next(WCK.map.rows) == nil then return end
-    if UnitExists("target") and UnitIsDead("target") == true then WCK.ClearRow(WCK.map, (WCK.Identify("target"))) end
+    if WCK.IsDead("target") then
+      local _, _, guid = WCK.Identify("target")
+      if guid then WCK.ClearGUID(WCK.map, guid) end
+    end
     WCK.Refresh()
   end)
 end)
@@ -246,6 +255,15 @@ function WCK.Probe()
   for ev, ok in pairs(WCK.overlayReg) do reg[#reg + 1] = ev:sub(26) .. "=" .. tostring(ok) end
   P("overlay events", table.concat(reg, " "))
   P("alert hook", WCK.alertHook or "none")
+  if WCK.map then
+    for key, row in pairs(WCK.map.rows) do
+      local spells = {}
+      for spell, t in pairs(row.casts) do spells[#spells + 1] = spell .. string.format("@%.0fs", GetTime() - t) end
+      P("row " .. key, tostring(row.label) .. " guid " .. tostring(row.guid) .. " " .. table.concat(spells, ", "))
+    end
+    local tk, _, tg = WCK.Identify("target")
+    P("target key", tk .. " dead " .. tostring(WCK.IsDead("target")) .. " guid " .. tostring(tg))
+  end
 
   local t0 = WCK.trace[1] and WCK.trace[1][1] or 0
   for _, e in ipairs(WCK.trace) do P("trace", string.format("+%.2f %s %s", e[1] - t0, e[2], tostring(e[3] or ""))) end
