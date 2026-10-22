@@ -71,10 +71,38 @@ trace: +24.00 UNIT_REMOVED nameplate1 guid=Creature-0-4615-1-6-3244-0544CD2757
 - **Readings repeat Run 1:** the Fear SENT/SUCCEEDED pair matches by GUID, and unit identity is non-secret.
 - **Plate removal on death:** `NAME_PLATE_UNIT_REMOVED` fired on the kill, at the same moment as `REGEN_ENABLED`, and its payload GUID is non-secret. The trace did not record `UnitIsDead` at removal time. The probe now adds a dead flag to that trace line; it needs one more kill with a second mob still alive.
 
+## Run 3 — open world, Razormane pack, succubus summoned, Seduction
+The client was still on the pre-`dead=` build, so the UNIT_REMOVED lines have no dead flag.
+```
+unit target: guid Creature-0-4615-1-6-3458-32A8484EEE name Razormane Seer mark nil dead false hostile true isTarget true
+spell Shadow Bolt: usable true/false range true cd active false gcd nil enabled true start SECRET
+trace: +0.00 UNIT_REMOVED nameplate2 guid=Creature-0-4615-1-6-3457-8484860EA7
+trace: +1.50 SENT 6217 tgt=Razormane Seer guid=Cast-3-...-6217-51E6147AF9      (Curse of Agony, instant)
+trace: +1.50 SUCCEEDED player 6217 guid=Cast-3-...-6217-51E6147AF9
+trace: +4.19 SENT 8288 tgt=Razormane Seer guid=Cast-3-...-8288-3D6B567093      (Drain Soul, channel)
+trace: +4.19 SUCCEEDED player 8288 guid=Cast-3-...-8288-3D6B567093
+trace: +12.26 SENT/SUCCEEDED 8288 (second channel)
+trace: +15.39 UNIT_ADDED nameplate2 guid=Creature-0-4615-1-6-3457-8484860EA7
+trace: +18.68 UNIT_REMOVED nameplate3 guid=Creature-0-4615-1-6-3844-4A713C3F99   (in combat)
+trace: +25.51 UNIT_REMOVED nameplate2 guid=Creature-0-4615-1-6-3457-8484860EA7
+trace: +26.28 REGEN_ENABLED
+trace: +26.54 UNIT_REMOVED nameplate1 guid=Creature-0-4615-1-6-3458-32A8484EEE
+trace: +38.56 SENT 712 tgt=nil ... +48.55 SUCCEEDED player 712                  (Summon Succubus)
+trace: +49.85 SENT 1248383 tgt=nil; SUCCEEDED player 434 (Cast-15-…) and 1248383   (food or drink)
+trace: +120.61 SUCCEEDED pet 6358 guid=Cast-3-4615-1-6-6358-FF17C2FDE9           (Seduction)
+trace: +120.71 REGEN_DISABLED
+trace: +120.71 UNIT_ADDED nameplate1 guid=Creature-0-4615-1-6-3458-32A8484EEE
+```
+**Observed:**
+- **Instant casts and channels:** SENT and SUCCEEDED arrive in the same frame. A channel (Drain Soul) reports SUCCEEDED when the channel starts.
+- **Pet casts:** pet `UNIT_SPELLCAST_SUCCEEDED` fires for Seduction (6358), and its spellID and castGUID are non-secret. It arrived just before `REGEN_DISABLED`.
+- **Plate removal:** `NAME_PLATE_UNIT_REMOVED` also fires mid-combat (nameplate3, nameplate2), for deaths or for plates leaving view. Telling those apart still needs the dead flag.
+- **`IsSpellInRange`:** `true` when in range.
+
 ## Pending runs
 - [ ] Kill one mob while still fighting another: does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [ ] After a Nightfall proc: which overlay event fires, and its spellID.
-- [ ] After a succubus Seduction: pet `SUCCEEDED`.
+- [x] After a succubus Seduction: pet `SUCCEEDED` (Run 3).
 - [ ] A raid-marked mob, in combat: is `GetRaidTargetIndex` non-secret when it is set?
 - [ ] Dungeon, in combat: unit identity, SENT target, plate texture.
 - [ ] Battleground, in combat: same as the dungeon run.
@@ -89,4 +117,4 @@ trace: +24.00 UNIT_REMOVED nameplate1 guid=Creature-0-4615-1-6-3244-0544CD2757
 7. CLEU: **unavailable** (registering it triggers the blocked-action prompt).
 8. Nameplate texture: **ok (world)**; dungeon and BG pending.
 9. `NAME_PLATE_UNIT_REMOVED` on death: **fires, and the GUID is non-secret (world)**. Whether `UnitIsDead` is still true at removal is pending.
-10. Pet `SUCCEEDED` for Seduction: pending.
+10. Pet `SUCCEEDED` for Seduction: **yes, the spellID (6358) is non-secret (world)**.
