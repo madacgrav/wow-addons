@@ -613,7 +613,7 @@ eq(#WCK.NewProcs({}, { nightfall = true }), 1, "rising edge"); eq(#WCK.NewProcs(
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
+- [x] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
 
 #### Manual
 - [ ] Put DoTs up until Nightfall procs, which the buff icon shows. The WCK Nightfall icon lights up, pulses and shines, and the sound plays once. Cast the instant Shadow Bolt: the icon greys out.

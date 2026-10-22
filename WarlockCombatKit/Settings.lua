@@ -29,8 +29,12 @@ local function Build()
       function(on) WCK.db.locked = on end),
     WCK.Check(win, "Mark CC'd mobs on nameplates (open world)", -92, function() return WCK.db.plateMarker end,
       function(on) WCK.db.plateMarker = on; WCK.Refresh() end),
+    WCK.Check(win, "Proc alerts (Nightfall)", -120, function() return WCK.db.procAlerts end,
+      function(on) WCK.db.procAlerts = on; WCK.Refresh() end),
+    WCK.Check(win, "Proc sound", -148, function() return WCK.db.procSound end,
+      function(on) WCK.db.procSound = on end),
   }
-  local y = -128
+  local y = -184
   for _, section in ipairs(WCK.settingsSections) do y = section(win, y) end
 
   local reset = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")

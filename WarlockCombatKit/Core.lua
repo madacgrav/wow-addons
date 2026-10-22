@@ -19,7 +19,8 @@ events:SetScript("OnEvent", function(_, event, ...)
   for _, fn in ipairs(handlers[event]) do fn(...) end
 end)
 
-local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 240, plateMarker = false }
+local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 240, plateMarker = false,
+  procAlerts = true, procSound = true }
 local CHAR_DEFAULTS = {}
 
 WCK.On("ADDON_LOADED", function(name)
@@ -124,6 +125,27 @@ function WCK.Identify(unit)
   local key, label = WCK.EnemyKey(guid, name)
   return key, label, guid, okM and (WCK.Secret(m) or m ~= nil) or false
 end
+
+-- procs: Nightfall on Forever has no overlay event or button glow (probe runs 7-12), but it makes
+-- Shadow Bolt instant and castTime is readable in combat, so castTime 0 = proc up.
+-- ponytail: an instant-cast talent/rank for the proc spell would read as a permanent proc
+WCK.procs = {}
+table.insert(WCK.refreshers, function() -- file scope: runs before the panel's refresher
+  local times = {}
+  for _, p in ipairs(WCK.DATA.procs) do
+    local ok, info = pcall(C_Spell.GetSpellInfo, p.spell)
+    local ct = ok and info and info.castTime
+    if ct ~= nil and not WCK.Secret(ct) and IsPlayerSpell(info.spellID) then times[p.spell] = ct end
+  end
+  local up = WCK.ProcsUp(WCK.DATA.procs, times)
+  if WCK.db.procAlerts and WCK.db.procSound and #WCK.NewProcs(WCK.procs, up) > 0 then
+    PlaySound(SOUNDKIT.RAID_WARNING or 8959, "Master")
+  end
+  WCK.procs = up
+end)
+WCK.On("UNIT_AURA", function(u) if not WCK.Secret(u) and u == "player" then WCK.Refresh() end end) -- event only; the aura payload is never read
+WCK.On("SPELL_UPDATE_USABLE", WCK.Refresh)
+WCK.On("PLAYER_TALENT_UPDATE", WCK.Refresh)
 
 -- true only for a readable "dead"; a secret or erroring read counts as alive (comparing a secret errors)
 function WCK.IsDead(unit)

@@ -87,6 +87,22 @@ table.insert(WCK.inits, function()
   f.disc = Disc(f, "BACKGROUND", 2); f.disc:SetSize(CORE + 4, CORE + 4); f.disc:SetColorTexture(0.04, 0, 0.07, 0.9)
   f.core = f:CreateTexture(nil, "ARTWORK"); f.core:SetSize(CORE, CORE)
   f.core:SetPoint("TOPLEFT", 8, -8); f.core:SetTexture("Interface\\Icons\\Spell_Shadow_DeathCoil"); f.core:SetDesaturated(true)
+  f.procs = {}
+  for i, p in ipairs(WCK.DATA.procs) do
+    local b = CreateFrame("Frame", nil, f); b:SetSize(28, 28); b:SetPoint("TOPLEFT", CORE + 20 + (i - 1) * 32, -16)
+    b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints(); b.icon:SetTexture(p.icon)
+    b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    WCK.AddGlow(b)
+    -- shine pop when the proc lands (same feel as WUK's stone pop)
+    b.shine = b.icon:CreateAnimationGroup()
+    local up = b.shine:CreateAnimation("Scale"); up:SetScale(1.3, 1.3); up:SetDuration(0.15); up:SetOrder(1)
+    local down = b.shine:CreateAnimation("Scale"); down:SetScale(1 / 1.3, 1 / 1.3); down:SetDuration(0.2); down:SetOrder(2)
+    b:SetScript("OnEnter", function(self)
+      GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:AddLine("Nightfall: instant " .. p.spell); GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", GameTooltip_Hide)
+    b.key = p.key; f.procs[i] = b
+  end
   f.rows = {}
   for i = 1, MAX_ROWS do
     local r = CreateFrame("Frame", nil, f); r:SetSize(WIDTH - 16, ROW_H)
@@ -110,6 +126,13 @@ end)
 function WCK.RenderPanel()
   local f = WCK.panel
   f:SetShown(WCK.db.shown)
+  for _, b in ipairs(f.procs) do
+    local on = WCK.db.procAlerts and WCK.procs[b.key] or false
+    b.icon:SetAlpha(on and 1 or 0.25); b.icon:SetDesaturated(not on)
+    WCK.SetAlert(b, on)
+    if on and not b.wasOn then b.shine:Play() end
+    b.wasOn = on
+  end
   local view = WCK.RowsView(WCK.map, GetTime(), WCK.DATA.tracked)
   for i, r in ipairs(f.rows) do
     local v = view[i]

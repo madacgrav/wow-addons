@@ -46,4 +46,11 @@ eq(WCK.RowHasCC({ icons = { { kind = "cc", age = 5, stale = 20 } } }), true, "fr
 eq(WCK.RowHasCC({ icons = { { kind = "cc", age = 25, stale = 20 } } }), false, "stale fear")
 eq(WCK.RowHasCC({ icons = { { kind = "dot", age = 1, stale = 20 } } }), false, "dot only")
 
+-- Phase 4
+local PR = { { key = "nightfall", spell = "Shadow Bolt" } }
+eq(WCK.ProcsUp(PR, { ["Shadow Bolt"] = 0 }).nightfall, true, "instant = proc")
+eq(WCK.ProcsUp(PR, { ["Shadow Bolt"] = 3000 }).nightfall, nil, "normal cast")
+eq(WCK.ProcsUp(PR, {}).nightfall, nil, "unknown spell")
+eq(#WCK.NewProcs({}, { nightfall = true }), 1, "rising edge"); eq(#WCK.NewProcs({ nightfall = true }, { nightfall = true }), 0, "no repeat")
+
 print("all tests passed")

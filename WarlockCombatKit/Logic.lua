@@ -87,3 +87,17 @@ function WCK.RowHasCC(viewRow)
   for _, i in ipairs(viewRow.icons) do if i.kind == "cc" and i.age < i.stale then return true end end
   return false
 end
+
+-- castTimes = {[spell] = ms or nil}; a proc is up when its spell is known and instant
+function WCK.ProcsUp(procs, castTimes)
+  local up = {}
+  for _, p in ipairs(procs) do if castTimes[p.spell] == 0 then up[p.key] = true end end
+  return up
+end
+
+-- keys that turned on since last time (sound/shine fire once per proc)
+function WCK.NewProcs(prev, now)
+  local out = {}
+  for k in pairs(now) do if not prev[k] then out[#out + 1] = k end end
+  return out
+end

@@ -15,3 +15,8 @@ WCK.DATA.tracked = {
   ["Seduction"] = { kind = "cc", stale = 15 }, ["Death Coil"] = { kind = "cc", stale = 3 },
   ["Howl of Terror"] = { kind = "cc", stale = 8 },
 }
+
+-- spell = the spell a proc makes instant; the proc is up while its castTime reads 0 (probe runs 11-12)
+WCK.DATA.procs = {
+  { key = "nightfall", spell = "Shadow Bolt", icon = "Interface\\Icons\\Spell_Shadow_Twilight" },
+}
