@@ -15,9 +15,18 @@ Client `1.60.1 70450`, `WOW_PROJECT_ID` 18. Character at Fishing 1/75, out of co
 ### Bug found
 - The `/tb` usage line printed `/tb showide|lockeset|probe|flash`. A single `|` followed by `h` or `r` is a chat escape code, so `|h` and `|r` were eaten. Fixed by printing `||`. `flash` was also dropped from the usage line until Phase 3b adds it.
 
+## Run 2 — 2026-10-22, site 3 (cast left alone, no click; same place)
+- **Channel info:** `lastChannel: 7620 start 716446213 end 716476213 secret false`.
+  - `UnitChannelInfo` start and end times are plain milliseconds, not secret.
+  - The full channel is 30 000 ms, so a cast lasts **30 s**. `TB.DATA.castSeconds = 30` stays; the cast bar can use the real times.
+- **Trace:** `+0.00 CHANNEL_START 7620`, then `+20.81 CHANNEL_STOP`, with no `LOOT_READY`.
+  - The channel ended early at ~20.8 s, not at 30 s. This fits the Classic rule: an unclicked bite ends the cast ("fish got away") after its short window.
+  - So a no-loot `CHANNEL_STOP` before the end time likely means a missed bite, while a stop at the end time means nothing bit. The addon still cannot see the bite itself.
+  - This is one sample, not confirmed.
+- **lastLoot:** none. This is consistent with no click.
+
 ## Still needed
-- Site 2: right after catching a fish (loot window closed).
-- Site 3: after a cast that ran out without a click.
+- Site 2: right after catching a fish (loot window closed). This gives the `CHANNEL_STOP` vs `LOOT_READY` order.
 - Site 4: at a Campsite Fishing Rack / Fishing Hut.
 - Site 5: with water-walking active.
 - Item IDs: the four Artisan quest fish, Surfer Shoes, Draught of Waterwalking, any Uncommon/Rare/Unique fish, and the Chef's Knife product.
