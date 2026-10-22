@@ -101,3 +101,33 @@ function WCK.NewProcs(prev, now)
   for k in pairs(now) do if not prev[k] then out[#out + 1] = k end end
   return out
 end
+
+-- state = { known = {[spell]=true}, ready = {[spell]=bool}, usable = {[spell]=bool}, lastOnTarget = {[spell]=age},
+--           proc = bool, marked = bool }
+local CONDS = {
+  ready = function() return true end,
+  notRecent = function(r, s) local a = s.lastOnTarget[r.spell]; return a == nil or a >= (r.n or 0) end,
+  proc = function(_, s) return s.proc end,
+  marked = function(_, s) return s.marked end,
+  usable = function(r, s) return s.usable[r.spell] ~= false end,
+}
+function WCK.EvalRules(rules, state)
+  for _, r in ipairs(rules) do
+    local c = CONDS[r.cond]
+    if c and state.known[r.spell] and state.ready[r.spell] ~= false and c(r, state) then return r.spell end
+  end
+end
+
+function WCK.MoveRule(rules, i, dir)
+  local j = i + dir
+  if not rules[i] or j < 1 or j > #rules then return false end
+  rules[i], rules[j] = rules[j], rules[i]
+  return true
+end
+
+-- deep copy so editing a character's list never mutates DATA.defaultRules
+function WCK.CopyRules(rules)
+  local out = {}
+  for i, r in ipairs(rules) do out[i] = { spell = r.spell, cond = r.cond, n = r.n } end
+  return out
+end

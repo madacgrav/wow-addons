@@ -53,4 +53,21 @@ eq(WCK.ProcsUp(PR, { ["Shadow Bolt"] = 3000 }).nightfall, nil, "normal cast")
 eq(WCK.ProcsUp(PR, {}).nightfall, nil, "unknown spell")
 eq(#WCK.NewProcs({}, { nightfall = true }), 1, "rising edge"); eq(#WCK.NewProcs({ nightfall = true }, { nightfall = true }), 0, "no repeat")
 
+-- Phase 5
+local st = { known = { ["Corruption"] = true, ["Shadow Bolt"] = true }, ready = {}, usable = {}, lastOnTarget = {}, proc = false, marked = false }
+local rules = { { spell = "Corruption", cond = "notRecent", n = 15 }, { spell = "Shadow Bolt", cond = "proc" }, { spell = "Shadow Bolt", cond = "ready" } }
+eq(WCK.EvalRules(rules, st), "Corruption", "first rule")
+st.lastOnTarget.Corruption = 3; eq(WCK.EvalRules(rules, st), "Shadow Bolt", "recent skips")
+st.lastOnTarget.Corruption = 15; eq(WCK.EvalRules(rules, st), "Corruption", "boundary passes")
+st.lastOnTarget.Corruption = 1; st.ready["Shadow Bolt"] = false; eq(WCK.EvalRules(rules, st), nil, "cooldown blocks")
+st.ready["Shadow Bolt"] = nil; st.known["Shadow Bolt"] = nil; eq(WCK.EvalRules(rules, st), nil, "unknown skipped")
+eq(WCK.EvalRules({ { spell = "Corruption", cond = "marked" } }, { known = { Corruption = true }, ready = {}, usable = {}, lastOnTarget = {}, marked = true }), "Corruption", "marked")
+eq(WCK.EvalRules({ { spell = "Corruption", cond = "usable" } }, { known = { Corruption = true }, ready = {}, usable = { Corruption = false }, lastOnTarget = {} }), nil, "unusable")
+eq(WCK.EvalRules({}, st), nil, "empty list")
+eq(WCK.EvalRules({ { spell = "Corruption", cond = "bogus" } }, st), nil, "unknown cond")
+local rl = { { spell = "A" }, { spell = "B" } }
+eq(WCK.MoveRule(rl, 2, -1), true, "move up"); eq(rl[1].spell, "B", "swapped")
+eq(WCK.MoveRule(rl, 1, -1), false, "top edge"); eq(WCK.MoveRule(rl, 2, 1), false, "bottom edge")
+local c = WCK.CopyRules(rl); c[1].spell = "Z"; eq(rl[1].spell, "B", "copy is deep")
+
 print("all tests passed")

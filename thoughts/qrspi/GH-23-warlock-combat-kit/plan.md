@@ -756,7 +756,7 @@ local c = WCK.CopyRules(rl); c[1].spell = "Z"; eq(rl[1].spell, "B", "copy is dee
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
+- [x] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
 
 #### Manual
 - [ ] On a fresh character, the core shows Corruption on a new target, then Curse of Agony (or Bane of Agony) once Corruption is cast, then Shadow Bolt.

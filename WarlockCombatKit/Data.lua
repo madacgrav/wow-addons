@@ -16,6 +16,20 @@ WCK.DATA.tracked = {
   ["Howl of Terror"] = { kind = "cc", stale = 8 },
 }
 
+-- spells offered in the rule editor (filtered to known spells when the menu opens)
+WCK.DATA.rotation = { "Shadow Bolt", "Incinerate", "Searing Pain", "Soul Fire", "Shadowburn", "Conflagrate", "Drain Life",
+  "Drain Soul", "Life Tap", "Haunt", "Chaos Bolt", "Corruption", "Immolate", "Siphon Life", "Unstable Affliction",
+  "Curse of Agony", "Bane of Agony", "Curse of Doom", "Bane of Doom", "Curse of the Elements", "Curse of Recklessness",
+  "Fear", "Death Coil", "Howl of Terror" }
+WCK.DATA.defaultRules = {
+  { spell = "Corruption", cond = "notRecent", n = 15 }, { spell = "Curse of Agony", cond = "notRecent", n = 22 },
+  { spell = "Bane of Agony", cond = "notRecent", n = 22 }, { spell = "Immolate", cond = "notRecent", n = 13 },
+  { spell = "Shadow Bolt", cond = "proc" }, { spell = "Shadow Bolt", cond = "ready" },
+}
+WCK.DATA.conds = { "ready", "notRecent", "proc", "marked", "usable" } -- "usable" only if WCK.USABLE_OK
+WCK.DATA.condLabels = { ready = "off cooldown", notRecent = "not cast on target in N s", proc = "proc up",
+  marked = "target has a mark", usable = "usable (mana/range)" }
+
 -- spell = the spell a proc makes instant; the proc is up while its castTime reads 0 (probe runs 11-12)
 WCK.DATA.procs = {
   { key = "nightfall", spell = "Shadow Bolt", icon = "Interface\\Icons\\Spell_Shadow_Twilight" },

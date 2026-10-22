@@ -147,6 +147,45 @@ WCK.On("UNIT_AURA", function(u) if not WCK.Secret(u) and u == "player" then WCK.
 WCK.On("SPELL_UPDATE_USABLE", WCK.Refresh)
 WCK.On("PLAYER_TALENT_UPDATE", WCK.Refresh)
 
+-- rotation helper: display only, the player presses their own key
+WCK.USABLE_OK = true -- probe run 1: IsSpellUsable is non-secret in combat (open world); pcall/Secret still guard it
+
+function WCK.Known(name)
+  local ok, info = pcall(C_Spell.GetSpellInfo, name)
+  return ok and info and IsPlayerSpell(info.spellID) or false
+end
+
+function WCK.BuildRuleState(now)
+  local s = { known = {}, ready = {}, usable = {}, lastOnTarget = {}, proc = next(WCK.procs) ~= nil, marked = false }
+  for _, name in ipairs(WCK.DATA.rotation) do
+    if WCK.Known(name) then
+      s.known[name] = true
+      local okC, cd = pcall(C_Spell.GetSpellCooldown, name)
+      if okC and cd and not WCK.Secret(cd.isActive) and not WCK.Secret(cd.isOnGCD) then
+        s.ready[name] = not cd.isActive or cd.isOnGCD == true -- GCD alone does not block
+      end
+      if WCK.USABLE_OK then
+        local okU, u = pcall(C_Spell.IsSpellUsable, name)
+        if okU and not WCK.Secret(u) then s.usable[name] = u end
+      end
+    end
+  end
+  if UnitExists("target") then
+    local key, _, _, marked = WCK.Identify("target")
+    s.marked = marked
+    local row = WCK.map.rows[key]
+    if row then for spell, t in pairs(row.casts) do s.lastOnTarget[spell] = now - t end end
+  end
+  return s
+end
+
+table.insert(WCK.refreshers, function() -- file scope: runs after the proc refresher, before the panel's
+  WCK.next = WCK.EvalRules(WCK.char.rules, WCK.BuildRuleState(GetTime()))
+end)
+WCK.On("SPELL_UPDATE_COOLDOWN", WCK.Refresh)
+WCK.On("PLAYER_TARGET_CHANGED", WCK.Refresh)
+WCK.On("RAID_TARGET_UPDATE", WCK.Refresh)
+
 -- true only for a readable "dead"; a secret or erroring read counts as alive (comparing a secret errors)
 function WCK.IsDead(unit)
   local ok, d = pcall(UnitIsDead, unit)
@@ -154,6 +193,8 @@ function WCK.IsDead(unit)
 end
 
 table.insert(WCK.inits, function()
+  -- not via MergeDefaults: a merged list would mix the saved rules with the defaults
+  if WCK.char.rules == nil then WCK.char.rules = WCK.CopyRules(WCK.DATA.defaultRules) end
   WCK.map = WCK.NewCastMap()
   WCK.On("UNIT_SPELLCAST_SENT", function(unit, target, castGUID, spellID)
     if unit ~= "player" then return end

@@ -87,6 +87,15 @@ table.insert(WCK.inits, function()
   f.disc = Disc(f, "BACKGROUND", 2); f.disc:SetSize(CORE + 4, CORE + 4); f.disc:SetColorTexture(0.04, 0, 0.07, 0.9)
   f.core = f:CreateTexture(nil, "ARTWORK"); f.core:SetSize(CORE, CORE)
   f.core:SetPoint("TOPLEFT", 8, -8); f.core:SetTexture("Interface\\Icons\\Spell_Shadow_DeathCoil"); f.core:SetDesaturated(true)
+  -- textures take no mouse, so a plain frame over the core carries the tooltip
+  local hit = CreateFrame("Frame", nil, f); hit:SetAllPoints(f.core); hit:EnableMouse(true)
+  hit:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:AddLine(WCK.next and ("Next: " .. WCK.next) or "No rule matches")
+    GameTooltip:AddLine("Rules: /wck config", 1, 1, 1)
+    GameTooltip:Show()
+  end)
+  hit:SetScript("OnLeave", GameTooltip_Hide)
   f.procs = {}
   for i, p in ipairs(WCK.DATA.procs) do
     local b = CreateFrame("Frame", nil, f); b:SetSize(28, 28); b:SetPoint("TOPLEFT", CORE + 20 + (i - 1) * 32, -16)
@@ -126,6 +135,8 @@ end)
 function WCK.RenderPanel()
   local f = WCK.panel
   f:SetShown(WCK.db.shown)
+  f.core:SetTexture(WCK.next and C_Spell.GetSpellTexture(WCK.next) or "Interface\\Icons\\Spell_Shadow_DeathCoil")
+  f.core:SetDesaturated(not WCK.next)
   for _, b in ipairs(f.procs) do
     local on = WCK.db.procAlerts and WCK.procs[b.key] or false
     b.icon:SetAlpha(on and 1 or 0.25); b.icon:SetDesaturated(not on)
