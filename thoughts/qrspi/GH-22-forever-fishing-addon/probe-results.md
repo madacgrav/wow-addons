@@ -25,6 +25,15 @@ Client `1.60.1 70450`, `WOW_PROJECT_ID` 18. Character at Fishing 1/75, out of co
   - This is one sample, not confirmed.
 - **lastLoot:** none. This is consistent with no click.
 
+## Run 3 — 2026-10-22, second cast, no loot (same place)
+- **Channel info:** `lastChannel: 7620 start 716521695 end 716551695 secret false`. The channel is again 30 000 ms.
+- **Trace:** `+75.48 CHANNEL_START 7620` and `+107.11 CHANNEL_STOP`, so the stop came 31.63 s after the start. That is about 1.6 s past the channel's end time. No `LOOT_READY`.
+- **Reading:**
+  - Cast 1 stopped well before the end time (20.8 s). Cast 2 stopped at or just after it.
+  - If "early stop = missed bite" holds, cast 2 had no bite.
+  - Either way, `CHANNEL_STOP` can arrive more than 1 s after the nominal end time. Any end-vs-early comparison needs about 2 s of slack.
+- **Open:** what the player did on each cast (no click vs a click on the bobber) is not in the trace. Ask before relying on the early-stop rule.
+
 ## Still needed
 - Site 2: right after catching a fish (loot window closed). This gives the `CHANNEL_STOP` vs `LOOT_READY` order.
 - Site 4: at a Campsite Fishing Rack / Fishing Hut.
