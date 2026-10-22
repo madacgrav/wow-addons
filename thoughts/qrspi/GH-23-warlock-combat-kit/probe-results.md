@@ -160,6 +160,12 @@ trace: +10.12 SENT/SUCCEEDED 6217 tgt=Nak; REGEN_DISABLED; UNIT_ADDED nameplate1
 - **Leash/evade:** combat dropped and both plates were removed with `dead=false` (the mob reset), then the same GUID came back on re-pull. Rows must therefore not be cleared on removal unless `dead=true`, which matches the Phase 2 plan.
 - **Proc events:** no proc signal at all in this trace (no ALERT/OVERLAY lines), so no Nightfall happened in the window. Still pending.
 
+## Run 10 — open world, Razormane Stalker; user report on Nightfall
+- **User report:** on Forever, Nightfall shows **only a buff icon**. Shadow Bolt does not light up and there is no screen overlay. No `OVERLAY_*` or `ALERT_*` lines appeared, which is consistent with that. **The overlay-event and button-glow paths do not exist for Nightfall here.**
+- **Next build adds two non-overlay signals to the probe:**
+  - `C_Spell.GetSpellInfo("Shadow Bolt").castTime`: is it 0 while the proc is up, and is it non-secret?
+  - `pcall(C_UnitAuras.GetPlayerAuraBySpellID, 17941)` in combat: does it error like `GetAuraDataByIndex`?
+
 ## Pending runs
 - [x] Kill one mob while still fighting another (Run 5): does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [ ] After a Nightfall proc: which overlay event fires, and its spellID.
@@ -171,7 +177,7 @@ trace: +10.12 SENT/SUCCEEDED 6217 tgt=Nak; REGEN_DISABLED; UNIT_ADDED nameplate1
 ## Conclusions (filled as runs land)
 1. SENT `target` non-secret in combat: **yes (world)**; dungeon and BG pending.
 2. `castGUID` non-secret, and SENT matches SUCCEEDED: **yes (world)**.
-3. Nightfall overlay event: pending.
+3. Nightfall overlay event: **none**. Nightfall only shows a buff icon (no button glow, no overlay). Testing castTime and a direct aura lookup instead.
 4. Enemy GUID, name and dead state in combat: **non-secret (world)**. Mark: **SECRET when set**, nil when unset. Dungeon and BG: pending.
 5. `IsSpellUsable` and `IsSpellInRange` in combat: **non-secret (world)**, so `WCK.USABLE_OK` can be true.
 6. `C_AssistedCombat`: **unavailable for warlocks**. Drop the fallback toggle, or keep it hidden.

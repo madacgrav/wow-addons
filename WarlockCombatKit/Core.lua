@@ -139,12 +139,20 @@ function WCK.Probe()
       P("spell " .. n, "usable " .. S(usable) .. "/" .. S(noMana) .. " range " .. S(C_Spell.IsSpellInRange(n, "target"))
         .. " cd " .. (cd and ("active " .. S(cd.isActive) .. " gcd " .. S(cd.isOnGCD) .. " enabled " .. S(cd.isEnabled)
         .. " start " .. S(cd.startTime)) or "nil"))
+      -- Nightfall makes Shadow Bolt instant: castTime 0 while the proc is up would be a non-aura proc signal
+      local info = C_Spell.GetSpellInfo(n)
+      P("castTime " .. n, info and S(info.castTime) or "nil")
     end)
   end
 
   Try("secrets", function()
     P("secrecy 17941", S(C_Secrets.GetSpellAuraSecrecy(17941)))
     P("secrecy Shadow Trance", S(C_Secrets.GetSpellAuraSecrecy("Shadow Trance")))
+  end)
+  -- direct lookup by id; GetAuraDataByIndex errors in combat (WUK), this may too
+  Try("aura 17941", function()
+    local a = C_UnitAuras.GetPlayerAuraBySpellID(17941)
+    P("aura 17941", a and ("up exp " .. S(a.expirationTime)) or "nil")
   end)
 
   local AC = C_AssistedCombat
