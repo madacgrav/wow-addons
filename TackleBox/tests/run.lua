@@ -72,4 +72,12 @@ eq(TB.WaterWalkPick({ 1, 2 }, { [2] = 1 }, false), 2, "first present")
 eq(TB.WaterWalkPick({ 1, 2 }, { [1] = 3, [2] = 1 }, false), 1, "preference order")
 eq(TB.WaterWalkPick({ 1 }, { [1] = 1 }, true), nil, "aura active")
 
+-- Action bar
+eq(TB.PickPole({ { id = 1, classID = 2, subID = 7 }, { id = 6256, classID = 2, subID = 20 } }), 6256, "pole found")
+eq(TB.PickPole({ { id = 1, classID = 7, subID = 8 } }), nil, "no pole")
+local LL = { { id = 1, bonus = 25 }, { id = 2, bonus = 75 }, { id = 3, bonus = 50 } }
+eq(TB.PickLure(LL, { [1] = 5, [3] = 1 }, false), 3, "best owned lure")
+eq(TB.PickLure(LL, { [1] = 5 }, true), nil, "lure already on pole")
+eq(TB.PickLure(LL, {}, false), nil, "no lures")
+
 print("all tests passed")

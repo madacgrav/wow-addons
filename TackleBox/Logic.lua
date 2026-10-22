@@ -149,3 +149,19 @@ function TB.WaterWalkPick(items, counts, auraActive)
   if auraActive then return nil end
   for _, id in ipairs(items) do if (counts[id] or 0) > 0 then return id end end
 end
+
+-- items = { {id, classID, subID} }; fishing poles are weapon class 2, subclass 20 (probe run 1: Fishing Pole 6256)
+-- ponytail: first pole found; rank by pole bonus if players carry several
+function TB.PickPole(items)
+  for _, it in ipairs(items) do if it.classID == 2 and it.subID == 20 then return it.id end end
+end
+
+-- best-bonus lure in bags, nil while the pole already has a lure on it
+function TB.PickLure(lures, counts, lureActive)
+  if lureActive then return nil end
+  local best
+  for _, l in ipairs(lures) do
+    if l.id and (counts[l.id] or 0) > 0 and (not best or l.bonus > best.bonus) then best = l end
+  end
+  return best and best.id
+end

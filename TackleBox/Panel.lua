@@ -235,50 +235,13 @@ table.insert(TB.sections, { key = "camp", title = "Camp buffs", tab = "Camp", em
   return rows
 end })
 
--- secure item button on UIParent, not the panel: a secure child would make the panel protected in combat
-table.insert(TB.inits, function()
-  local b = CreateFrame("Button", "TBWaterButton", UIParent, "SecureActionButtonTemplate")
-  b:SetSize(40, 40); b:RegisterForClicks("AnyUp", "AnyDown"); b:SetAttribute("type", "item")
-  b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetPoint("TOPLEFT", 3, -3); b.icon:SetPoint("BOTTOMRIGHT", -3, 3)
-  b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-  local rim = b:CreateTexture(nil, "OVERLAY"); rim:SetAllPoints()
-  rim:SetTexture("Interface\\Buttons\\UI-Quickslot2"); rim:SetTexCoord(0.2, 0.8, 0.2, 0.8); rim:SetVertexColor(T.rope[1], T.rope[2], T.rope[3])
-  b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
-  b:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-  -- slow ripple so the button reads as "water"
-  local ripple = b:CreateTexture(nil, "BACKGROUND"); ripple:SetPoint("CENTER"); ripple:SetSize(64, 64)
-  ripple:SetTexture("Interface\\Buttons\\UI-ActionButton-Border"); ripple:SetBlendMode("ADD"); ripple:SetVertexColor(T.line[1], T.line[2], T.line[3])
-  local ag = ripple:CreateAnimationGroup(); ag:SetLooping("BOUNCE")
-  local a = ag:CreateAnimation("Alpha"); a:SetFromAlpha(0.15); a:SetToAlpha(0.7); a:SetDuration(1.2)
-  ag:Play()
-  TB.MakeMovable(b, "water", 0, -220)
-  b:SetScript("OnEnter", function(self)
-    if not self.itemID then return end
-    GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:SetItemByID(self.itemID); GameTooltip:Show()
-  end)
-  b:SetScript("OnLeave", GameTooltip_Hide)
-  b:Hide()
-  TB.waterButton = b
-end)
-
--- attributes and visibility only out of combat; PLAYER_REGEN_ENABLED -> Refresh re-applies
-local function ApplyWater(id)
-  local b = TB.waterButton
-  if not b or InCombatLockdown() then return end
-  b.itemID = id
-  if id then b:SetAttribute("item", "item:" .. id); b.icon:SetTexture(C_Item.GetItemIconByID(id)); b:Show() else b:Hide() end
-end
-
+-- the action bar (Actions.lua, refreshed first) owns the secure button; this tab only reports
 table.insert(TB.sections, { key = "water", title = "Water-walking", tab = "Water", empty = "No Draught of Water Walking or Surfer Shoes in bags.", icon = "Interface\\Icons\\Spell_Frost_WindWalkOn", build = function()
-  local ww, counts, active = TB.DATA.waterWalk, {}, false
-  for _, id in ipairs(ww.items) do counts[id] = C_Item.GetItemCount(id) + (C_Item.IsEquippedItem(id) and 1 or 0) end
-  for _, sid in ipairs(ww.auras) do if TB.ReadAura(sid).active then active = true end end
-  local id = TB.WaterWalkPick(ww.items, counts, active)
-  ApplyWater(id)
-  if active then return { { text = "Walking on water", icon = "Interface\\Icons\\Spell_Frost_WindWalkOn", color = { 0.4, 0.9, 0.5 } } } end
-  if id then
-    local name, icon = TB.ItemName(id)
-    return { { itemID = id, text = name, icon = icon, sub = "click the water button to use (shift-drag to move)" } }
+  if TB.waterActive then return { { text = "Walking on water", icon = "Interface\\Icons\\Spell_Frost_WindWalkOn", color = { 0.4, 0.9, 0.5 } } } end
+  local w = TB.actions.water
+  if w then
+    local name, icon = TB.ItemName(w.item)
+    return { { itemID = w.item, text = name, icon = icon, sub = "click it on the fishing bar to use" } }
   end
   return {}
 end })

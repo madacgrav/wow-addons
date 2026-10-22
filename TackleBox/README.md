@@ -15,6 +15,19 @@ Fishing companion for WoW Forever. One movable panel shows your fishing skill an
 
 The header shows your fishing skill as a water-filled bar (`Fishing level/max (+modifier)`) and the session's "got away" count. Below it, five tabs switch between Quest, Where, Camp, Water and Catch; each tab shows how many rows it holds, and the last tab you picked is remembered. Shift-drag the panel to move it; the position is saved. The close button or `/tb hide` hides the panel.
 
+## Fishing bar
+
+A small rope-framed bar (shift-drag to move) holds up to four click-to-use buttons. Each one shows only when it is useful:
+
+| Button | Shows when | Click |
+|---|---|---|
+| Pole | A fishing pole is in your bags and not equipped | Equips it |
+| Lure | A pole is equipped, it has no lure, and you carry one | Applies your best lure to the pole |
+| Water | You carry a Draught of Water Walking or Surfer Shoes and are not water-walking | Uses it |
+| Cast | You know Fishing | Casts Fishing |
+
+The buttons only update out of combat. Every action needs your click; TackleBox never casts or reacts to a bite on its own.
+
 The minimap button toggles the panel (left-click) and prints your skill (right-click). Drag it around the minimap.
 
 ## Slash commands

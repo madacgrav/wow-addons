@@ -140,7 +140,10 @@ Shared shell:
 12. **Name.** TackleBox / `TB` / `/tb`. Rename now if the name is taken on CurseForge; the risk is listed below.
 
 ## What We're NOT Doing
-- **No casting features:** no one-key or double-click cast, no lure auto-apply, no weapon swap, no soft-target CVar changes, no bite or splash sound.
+- **No automatic casting features:** no one-key or double-click cast, no auto-applied lure, no automatic weapon swap, no soft-target CVar changes, no bite or splash sound.
+  - **Amended 2026-10-22 at the user's request:** a player-clicked fishing action bar was added. It has four buttons: equip pole, apply best lure, water-walk and cast.
+  - Each click is one secure action.
+  - It lives on its own UIParent frame, `TBActionBar`, which replaces the standalone water button.
 - **No Stranglethorn tournament timer or coin vendor list.** The schedule is unverified on Forever and the calendar exposure was not found (research Q5). Revisit after launch.
 - **No Legacy talent progress.** No API was found and the TraitTree rows are untitled (research Q5, Q6).
 - **No published catch tables per pool.** "Where to fish" covers skill bands only. Per-fish location comes from the addon's own logged catches.

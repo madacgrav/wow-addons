@@ -22,8 +22,15 @@ TB.DATA = {
       "Stranglethorn Vale", "Swamp of Sorrows", "Thousand Needles" } },
     { band = 225, max = 300, lure = 75, names = { "Felwood", "Feralas", "The Hinterlands", "Tanaris", "Un'Goro Crater", "Western Plaguelands" } },
   },
-  lures = { { name = "Shiny Bauble", bonus = 25 }, { name = "Nightcrawlers", bonus = 50 }, { name = "Bright Baubles", bonus = 75 },
-    { name = "Aquadynamic Fish Attractor", bonus = 100 } },
+  -- sorted by bonus; IDs from wago DB2 build 70450, bonuses from Forever guides (Classic values)
+  lures = {
+    { id = 6529, name = "Shiny Bauble", bonus = 25 },
+    { id = 6530, name = "Nightcrawlers", bonus = 50 },
+    { id = 6811, name = "Aquadynamic Fish Lens", bonus = 50 },
+    { id = 6532, name = "Bright Baubles", bonus = 75 },
+    { id = 7307, name = "Flesh Eating Worm", bonus = 75 },
+    { id = 6533, name = "Aquadynamic Fish Attractor", bonus = 100 },
+  },
   fish = {},          -- Phase 3
   -- unlock = ItemSparse RequiredSkillRank; aura IDs are the DB2 "Uncommon/Rare Fishing" dummies, mapping unverified in game
   campBuffs = {
