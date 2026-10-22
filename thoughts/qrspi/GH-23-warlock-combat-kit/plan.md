@@ -198,12 +198,26 @@ Later phases insert their blocks above `print`. A later phase may also need `Dat
 - [ ] After the push to main, the CI "Package Warlock Combat Kit" run is green and creates the `wck-v0.1.0` release.
 
 #### Manual
-- [ ] Deploy, then `/reload` on a warlock. There are no Lua errors, and `/wck` prints its usage.
+- [x] Deploy, then `/reload` on a warlock. There are no Lua errors, and `/wck` prints its usage. (The CLEU probe triggered the blocked-action prompt; it was removed in 3fc7f58. Clean since.)
 - [ ] On a non-warlock, `/wck probe` prints "warlocks only".
-- [ ] Run `/wck probe` six times: out of combat and in combat, in each of the open world, a dungeon and a battleground. Each in-combat run happens after casting Shadow Bolt, Corruption and Fear on two different mobs, with a mouseover cast on one of them. Include one run right after a mob dies, and one with the succubus out casting Seduction.
-- [ ] After a Nightfall proc, run `/wck probe` so the trace shows the overlay events.
-- [ ] `probe-results.md` is written, with all ten conclusions answered.
-- [ ] **Gate:** re-read Phases 2-6 against those conclusions, and edit this plan where a result contradicts it (identity key order, death detection, proc event, the `usable` condition, the plate marker) before starting Phase 2.
+- [ ] (Open world done in Runs 1-12; **dungeon and BG skipped for now by the user**, and still to run before release.) Run `/wck probe` six times: out of combat and in combat, in each of the open world, a dungeon and a battleground. Each in-combat run happens after casting Shadow Bolt, Corruption and Fear on two different mobs, with a mouseover cast on one of them. Include one run right after a mob dies, and one with the succubus out casting Seduction.
+- [x] After a Nightfall proc, run `/wck probe`. No overlay event fires; the Shadow Bolt castTime signal is used instead (Runs 7-12).
+- [x] `probe-results.md` is written. All ten conclusions are answered for the open world; dungeon and BG are pending.
+- [x] **Gate:** (done 2026-10-22, see "Gate review" below) re-read Phases 2-6 against those conclusions, and edit this plan where a result contradicts it (identity key order, death detection, proc event, the `usable` condition, the plate marker) before starting Phase 2.
+
+---
+
+## Gate review (2026-10-22, from probe-results.md)
+These results are already applied to Phases 2-6 below:
+1. **Identity key:** the raid mark is **SECRET in combat once set**, while GUID and name are non-secret in the open world. The key order is therefore **GUID > name > "target"**. The mark is used only as a "marked" flag (`Secret(mark) or mark ~= nil`), and there is no mark icon in rows.
+2. **Pairing:** `castGUID` on SENT and SUCCEEDED is non-secret and matches between them. The castGUID fallback is dropped.
+3. **Death detection:** `NAME_PLATE_UNIT_REMOVED` reports a non-secret GUID with `UnitIsDead(unit) == true` on a kill. A leash or evade removes the plate with `dead=false`, so the row is kept.
+4. **Proc alerts:** Nightfall raises **no overlay event and no button glow** on Forever (buff icon only). Phase 4 is rebuilt on `C_Spell.GetSpellInfo("Shadow Bolt").castTime == 0` (3000 normally; non-secret in combat).
+5. **The `usable` condition:** `IsSpellUsable` and `IsSpellInRange` are non-secret in combat, so `WCK.USABLE_OK = true`.
+6. **Assisted Combat:** unavailable for warlocks, so the fallback toggle is **removed** from Phase 5.
+7. **Nameplate marker:** textures can be created on enemy plates in the open world. Instances are untested, so `PLATE_OK` stays at world-only.
+8. **Pet casts:** pet `SUCCEEDED` fires for Seduction (6358) and for every other succubus ability, so the handler filters to tracked spells, as planned.
+9. **Dungeon and BG:** untested. The runtime guards fall back to the "target" key, and the plate marker stays off in instances.
 
 ---
 
@@ -239,9 +253,8 @@ WCK.DATA.tracked = {
 -- cast map: what I cast, keyed per enemy; all times are GetTime() seconds
 function WCK.NewCastMap() return { pending = {}, rows = {} } end
 
--- nil for anything secret; mark > guid > name > current target
-function WCK.EnemyKey(mark, guid, name)
-  if mark then return "mark" .. mark, name end
+-- nil for anything secret; guid > name > current target (raid marks turn secret in combat once set)
+function WCK.EnemyKey(guid, name)
   if guid then return "guid:" .. guid, name end
   if name then return "name:" .. name, name end
   return "target", nil
@@ -256,16 +269,16 @@ function WCK.PickUnit(sentName, names)
   return "target"
 end
 
-function WCK.CastSent(map, castGUID, spell, key, label, mark, guid, now)
+function WCK.CastSent(map, castGUID, spell, key, label, guid, now)
   if not castGUID or not spell or not key then return end
   for g, p in pairs(map.pending) do if now - p.t > 10 then map.pending[g] = nil end end -- lost SUCCEEDED/FAILED
-  map.pending[castGUID] = { spell = spell, key = key, label = label, mark = mark, guid = guid, t = now }
+  map.pending[castGUID] = { spell = spell, key = key, label = label, guid = guid, t = now }
 end
 
-function WCK.CastLanded(map, key, label, mark, guid, spell, now)
+function WCK.CastLanded(map, key, label, guid, spell, now)
   local row = map.rows[key]
   if not row then row = { key = key, casts = {} }; map.rows[key] = row end
-  row.label, row.mark, row.guid, row.last = label or row.label, mark or row.mark, guid or row.guid, now
+  row.label, row.guid, row.last = label or row.label, guid or row.guid, now
   row.casts[spell] = now
 end
 
@@ -273,7 +286,7 @@ function WCK.CastSucceeded(map, castGUID, now)
   local p = castGUID and map.pending[castGUID]
   if not p then return end
   map.pending[castGUID] = nil
-  WCK.CastLanded(map, p.key, p.label, p.mark, p.guid, p.spell, now)
+  WCK.CastLanded(map, p.key, p.label, p.guid, p.spell, now)
 end
 
 function WCK.CastFailed(map, castGUID) if castGUID then map.pending[castGUID] = nil end end
@@ -300,7 +313,7 @@ function WCK.RowsView(map, now, tracked)
       icons[#icons + 1] = { spell = spell, age = now - t, alpha = WCK.IconAlpha(now - t, d.stale), kind = d.kind, stale = d.stale }
     end
     table.sort(icons, function(a, b) return a.age < b.age end)
-    out[#out + 1] = { key = row.key, label = row.label, mark = row.mark, last = row.last, icons = icons }
+    out[#out + 1] = { key = row.key, label = row.label, last = row.last, icons = icons }
   end
   table.sort(out, function(a, b) return a.last > b.last end)
   return out
@@ -311,7 +324,7 @@ end
 **File**: `WarlockCombatKit/Core.lua` — modify. Add the following after the trace block, inside `table.insert(WCK.inits, function() ... end)` so that it only runs for warlocks.
 - `WCK.map = WCK.NewCastMap()`.
 - A `NonSecret(v)` helper returns `v`, or nil if `v` is secret.
-- `WCK.Identify(unit)` returns `key, label, mark, guid` by passing the unit's `GetRaidTargetIndex`, `UnitGUID` and `UnitName` through `NonSecret`, then calling `WCK.EnemyKey(mark, guid, name)`. Each read runs under `pcall`, and a failure counts as nil.
+- `WCK.Identify(unit)` returns `key, label, guid, marked`. It passes the unit's `UnitGUID` and `UnitName` through `NonSecret` and calls `WCK.EnemyKey(guid, name)`. `marked` is `WCK.Secret(m) or m ~= nil`, where `m = GetRaidTargetIndex(unit)`; the `Secret` check runs first, so a secret value is never compared. Each read runs under `pcall`, and a failure counts as nil.
 - `WCK.SpellName(spellID)` is copied from `WarlockUtilityKit/Core.lua:160-164`.
 - Event handlers:
 ```lua
@@ -322,16 +335,16 @@ WCK.On("UNIT_SPELLCAST_SENT", function(unit, target, castGUID, spellID)
   local names = {}
   for _, u in ipairs({ "mouseover", "target", "focus" }) do names[u] = NonSecret(UnitName(u)) end
   local u = WCK.PickUnit(NonSecret(target), names)
-  local key, label, mark, guid = WCK.Identify(u)
-  WCK.CastSent(WCK.map, castGUID, spell, key, label or NonSecret(target), mark, guid, GetTime())
+  local key, label, guid = WCK.Identify(u)
+  WCK.CastSent(WCK.map, castGUID, spell, key, label or NonSecret(target), guid, GetTime())
 end)
 WCK.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, castGUID, spellID)
   if unit == "player" and not WCK.Secret(castGUID) then WCK.CastSucceeded(WCK.map, castGUID, GetTime()); WCK.Refresh()
   elseif unit == "pet" then -- Seduction: pet casts have no SENT; key on the pet's target
     local spell = WCK.SpellName(spellID)
     if spell and WCK.DATA.tracked[spell] then
-      local key, label, mark, guid = WCK.Identify("pettarget")
-      WCK.CastLanded(WCK.map, key, label, mark, guid, spell, GetTime()); WCK.Refresh()
+      local key, label, guid = WCK.Identify("pettarget")
+      WCK.CastLanded(WCK.map, key, label, guid, spell, GetTime()); WCK.Refresh()
     end
   end
 end)
@@ -350,7 +363,7 @@ C_Timer.NewTicker(0.5, function()
 end)
 ```
 - `UnitIsDead(...) == true` is false for a secret value, which keeps the row without raising an error.
-- **Gate dependency:** if Phase 1 shows `castGUID` is secret, pair by the most recent pending entry with the same spell instead. Change `CastSucceeded` to take `spell` and search `pending` for the newest entry with that spell.
+- **Probe-confirmed:** `castGUID` is non-secret and matches between SENT and SUCCEEDED. A `FAILED` carrying a `Cast-2-…` GUID with no SENT is a harmless no-op.
 
 #### 4. Panel
 **File**: `WarlockCombatKit/Panel.lua` — create, and add it to the TOC after `Core.lua`.
@@ -374,9 +387,8 @@ table.insert(WCK.inits, function()
   for i = 1, MAX_ROWS do
     local r = CreateFrame("Frame", nil, f); r:SetSize(WIDTH - 16, ROW_H)
     r:SetPoint("TOPLEFT", 8, -(CORE + 16) - (i - 1) * (ROW_H + 2))
-    r.mark = r:CreateTexture(nil, "ARTWORK"); r.mark:SetSize(16, 16); r.mark:SetPoint("LEFT")
-    r.label = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.label:SetPoint("LEFT", 20, 0)
-    r.label:SetWidth(70); r.label:SetJustifyH("LEFT"); r.label:SetWordWrap(false)
+    r.label = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.label:SetPoint("LEFT")
+    r.label:SetWidth(88); r.label:SetJustifyH("LEFT"); r.label:SetWordWrap(false)
     r.icons = {}
     for j = 1, MAX_ICONS do
       local t = r:CreateTexture(nil, "ARTWORK"); t:SetSize(ICON, ICON); t:SetPoint("LEFT", 92 + (j - 1) * (ICON + 1), 0)
@@ -392,7 +404,6 @@ end)
   - `f:SetShown(WCK.db.shown)`.
   - `local view = WCK.RowsView(WCK.map, GetTime(), WCK.DATA.tracked)`.
   - For `i = 1..MAX_ROWS`, take row `v = view[i]`:
-    - `r.mark` uses the texture `"Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. v.mark` when `v.mark` is set; otherwise it is hidden.
     - `r.label` is `v.label or (v.key == "target" and "Target" or "?")`.
     - Icon `j` is `C_Spell.GetSpellTexture(icon.spell)` with `SetAlpha(icon.alpha)`, and is shown or hidden.
   - Panel height: `CORE + 20 + max(#view, 1) * (ROW_H + 2)`.
@@ -416,26 +427,26 @@ end)
 **File**: `WarlockCombatKit/tests/run.lua` — modify. Load `Data.lua` before `Logic.lua`.
 ```lua
 -- Phase 2
-local k, l = WCK.EnemyKey(8, "G1", "Boar"); eq(k, "mark8", "mark wins"); eq(l, "Boar", "label kept")
-eq((WCK.EnemyKey(nil, "G1", "Boar")), "guid:G1", "guid next"); eq((WCK.EnemyKey(nil, nil, "Boar")), "name:Boar", "name next")
-eq((WCK.EnemyKey(nil, nil, nil)), "target", "all secret")
+local k, l = WCK.EnemyKey("G1", "Boar"); eq(k, "guid:G1", "guid wins"); eq(l, "Boar", "label kept")
+eq((WCK.EnemyKey(nil, "Boar")), "name:Boar", "name next"); eq((WCK.EnemyKey(nil, nil)), "target", "all secret")
 eq(WCK.PickUnit("Boar", { target = "Wolf", mouseover = "Boar" }), "mouseover", "mouseover match")
 eq(WCK.PickUnit("Wolf", { target = "Wolf" }), "target", "target match")
 eq(WCK.PickUnit(nil, { target = "Wolf" }), "target", "secret name")
 local map = WCK.NewCastMap()
-WCK.CastSent(map, "c1", "Corruption", "mark8", "Boar", 8, nil, 100)
-WCK.CastSent(map, "c2", "Fear", "name:Wolf", "Wolf", nil, nil, 100.5)
-eq(map.rows.mark8, nil, "not landed yet")
+WCK.CastSent(map, "c1", "Corruption", "guid:G1", "Boar", "G1", 100)
+WCK.CastSent(map, "c2", "Fear", "name:Wolf", "Wolf", nil, 100.5)
+eq(map.rows["guid:G1"], nil, "not landed yet")
 WCK.CastSucceeded(map, "c2", 101); WCK.CastSucceeded(map, "c1", 101.5)
-eq(map.rows.mark8.casts.Corruption, 101.5, "c1 landed"); eq(map.rows["name:Wolf"].casts.Fear, 101, "c2 landed")
-WCK.CastSent(map, "c3", "Immolate", "mark8", "Boar", 8, nil, 102); WCK.CastFailed(map, "c3"); WCK.CastSucceeded(map, "c3", 103)
-eq(map.rows.mark8.casts.Immolate, nil, "failed dropped")
-WCK.CastSent(map, "old", "Fear", "x", nil, nil, nil, 0); WCK.CastSent(map, "new", "Fear", "x", nil, nil, nil, 20)
+eq(map.rows["guid:G1"].casts.Corruption, 101.5, "c1 landed"); eq(map.rows["name:Wolf"].casts.Fear, 101, "c2 landed")
+WCK.CastSent(map, "c3", "Immolate", "guid:G1", "Boar", "G1", 102); WCK.CastFailed(map, "c3"); WCK.CastSucceeded(map, "c3", 103)
+eq(map.rows["guid:G1"].casts.Immolate, nil, "failed dropped")
+WCK.CastFailed(map, "never-sent"); eq(next(map.pending), nil, "unknown failed is a no-op")
+WCK.CastSent(map, "old", "Fear", "x", nil, nil, 0); WCK.CastSent(map, "new", "Fear", "x", nil, nil, 20)
 eq(map.pending.old, nil, "stale pending pruned")
 near(WCK.IconAlpha(0, 10), 1, "fresh"); near(WCK.IconAlpha(5, 10), 0.65, "half"); near(WCK.IconAlpha(30, 10), 0.3, "floor")
 local v = WCK.RowsView(map, 110, WCK.DATA.tracked)
-eq(#v, 2, "two rows"); eq(v[1].key, "mark8", "newest row first"); eq(v[1].icons[1].spell, "Corruption", "icon")
-WCK.CastLanded(map, "guid:G9", "Imp", nil, "G9", "Fear", 111); WCK.ClearGUID(map, "G9"); eq(map.rows["guid:G9"], nil, "clear by guid")
+eq(#v, 2, "two rows"); eq(v[1].key, "guid:G1", "newest row first"); eq(v[1].icons[1].spell, "Corruption", "icon")
+WCK.CastLanded(map, "guid:G9", "Imp", "G9", "Fear", 111); WCK.ClearGUID(map, "G9"); eq(map.rows["guid:G9"], nil, "clear by guid")
 WCK.ClearAll(map); eq(next(map.rows), nil, "clear all")
 ```
 
@@ -445,7 +456,7 @@ WCK.ClearAll(map); eq(next(map.rows), nil, "clear all")
 
 #### Manual
 - [ ] Deploy and `/reload`. The panel shows with an empty desaturated core; Shift+drag moves it, it does not move after `/wck lock`, and its position survives a `/reload`.
-- [ ] Mark two mobs in a three-mob pack (skull and cross), then cast Corruption and Curse of Agony on all three. Expect three rows: skull and cross shown with mark icons, and the third labelled with its name (or "Target" if names are secret). Icons fade over time.
+- [ ] On a three-mob pack, cast Corruption and Curse of Agony on all three, including one by mouseover. Expect three rows labelled with the mob names; same-named mobs still get separate rows, because they are keyed by GUID. Icons fade over time.
 - [ ] A resisted Fear still shows. A cast you cancel mid-cast does not.
 - [ ] When the current target dies, its row clears within about 0.5s. All rows clear when you leave combat.
 - [ ] In a dungeon pull there are no Lua errors and the rows are as rich as Phase 1 conclusion 4 allows.
@@ -495,7 +506,7 @@ end
 - Refresher: hide every marker first. If `WCK.db.plateMarker` is on and the Phase 1 hard-coded gate `WCK.PLATE_OK(instanceType)` passes, then for `i = 1..40` with `UnitExists("nameplate"..i)`:
   - call `WCK.Identify("nameplate"..i)`;
   - if a view row with that key has CC, call `PlateMarker("nameplate"..i, true)`.
-- `WCK.PLATE_OK` is set in `Panel.lua` from the Phase 1 conclusion 8 result. The default, used until the gate edit, is `function(kind) return kind == "none" end` (open world only).
+- `WCK.PLATE_OK` is defined in `Panel.lua` as `function(kind) return kind == "none" end` (open world only). The probe confirmed plate textures work in the open world; instances are untested.
 - Rows keyed `"target"` never match a nameplate. That is accepted: a mob only gets a marker when it has an identity key.
 
 #### 4. Settings
@@ -516,60 +527,76 @@ eq(WCK.RowHasCC({ icons = { { kind = "dot", age = 1, stale = 20 } } }), false, "
 #### Manual
 - [ ] Fear one mob. Its row pulses purple until about 20s after the cast, then stops. DoT-only rows never pulse.
 - [ ] With the plate toggle off, no markers appear anywhere.
-- [ ] In the open world, with the toggle on, a marked or GUID-keyed feared mob shows the Fear icon above its nameplate, and the icon hides when the CC goes stale.
+- [ ] In the open world, with the toggle on, a feared mob (GUID-keyed) shows the Fear icon above its nameplate, and the icon hides when the CC goes stale.
 - [ ] In a dungeon with the toggle on, there are no Lua errors and no `ADDON_ACTION_BLOCKED`. Markers are suppressed unless Phase 1 showed instanced plates allow textures.
 
 ---
 
 ## Phase 4: Proc alerts
 
+Gate result: Nightfall on Forever shows a buff icon only. No `SPELL_ACTIVATION_OVERLAY_*` event fires and no action button glows. The proc signal is instead **Shadow Bolt's `castTime` dropping to 0** (it is 3000 normally, and non-secret in combat). Backlash, if present, makes Shadow Bolt instant too, so this single signal covers both procs.
+
 ### Changes
 
 #### 1. Data
 **File**: `WarlockCombatKit/Data.lua` — modify
 ```lua
--- aura = overlay aura id (SPELL_ACTIVATION_OVERLAY_SHOW); glow = action spell that glows (..._GLOW_SHOW)
+-- spell = the spell a proc makes instant; the proc is up while its castTime reads 0 (probe runs 11-12)
 WCK.DATA.procs = {
-  { key = "nightfall", aura = 17941, glow = "Shadow Bolt", icon = "Interface\\Icons\\Spell_Shadow_Twilight" },
-  { key = "backlash", aura = 34936, glow = "Incinerate", icon = "Interface\\Icons\\Spell_Fire_PlayingWithFire" },
+  { key = "nightfall", spell = "Shadow Bolt", icon = "Interface\\Icons\\Spell_Shadow_Twilight" },
 }
 ```
 
 #### 2. Logic
 **File**: `WarlockCombatKit/Logic.lua` — append
 ```lua
-function WCK.ProcState(active, key, on) active[key] = on and true or nil; return active end
--- returns the proc keys matching an overlay event (by aura id or by glowing spell name)
-function WCK.MatchProcs(procs, auraID, spellName)
+-- castTimes = {[spell] = ms or nil}; a proc is up when its spell is known and instant
+function WCK.ProcsUp(procs, castTimes)
+  local up = {}
+  for _, p in ipairs(procs) do if castTimes[p.spell] == 0 then up[p.key] = true end end
+  return up
+end
+-- keys that turned on since last time (sound/shine fire once per proc)
+function WCK.NewProcs(prev, now)
   local out = {}
-  for _, p in ipairs(procs) do
-    if (auraID and p.aura == auraID) or (spellName and p.glow == spellName) then out[#out + 1] = p.key end
-  end
+  for k in pairs(now) do if not prev[k] then out[#out + 1] = k end end
   return out
 end
 ```
 
 #### 3. Core
 **File**: `WarlockCombatKit/Core.lua` — modify, inside the warlock init.
-- Add DEFAULTS `procAlerts = true, procSound = true`.
-- Add `WCK.procs = {}`.
-- Handlers:
-  - `SPELL_ACTIVATION_OVERLAY_SHOW/HIDE (spellID)`: if the spell ID is not secret, call `MatchProcs(DATA.procs, spellID, nil)`.
-  - `SPELL_ACTIVATION_OVERLAY_GLOW_SHOW/HIDE (spellID)`: call `MatchProcs(DATA.procs, nil, WCK.SpellName(spellID))`.
-  - For each match: `ProcState(WCK.procs, key, isShow)`. On a show that was not already active, if `db.procAlerts and db.procSound` then `PlaySound(SOUNDKIT.RAID_WARNING or 8959, "Master")`.
-  - Then call `WCK.Refresh()`.
-- Registration uses the `WCK.On` return value. If neither pair registers, set `WCK.procsUnavailable = true`.
-- **Gate:** after Phase 1, keep only the event pair that conclusion 3 shows firing in combat. If neither fires, set `WCK.procsUnavailable = true` unconditionally, and add the README note "Proc alerts are unavailable on Forever: the client sends no overlay event for Nightfall."
+- Add DEFAULTS `procAlerts = true, procSound = true`, and add `WCK.procs = {}`.
+- A refresher, inserted before the panel's, reads the cast times and updates `WCK.procs`:
+```lua
+table.insert(WCK.refreshers, function()
+  local times = {}
+  for _, p in ipairs(WCK.DATA.procs) do
+    local ok, info = pcall(C_Spell.GetSpellInfo, p.spell)
+    local ct = ok and info and info.castTime
+    if ct ~= nil and not WCK.Secret(ct) and IsPlayerSpell(info.spellID) then times[p.spell] = ct end
+  end
+  local up = WCK.ProcsUp(WCK.DATA.procs, times)
+  if WCK.db.procAlerts and WCK.db.procSound and #WCK.NewProcs(WCK.procs, up) > 0 then
+    PlaySound(SOUNDKIT.RAID_WARNING or 8959, "Master")
+  end
+  WCK.procs = up
+end)
+```
+- Triggers:
+  - `WCK.On("UNIT_AURA", function(u) if u == "player" then WCK.Refresh() end end)`. The unit token is non-secret; the aura payload is never read.
+  - `SPELL_UPDATE_USABLE` and `PLAYER_TALENT_UPDATE` both call `WCK.Refresh`.
+  - The SUCCEEDED handler already refreshes after the instant Shadow Bolt consumes the proc.
+- **Ceiling:** an instant-cast talent or a Shadow Bolt rank with castTime 0 would read as a permanent proc. Add a `ponytail:` comment saying so; it is unlikely for Shadow Bolt.
 
 #### 4. Panel
 **File**: `WarlockCombatKit/Panel.lua` — modify
-- In the build, create `f.procs[i]` for each entry of `WCK.DATA.procs`: a 28px texture frame (a plain `Frame` holding an icon texture), placed at `TOPLEFT` `(CORE + 20 + (i-1)*32, -16)`. Then call `WCK.AddGlow(frame)` and add a shine scale animation copied from `WarlockUtilityKit/UI.lua:135-138`.
+- In the build, create `f.procs[i]` for each entry of `WCK.DATA.procs`: a 28px `Frame` holding an icon texture, placed at `TOPLEFT (CORE + 20 + (i-1)*32, -16)`. Call `WCK.AddGlow(frame)` and add a shine Scale animation copied from `WarlockUtilityKit/UI.lua:135-138`.
 - In `RenderPanel`, for each proc:
   - `on = WCK.db.procAlerts and WCK.procs[p.key]`;
-  - set the icon alpha to `on and 1 or 0.25` and `SetDesaturated(not on)`;
+  - set the alpha to `on and 1 or 0.25` and call `SetDesaturated(not on)`;
   - call `WCK.SetAlert(frame, on)`;
-  - when `on` becomes true, play the shine.
-- If `WCK.procsUnavailable`, hide the proc strip.
+  - play the shine when `on` flips to true (track `frame.wasOn`).
 
 #### 5. Settings
 **File**: `WarlockCombatKit/Settings.lua` — modify. Add the checks "Proc alerts" (`db.procAlerts`) and "Proc sound" (`db.procSound`).
@@ -577,13 +604,11 @@ end
 #### 6. Tests
 ```lua
 -- Phase 4
-local act = {}
-WCK.ProcState(act, "nightfall", true); eq(act.nightfall, true, "proc on")
-WCK.ProcState(act, "nightfall", true); eq(act.nightfall, true, "idempotent")
-WCK.ProcState(act, "nightfall", false); eq(act.nightfall, nil, "proc off")
-local P = { { key = "nightfall", aura = 17941, glow = "Shadow Bolt" } }
-eq(WCK.MatchProcs(P, 17941, nil)[1], "nightfall", "by aura"); eq(WCK.MatchProcs(P, nil, "Shadow Bolt")[1], "nightfall", "by glow")
-eq(#WCK.MatchProcs(P, 1, "Fear"), 0, "no match")
+local PR = { { key = "nightfall", spell = "Shadow Bolt" } }
+eq(WCK.ProcsUp(PR, { ["Shadow Bolt"] = 0 }).nightfall, true, "instant = proc")
+eq(WCK.ProcsUp(PR, { ["Shadow Bolt"] = 3000 }).nightfall, nil, "normal cast")
+eq(WCK.ProcsUp(PR, {}).nightfall, nil, "unknown spell")
+eq(#WCK.NewProcs({}, { nightfall = true }), 1, "rising edge"); eq(#WCK.NewProcs({ nightfall = true }, { nightfall = true }), 0, "no repeat")
 ```
 
 ### Verification
@@ -591,9 +616,9 @@ eq(#WCK.MatchProcs(P, 1, "Fear"), 0, "no match")
 - [ ] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
 
 #### Manual
-- [ ] Put DoTs up until Nightfall procs. The Nightfall icon lights up, pulses and shines, and the sound plays once. Cast Shadow Bolt: the icon greys out.
+- [ ] Put DoTs up until Nightfall procs, which the buff icon shows. The WCK Nightfall icon lights up, pulses and shines, and the sound plays once. Cast the instant Shadow Bolt: the icon greys out.
+- [ ] With no proc, the icon stays grey both in and out of combat.
 - [ ] Turning off "Proc sound" silences it. Turning off "Proc alerts" keeps the icon grey.
-- [ ] If the probe showed no overlay event, the strip is hidden and the README note is present.
 
 ---
 
@@ -655,8 +680,7 @@ end
 #### 3. Core
 **File**: `WarlockCombatKit/Core.lua` — modify
 - `CHAR_DEFAULTS` gets nothing from `MergeDefaults` for rules, because a merged list would mix with the defaults. In the warlock init, if `WCK.char.rules == nil` then set `WCK.char.rules = WCK.CopyRules(WCK.DATA.defaultRules)`.
-- Add DEFAULTS `assistedFallback = false`.
-- `WCK.USABLE_OK = false` is a hard-coded gate. Set it to true at the Phase 1 gate if conclusion 5 shows `IsSpellUsable` is non-secret in combat.
+- `WCK.USABLE_OK = true`. This is a hard-coded gate: probe Run 1 showed `IsSpellUsable` is non-secret in combat in the open world. The `pcall`/`Secret` guard still covers instances.
 - `WCK.BuildRuleState(now)`:
 ```lua
 function WCK.BuildRuleState(now)
@@ -676,8 +700,8 @@ function WCK.BuildRuleState(now)
     end
   end
   if UnitExists("target") then
-    local key, _, mark = WCK.Identify("target")
-    s.marked = mark ~= nil
+    local key, _, _, marked = WCK.Identify("target")
+    s.marked = marked
     local row = WCK.map.rows[key]
     if row then for spell, t in pairs(row.casts) do s.lastOnTarget[spell] = now - t end end
   end
@@ -685,7 +709,6 @@ function WCK.BuildRuleState(now)
 end
 ```
 - The refresher `WCK.NextSpell()` computes `local spell = WCK.EvalRules(WCK.char.rules, WCK.BuildRuleState(GetTime()))`.
-  - If there is no spell and `db.assistedFallback` is on, it runs `pcall(C_AssistedCombat.GetNextCastSpell)` and, when that returns a non-secret spell ID, sets `spell = WCK.SpellName(id)`.
   - The result is stored in `WCK.next`.
 - Refresh also needs a trigger on `SPELL_UPDATE_COOLDOWN`, `PLAYER_TARGET_CHANGED` and `RAID_TARGET_UPDATE`, each calling `WCK.Refresh`. The debounce limits the cost.
 
@@ -708,7 +731,6 @@ end
   - Every change calls `win:SyncRules()` and then `WCK.Refresh()`.
 - An "Add rule" button runs `table.insert(WCK.char.rules, { spell = "Shadow Bolt", cond = "ready" })` and is disabled at `MAX_RULES`.
 - A "Defaults" button runs `WCK.char.rules = WCK.CopyRules(WCK.DATA.defaultRules)`.
-- A check, "Fall back to Blizzard's Assisted Combat suggestion", toggles `db.assistedFallback`.
 - `win:SyncRules()` shows rows `1..#rules`, regenerates their menus, sets the edit text, and hides the rest. It is called from `win:Sync`.
 - **Ceiling:** a list longer than 10 rules is capped by the disabled Add button. Mark it with `-- ponytail: 10 rules max, add a ScrollBox if users want more`.
 
@@ -741,7 +763,7 @@ local c = WCK.CopyRules(rl); c[1].spell = "Z"; eq(rl[1].spell, "B", "copy is dee
 - [ ] Moving Shadow Bolt "ready" to the top makes the core always show Shadow Bolt. "Defaults" restores the list.
 - [ ] A rule saves per character: `/reload` keeps it, and an alt has its own list.
 - [ ] The core updates in combat and nothing is cast without a key press.
-- [ ] With "Assisted Combat" on and an empty rule list, the core shows Blizzard's suggestion, or stays grey if the API is unavailable. There are no errors.
+- [ ] With an empty rule list, the core stays grey and there are no errors.
 
 ---
 
@@ -878,7 +900,6 @@ eq(WCK.CastMacro("Curse of Agony"), "/cast [@mouseover,harm,nodead][] Curse of A
 5. **Phase 5**:
    - Rules drive the core icon.
    - The editor saves per character.
-   - The Assisted Combat fallback is guarded.
 6. **Phase 6**:
    - 6 bindable slots cast on mouseover.
    - Attributes are written only out of combat.
