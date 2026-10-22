@@ -44,11 +44,14 @@ local function PlateMarker(unit, on)
   if not ok or not plate or not plate.UnitFrame then return end
   local m = markers[plate]
   if not m and on then
-    local okT, t = pcall(plate.UnitFrame.CreateTexture, plate.UnitFrame, nil, "OVERLAY")
-    if not okT then return end
-    t:SetSize(20, 20); t:SetPoint("BOTTOM", plate.UnitFrame, "TOP", 0, 2)
+    -- own child frame raised above the plate's level/name widgets, sitting clear above them
+    local okF, holder = pcall(CreateFrame, "Frame", nil, plate.UnitFrame)
+    if not okF then return end
+    holder:SetSize(22, 22); holder:SetPoint("BOTTOM", plate.UnitFrame, "TOP", 0, 18)
+    holder:SetFrameLevel(plate.UnitFrame:GetFrameLevel() + 20)
+    local t = holder:CreateTexture(nil, "OVERLAY"); t:SetAllPoints()
     t:SetTexture("Interface\\Icons\\Spell_Shadow_Possession") -- Fear icon
-    markers[plate], m = t, t
+    markers[plate], m = holder, holder
   end
   if m then m:SetShown(on) end
 end
