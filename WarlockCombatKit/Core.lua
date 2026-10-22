@@ -50,10 +50,10 @@ end)
 WCK.On("PLAYER_REGEN_ENABLED", WCK.Refresh)
 
 -- probe snapshots: always on so /wck probe can report event order and secrecy
-WCK.trace = {} -- last 20 {t, event, detail}
+WCK.trace = {} -- last 40 {t, event, detail}
 function WCK.Trace(ev, d)
   table.insert(WCK.trace, { GetTime(), ev, d })
-  if #WCK.trace > 20 then table.remove(WCK.trace, 1) end
+  if #WCK.trace > 40 then table.remove(WCK.trace, 1) end
 end
 local function S(v) if WCK.Secret(v) then return "SECRET" end return tostring(v) end
 WCK.S = S
@@ -159,14 +159,15 @@ table.insert(WCK.inits, function()
   -- probe: removal on a kill reads dead=true; a leash/evade reads dead=false and keeps the row
   WCK.On("NAME_PLATE_UNIT_REMOVED", function(unit)
     local guid = NonSecret(UnitGUID(unit))
-    if guid and WCK.IsDead(unit) then WCK.ClearGUID(WCK.map, guid); WCK.Refresh() end
+    if guid and WCK.IsDead(unit) then WCK.Trace("CLR_PLATE", guid .. " rows=" .. WCK.ClearGUID(WCK.map, guid)); WCK.Refresh() end
   end)
   WCK.On("PLAYER_REGEN_ENABLED", function() WCK.ClearAll(WCK.map) end) -- Refresh is debounced 0.1s, so this clear lands before the redraw
   C_Timer.NewTicker(0.5, function()
     if next(WCK.map.rows) == nil then return end
     if WCK.IsDead("target") then
       local _, _, guid = WCK.Identify("target")
-      if guid then WCK.ClearGUID(WCK.map, guid) end
+      local n = guid and WCK.ClearGUID(WCK.map, guid) or 0
+      if n > 0 or not guid then WCK.Trace("CLR_TARGET", tostring(guid) .. " rows=" .. n) end
     end
     WCK.Refresh()
   end)

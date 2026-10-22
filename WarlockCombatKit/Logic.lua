@@ -51,8 +51,11 @@ end
 
 function WCK.CastFailed(map, castGUID) if castGUID then map.pending[castGUID] = nil end end
 function WCK.ClearRow(map, key) map.rows[key] = nil end
+-- returns how many rows it cleared
 function WCK.ClearGUID(map, guid)
-  for k, row in pairs(map.rows) do if row.guid == guid then map.rows[k] = nil end end
+  local n = 0
+  for k, row in pairs(map.rows) do if row.guid == guid then map.rows[k] = nil; n = n + 1 end end
+  return n
 end
 function WCK.ClearAll(map) map.pending, map.rows = {}, {} end
 
