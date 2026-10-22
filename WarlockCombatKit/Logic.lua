@@ -81,3 +81,9 @@ function WCK.RowsView(map, now, tracked)
   table.sort(out, function(a, b) return a.last > b.last end)
   return out
 end
+
+-- a view row (from RowsView) holds a CC cast that isn't stale yet
+function WCK.RowHasCC(viewRow)
+  for _, i in ipairs(viewRow.icons) do if i.kind == "cc" and i.age < i.stale then return true end end
+  return false
+end

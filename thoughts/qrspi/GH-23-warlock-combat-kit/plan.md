@@ -455,12 +455,12 @@ WCK.ClearAll(map); eq(next(map.rows), nil, "clear all")
 - [x] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
 
 #### Manual
-- [ ] Deploy and `/reload`. The panel shows with an empty desaturated core; Shift+drag moves it, it does not move after `/wck lock`, and its position survives a `/reload`.
-- [ ] On a three-mob pack, cast Corruption and Curse of Agony on all three, including one by mouseover. Expect three rows labelled with the mob names; same-named mobs still get separate rows, because they are keyed by GUID. Icons fade over time.
-- [ ] A resisted Fear still shows. A cast you cancel mid-cast does not.
-- [ ] When the current target dies, its row clears within about 0.5s. All rows clear when you leave combat.
-- [ ] In a dungeon pull there are no Lua errors and the rows are as rich as Phase 1 conclusion 4 allows.
-- [ ] The minimap button: left-click toggles settings, right-click toggles the panel, and dragging moves it around the minimap.
+- [x] Deploy and `/reload`. The panel shows with an empty desaturated core; Shift+drag moves it, it does not move after `/wck lock`, and its position survives a `/reload`.
+- [x] On a three-mob pack, cast Corruption and Curse of Agony on all three, including one by mouseover. Expect three rows labelled with the mob names; same-named mobs still get separate rows, because they are keyed by GUID. Icons fade over time.
+- [x] A resisted Fear still shows. A cast you cancel mid-cast does not.
+- [x] When the current target dies, its row clears within about 0.5s. All rows clear when you leave combat. (Mid-fight clearing needs enemy nameplates on; with them off, only a still-targeted corpse clears.)
+- [ ] In a dungeon pull there are no Lua errors and the rows are as rich as Phase 1 conclusion 4 allows. (Deferred with the dungeon probe.)
+- [x] The minimap button: left-click toggles settings, right-click toggles the panel, and dragging moves it around the minimap.
 
 ---
 
@@ -522,7 +522,7 @@ eq(WCK.RowHasCC({ icons = { { kind = "dot", age = 1, stale = 20 } } }), false, "
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
+- [x] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
 
 #### Manual
 - [ ] Fear one mob. Its row pulses purple until about 20s after the cast, then stops. DoT-only rows never pulse.

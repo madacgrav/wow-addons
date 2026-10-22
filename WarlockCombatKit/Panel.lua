@@ -17,6 +17,54 @@ function WCK.MakeMovable(f, key, x, y)
   if pos then f:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else f:SetPoint("CENTER", UIParent, "CENTER", x, y) end
 end
 
+-- pulsing purple border on a frame; textures only, so safe in combat
+function WCK.AddGlow(b)
+  local g = b:CreateTexture(nil, "OVERLAY")
+  g:SetTexture("Interface\\Buttons\\UI-ActionButton-Border"); g:SetBlendMode("ADD")
+  g:SetVertexColor(0.7, 0.3, 1); g:SetPoint("CENTER"); g:SetSize(b:GetWidth() * 1.8, b:GetHeight() * 1.8); g:Hide()
+  local ag = g:CreateAnimationGroup(); ag:SetLooping("BOUNCE")
+  local a = ag:CreateAnimation("Alpha"); a:SetFromAlpha(0.15); a:SetToAlpha(1); a:SetDuration(0.6)
+  b.glow, b.pulse = g, ag
+end
+
+function WCK.SetAlert(b, on)
+  on = on and true or false
+  if b.alerting == on then return end
+  b.alerting = on
+  if on then b.glow:Show(); b.pulse:Play() else b.pulse:Stop(); b.glow:Hide() end
+end
+
+-- probe: textures on enemy plates work in the open world; instances untested, so world only
+function WCK.PLATE_OK(kind) return kind == "none" end
+
+-- ponytail: one marker per visible plate; plates are pooled by Blizzard, so key markers by plate frame
+local markers = {}
+local function PlateMarker(unit, on)
+  local ok, plate = pcall(C_NamePlate.GetNamePlateForUnit, unit)
+  if not ok or not plate or not plate.UnitFrame then return end
+  local m = markers[plate]
+  if not m and on then
+    local okT, t = pcall(plate.UnitFrame.CreateTexture, plate.UnitFrame, nil, "OVERLAY")
+    if not okT then return end
+    t:SetSize(20, 20); t:SetPoint("BOTTOM", plate.UnitFrame, "TOP", 0, 2)
+    t:SetTexture("Interface\\Icons\\Spell_Shadow_Possession") -- Fear icon
+    markers[plate], m = t, t
+  end
+  if m then m:SetShown(on) end
+end
+
+local function RenderMarkers(view)
+  for _, m in pairs(markers) do m:Hide() end
+  if not WCK.db.plateMarker or not WCK.PLATE_OK(select(2, IsInInstance())) then return end
+  local cc = {}
+  for _, v in ipairs(view) do if WCK.RowHasCC(v) then cc[v.key] = true end end
+  if next(cc) == nil then return end
+  for i = 1, 40 do
+    local u = "nameplate" .. i
+    if UnitExists(u) and cc[(WCK.Identify(u))] then PlateMarker(u, true) end
+  end
+end
+
 -- circular texture centered on the core (portrait mask cuts it round)
 local function Disc(f, layer, sub)
   local t = f:CreateTexture(nil, layer, nil, sub); t:SetPoint("CENTER", f, "TOPLEFT", 8 + CORE / 2, -8 - CORE / 2)
@@ -39,6 +87,8 @@ table.insert(WCK.inits, function()
   f.rows = {}
   for i = 1, MAX_ROWS do
     local r = CreateFrame("Frame", nil, f); r:SetSize(WIDTH - 16, ROW_H)
+    WCK.AddGlow(r) -- 1.8x a 220px row is too wide; hug the row instead
+    r.glow:ClearAllPoints(); r.glow:SetPoint("TOPLEFT", -6, 6); r.glow:SetPoint("BOTTOMRIGHT", 6, -6)
     r:SetPoint("TOPLEFT", 8, -(CORE + 16) - (i - 1) * (ROW_H + 2))
     r.label = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.label:SetPoint("LEFT")
     r.label:SetWidth(88); r.label:SetJustifyH("LEFT"); r.label:SetWordWrap(false)
@@ -65,11 +115,14 @@ function WCK.RenderPanel()
         local icon = v.icons[j]
         if icon then t:SetTexture(C_Spell.GetSpellTexture(icon.spell)); t:SetAlpha(icon.alpha); t:Show() else t:Hide() end
       end
+      WCK.SetAlert(r, WCK.RowHasCC(v))
       r:Show()
     else
+      WCK.SetAlert(r, false)
       r:Hide()
     end
   end
+  RenderMarkers(view)
   f:SetHeight(CORE + 20 + math.max(math.min(#view, MAX_ROWS), 1) * (ROW_H + 2))
 end
 table.insert(WCK.refreshers, WCK.RenderPanel)

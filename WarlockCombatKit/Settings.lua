@@ -27,8 +27,10 @@ local function Build()
       function(on) WCK.db.shown = on; WCK.Refresh() end),
     WCK.Check(win, "Lock panel (no Shift+drag)", -64, function() return WCK.db.locked end,
       function(on) WCK.db.locked = on end),
+    WCK.Check(win, "Mark CC'd mobs on nameplates (open world)", -92, function() return WCK.db.plateMarker end,
+      function(on) WCK.db.plateMarker = on; WCK.Refresh() end),
   }
-  local y = -100
+  local y = -128
   for _, section in ipairs(WCK.settingsSections) do y = section(win, y) end
 
   local reset = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")

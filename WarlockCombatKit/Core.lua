@@ -19,7 +19,7 @@ events:SetScript("OnEvent", function(_, event, ...)
   for _, fn in ipairs(handlers[event]) do fn(...) end
 end)
 
-local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 240 }
+local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 240, plateMarker = false }
 local CHAR_DEFAULTS = {}
 
 WCK.On("ADDON_LOADED", function(name)

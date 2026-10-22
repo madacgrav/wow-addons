@@ -41,4 +41,9 @@ WCK.CastLanded(map, "guid:G9", "Imp", "G9", "Fear", 111); eq(WCK.ClearGUID(map, 
 eq(WCK.ClearGUID(map, "nope"), 0, "no match clears none")
 WCK.ClearAll(map); eq(next(map.rows), nil, "clear all")
 
+-- Phase 3
+eq(WCK.RowHasCC({ icons = { { kind = "cc", age = 5, stale = 20 } } }), true, "fresh fear")
+eq(WCK.RowHasCC({ icons = { { kind = "cc", age = 25, stale = 20 } } }), false, "stale fear")
+eq(WCK.RowHasCC({ icons = { { kind = "dot", age = 1, stale = 20 } } }), false, "dot only")
+
 print("all tests passed")
