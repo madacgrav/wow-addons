@@ -165,5 +165,5 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "lock" then TB.db.locked = not TB.db.locked; TB.Print(TB.db.locked and "locked" or "unlocked")
   elseif cmd == "reset" then wipe(TB.db.frames); TB.Print("positions reset; /reload to apply")
   elseif cmd == "probe" then TB.Probe()
-  else TB.Print("/tb show|hide|lock|reset|probe|flash") end
+  else TB.Print("/tb show||hide||lock||reset||probe") end -- || prints one pipe; a bare |h starts a chat link escape
 end
