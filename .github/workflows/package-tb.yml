@@ -1,0 +1,44 @@
+name: Package TackleBox
+
+on:
+  push:
+    branches: [main]
+    paths: ["TackleBox/**", ".github/workflows/package-tb.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tests (Lua 5.1, same as the WoW client)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lua5.1
+          lua5.1 TackleBox/tests/run.lua
+
+      - name: Read version from TOC
+        id: version
+        run: |
+          version=$(sed -n 's/^## Version: *\([^[:space:]]*\).*/\1/p' TackleBox/TackleBox.toc)
+          test -n "$version" || { echo "No ## Version in TOC"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build zip
+        run: zip -r "TackleBox-${{ steps.version.outputs.version }}.zip" TackleBox -x 'TackleBox/tests/*'
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: tb-v${{ steps.version.outputs.version }}
+          ZIP: TackleBox-${{ steps.version.outputs.version }}.zip
+        run: |
+          # same version merged again: replace the zip on the existing release; bump ## Version for a new one
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --clobber
+          else
+            gh release create "$TAG" "$ZIP" --target "$GITHUB_SHA" --title "TackleBox $TAG" --generate-notes
+          fi
