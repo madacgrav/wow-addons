@@ -57,6 +57,15 @@ end)
 TB.On("SKILL_LINES_CHANGED", TB.Refresh)
 TB.On("PLAYER_REGEN_ENABLED", TB.Refresh)
 TB.On("BAG_UPDATE_DELAYED", TB.Refresh)
+TB.On("BANKFRAME_OPENED", TB.Refresh)
+TB.On("PLAYERBANKSLOTS_CHANGED", TB.Refresh)
+
+-- includeBank=true counts the bank too (PP probe: works on Forever)
+function TB.CountItems(ids)
+  local counts = {}
+  for _, id in ipairs(ids) do counts[id] = C_Item.GetItemCount(id, true) end
+  return counts
+end
 
 -- probe snapshots: always on so /tb probe can report the last cast and loot
 TB.trace = {} -- last 12 {t, event, detail}; the probe reads the event order
@@ -78,7 +87,7 @@ TB.On("LOOT_READY", function()
   Trace("LOOT_READY", #slots)
 end)
 
-local PROBE_WORDS = { "Fish", "Surfer", "Waterwalk", "Knife", "Lure", "Bauble", "Snapper", "Ahi", "Mahi", "Striker", "Sailfin" }
+local PROBE_WORDS = { "Fish", "Surfer", "Water Walk", "Knife", "Lure", "Bauble", "Snapper", "Ahi", "Mahi", "Striker", "Sailfin" }
 
 -- dumps the fishing facts Data.lua needs; output saved to TackleBoxDB.lastProbe for probe-results.md
 function TB.Probe()

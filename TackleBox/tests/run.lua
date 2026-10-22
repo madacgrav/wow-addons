@@ -17,4 +17,9 @@ eq(#v, 2, "empty section hidden"); eq(v[1].header, "a", "header row"); eq(v[1].t
 v = TB.BuildView({ { key = "a", title = "A", rows = { { text = "x" } } } }, { a = true })
 eq(#v, 1, "collapsed hides rows"); eq(v[1].text, "+ A (1)", "closed header")
 
+-- Phase 2
+local q = TB.QuestRows({ { id = 1, need = 2, zone = "Z" }, { id = 2, need = 1, zone = "Y" } }, { [1] = 2 })
+eq(q[1].itemID, 2, "incomplete first"); eq(q[2].done, true, "complete"); eq(q[1].sub, "0/1  Y", "zero have")
+eq(#TB.DATA.questFish, 4, "four quest fish")
+
 print("all tests passed")

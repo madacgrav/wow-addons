@@ -288,13 +288,13 @@ eq(#v, 1, "collapsed hides rows"); eq(v[1].text, "+ A (1)", "closed header")
   3. After a cast that expired with no click.
   4. Standing at a Campsite Fishing Rack, and again at a Fishing Hut, if reachable.
   5. With water-walking active.
-- [ ] Write `thoughts/qrspi/GH-22-forever-fishing-addon/probe-results.md`. It records:
+- [x] Write `thoughts/qrspi/GH-22-forever-fishing-addon/probe-results.md`. It records:
   - The fishing spell ID, and which skill read worked.
   - Whether `IsFishingLoot` exists, the event order (CHANNEL_STOP vs LOOT_READY), whether channel times are secret, and the real cast length.
   - Fish, quest-fish, water-walk, lure and Chef's Knife item IDs and qualities.
   - Camp and water-walk aura spell IDs, and whether `expirationTime` is secret out of combat.
   - Any deviation from the guides.
-- [ ] Set `TB.DATA.fishingSpells` and `TB.DATA.castSeconds` from the probe.
+- [x] Set `TB.DATA.fishingSpells` and `TB.DATA.castSeconds` from the probe.
 
 **Gate:** do not start Phase 2 until `probe-results.md` exists.
 
@@ -348,7 +348,7 @@ eq(q[1].itemID, 2, "incomplete first"); eq(q[2].done, true, "complete"); eq(q[1]
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 TackleBox/tests/run.lua` passes
+- [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
 - [ ] Deploy, then `/reload`. The Quest fish section lists 4 fish with the correct have counts.

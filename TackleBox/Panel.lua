@@ -76,6 +76,21 @@ function TB.RenderPanel(rows, header)
 end
 
 TB.sections = {} -- each phase's init appends {key, title, build=function() return rows end}
+
+-- name + icon now, or a placeholder and a refresh once the client has loaded the item
+function TB.ItemName(id)
+  local name = C_Item.GetItemInfo(id)
+  if not name then Item:CreateFromItemID(id):ContinueOnItemLoad(TB.Refresh) end
+  return name or ("item:" .. id), C_Item.GetItemIconByID(id)
+end
+
+table.insert(TB.sections, { key = "quest", title = "Quest fish", build = function()
+  local ids = {}
+  for _, q in ipairs(TB.DATA.questFish) do ids[#ids + 1] = q.id end
+  local rows = TB.QuestRows(TB.DATA.questFish, TB.CountItems(ids))
+  for _, r in ipairs(rows) do r.text, r.icon = TB.ItemName(r.itemID) end
+  return rows
+end })
 table.insert(TB.refreshers, function()
   if not TB.db.shown then if panel then panel:Hide() end return end
   local secs = {}

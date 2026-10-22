@@ -32,3 +32,15 @@ function TB.BuildView(sections, collapsed)
   end
   return out
 end
+
+-- rows sorted incomplete first, then by data order
+function TB.QuestRows(list, counts)
+  local rows = {}
+  for i, q in ipairs(list) do
+    local have = counts[q.id] or 0
+    rows[#rows + 1] = { itemID = q.id, have = have, need = q.need, done = have >= q.need, order = i,
+      sub = have .. "/" .. q.need .. "  " .. q.zone, color = have >= q.need and { 0.25, 0.75, 0.25 } or nil }
+  end
+  table.sort(rows, function(a, b) if a.done ~= b.done then return not a.done end return a.order < b.order end)
+  return rows
+end
