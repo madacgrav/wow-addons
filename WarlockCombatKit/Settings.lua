@@ -86,6 +86,40 @@ table.insert(WCK.settingsSections, function(win, y)
   return by - 34
 end)
 
+-- Mouseover cast slots: pick a spell per slot here, bind the key in Blizzard's Key Bindings
+table.insert(WCK.settingsSections, function(win, y)
+  local head = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  head:SetPoint("TOPLEFT", 20, y); head:SetText("Mouseover cast slots")
+  local note = win:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  note:SetPoint("TOPLEFT", 20, y - 16); note:SetText("Bind keys: Esc > Options > Keybindings > AddOns > Warlock Combat Kit")
+  local rows = {}
+  for i = 1, WCK.SLOTS do
+    local r = CreateFrame("Frame", nil, win); r:SetSize(348, 24); r:SetPoint("TOPLEFT", 14, y - 34 - (i - 1) * 26)
+    r.key = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.key:SetPoint("LEFT", 4, 0)
+    r.key:SetWidth(110); r.key:SetJustifyH("LEFT")
+    r.spell = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
+    r.spell:SetWidth(170); r.spell:SetPoint("LEFT", 120, 0)
+    local function Set(name)
+      WCK.char.slots[i] = name; WCK.Refresh()
+      if InCombatLockdown() then WCK.Print("slot change applies after combat") end
+    end
+    r.spell:SetupMenu(function(_, root)
+      root:CreateRadio("(none)", function() return WCK.char.slots[i] == nil end, function() Set(nil) end)
+      for _, name in ipairs(KnownSpells()) do
+        root:CreateRadio(name, function() return WCK.char.slots[i] == name end, function() Set(name) end)
+      end
+    end)
+    rows[i] = r
+  end
+  table.insert(win.syncs, { Sync = function()
+    for i, r in ipairs(rows) do
+      r.key:SetText("Slot " .. i .. " [" .. (GetBindingKey("CLICK WCKCast" .. i .. ":LeftButton") or "unbound") .. "]")
+      r.spell:GenerateMenu()
+    end
+  end })
+  return y - 34 - WCK.SLOTS * 26 - 8
+end)
+
 local function Build()
   win = CreateFrame("Frame", "WCKSettings", UIParent, "BasicFrameTemplateWithInset")
   win:SetSize(380, 560); win:SetPoint("CENTER"); win:SetFrameStrata("DIALOG")

@@ -841,8 +841,8 @@ eq(WCK.CastMacro("Curse of Agony"), "/cast [@mouseover,harm,nodead][] Curse of A
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
-- [ ] `grep -c "CLICK WCKCast" WarlockCombatKit/Bindings.xml` prints `6`.
+- [x] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
+- [x] `grep -c "CLICK WCKCast" WarlockCombatKit/Bindings.xml` prints `6`.
 
 #### Manual
 - [ ] Esc > Keybindings > AddOns shows "Warlock Combat Kit" with 6 "Mouseover cast slot" entries. Bind slot 1 to a key.

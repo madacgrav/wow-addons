@@ -70,4 +70,9 @@ eq(WCK.MoveRule(rl, 2, -1), true, "move up"); eq(rl[1].spell, "B", "swapped")
 eq(WCK.MoveRule(rl, 1, -1), false, "top edge"); eq(WCK.MoveRule(rl, 2, 1), false, "bottom edge")
 local c = WCK.CopyRules(rl); c[1].spell = "Z"; eq(rl[1].spell, "B", "copy is deep")
 
+-- Phase 6
+eq(WCK.CastMacro("Corruption"), "/cast [@mouseover,harm,nodead][] Corruption", "macro")
+eq(WCK.CastMacro(nil), "", "no spell"); eq(WCK.CastMacro(""), "", "empty spell")
+eq(WCK.CastMacro("Curse of Agony"), "/cast [@mouseover,harm,nodead][] Curse of Agony", "spaces kept")
+
 print("all tests passed")

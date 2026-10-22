@@ -131,3 +131,10 @@ function WCK.CopyRules(rules)
   for i, r in ipairs(rules) do out[i] = { spell = r.spell, cond = r.cond, n = r.n } end
   return out
 end
+
+-- mouseover cast slots: hostile mouseover, else the normal target
+WCK.SLOTS = 6
+function WCK.CastMacro(spell)
+  if type(spell) ~= "string" or spell == "" then return "" end
+  return "/cast [@mouseover,harm,nodead][] " .. spell
+end
