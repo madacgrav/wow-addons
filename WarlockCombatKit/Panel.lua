@@ -92,6 +92,7 @@ table.insert(WCK.inits, function()
     local r = CreateFrame("Frame", nil, f); r:SetSize(WIDTH - 16, ROW_H)
     WCK.AddGlow(r) -- 1.8x a 220px row is too wide; hug the row instead
     r.glow:ClearAllPoints(); r.glow:SetPoint("TOPLEFT", -6, 6); r.glow:SetPoint("BOTTOMRIGHT", 6, -6)
+    r.glow:SetDrawLayer("BACKGROUND") -- behind the spell icons so they stay readable while pulsing
     r:SetPoint("TOPLEFT", 8, -(CORE + 16) - (i - 1) * (ROW_H + 2))
     r.label = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.label:SetPoint("LEFT")
     r.label:SetWidth(88); r.label:SetJustifyH("LEFT"); r.label:SetWordWrap(false)
