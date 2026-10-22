@@ -76,6 +76,43 @@ Client `1.60.1 70450`, `WOW_PROJECT_ID` 18. Character at Fishing 1/75, out of co
 - **No "Unique Fish" item** was found by name. Unique fish stay unlisted until a catch shows one.
 - Rack/Hut buff spell IDs are not in item data. They still need probe site 4.
 
+## Spell and skill data from client DB2 (build 1.60.1.70450)
+Sources are `SpellName`, `SpellEffect` and `ItemSparse.RequiredSkill/RequiredSkillRank`.
+
+**Unlock skills (Fishing = skill line 356)**
+
+| Item | Required Fishing |
+|---|---|
+| Blueprint: Fishing Rack | 140 |
+| Fishing Rack | 140 |
+| Blueprint: Fishing Hut | 300 |
+| Fishing Hut | 300 |
+| Fish Bowl | 20 |
+| Chef's Knife | 275 (plus level 35) |
+
+This settles the Rack ~140 / Hut 300 conflict in the guides.
+
+**Placeable spells**
+- **Rack (1307247) and Hut (1307246):** each summons a game object (effect 50) and creates an area trigger (effect 179; misc 43850 for the Rack, 43851 for the Hut). Neither applies an aura directly.
+- **Craft spells:** 1262990 makes the Rack and 1262998 makes the Hut (effect 24).
+
+**Candidate buff auras** (effect 6, aura 4 = dummy)
+- `1280341 Uncommon Fishing`
+- `1280342 Rare Fishing`
+- The guides say the Rack allows Uncommon catches and the Hut allows Rare. So the likely mapping is Rack = 1280341 and Hut = 1280342, applied by the area triggers. **Needs an in-game check at a camp.**
+
+**Other auras found**
+- `1225455 Luremaster` (aura 4)
+- `1277246 Fishing Lure`
+- `1299323 Master Angler!`
+- Fish Bowl's buff aura was not identified: 1255254 triggers 1229745, which only creates an item.
+
+**Water-walking auras** (aura 104 = water walk)
+- `11319 Water Walking`: the Draught's aura in Classic.
+- `1299351` and `1310296 Water Walking`: likely Surfer Shoes or other new sources.
+- `546` (shaman) and `1221095 Water Walk`.
+- Spell 11447 "Draught of Water Walking" creates an item (crafting), so it is not an aura.
+
 ## Still needed
 - Site 4: at a Campsite Fishing Rack / Fishing Hut.
 - Site 5: with water-walking active.

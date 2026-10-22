@@ -651,11 +651,11 @@ eq(TB.IsMiss(10, 10.2), false, "loot after stop"); eq(TB.IsMiss(10, 5), true, "o
 - [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
-- [ ] Deploy, then `/reload`. A cast shows the bar counting down, and the bar hides on stop.
-- [ ] A cast clicked with a catch produces no flash, and the counter stays the same.
-- [ ] A cast left to expire produces a blue edge flash, and "got away" increments. Jumping mid-cast does the same.
-- [ ] `/tb flash` silences the flash, and the counter still increments.
-- [ ] Fishing, then getting attacked, produces no Lua errors.
+- [x] Deploy, then `/reload`. A cast shows the bar counting down, and the bar hides on stop.
+- [x] A cast clicked with a catch produces no flash, and the counter stays the same.
+- [x] A cast left to expire produces a blue edge flash, and "got away" increments. Jumping mid-cast does the same.
+- [x] `/tb flash` silences the flash, and the counter still increments.
+- [x] Fishing, then getting attacked, produces no Lua errors.
 
 ---
 
@@ -719,7 +719,7 @@ eq(cr[1].sub, "active", "secret timer"); eq(cr[2].sub, "available", "eligible")
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 TackleBox/tests/run.lua` passes
+- [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
 - [ ] Deploy, then `/reload`. At a Rack, the row shows a countdown, or "active" if the timer is secret.

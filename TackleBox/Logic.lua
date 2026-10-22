@@ -133,3 +133,18 @@ end
 function TB.IsMiss(stopT, lastLootT)
   return not (lastLootT and lastLootT >= stopT - 0.5)
 end
+
+-- state[spellID] = {active, remaining|nil}; skill = TB.skill
+function TB.CampRows(buffs, state, skill, subzone)
+  local rows, lvl = {}, skill and skill.level or 0
+  for _, b in ipairs(buffs) do
+    local s = b.spellID and state[b.spellID]
+    local active = (s and s.active) or (b.subzone ~= nil and b.subzone == subzone)
+    local sub
+    if active then sub = (s and s.remaining) and TB.FormatTime(s.remaining) .. " left" or "active"
+    elseif lvl < b.unlock then sub = "needs skill " .. b.unlock
+    else sub = "available" end
+    rows[#rows + 1] = { text = b.name, sub = sub, active = active, color = active and { 0.25, 0.75, 0.25 } or nil }
+  end
+  return rows
+end

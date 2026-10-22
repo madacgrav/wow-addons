@@ -25,6 +25,10 @@ TB.DATA = {
   lures = { { name = "Shiny Bauble", bonus = 25 }, { name = "Nightcrawlers", bonus = 50 }, { name = "Bright Baubles", bonus = 75 },
     { name = "Aquadynamic Fish Attractor", bonus = 100 } },
   fish = {},          -- Phase 3
-  campBuffs = {},     -- Phase 4
+  -- unlock = ItemSparse RequiredSkillRank; aura IDs are the DB2 "Uncommon/Rare Fishing" dummies, mapping unverified in game
+  campBuffs = {
+    { spellID = 1280341, name = "Fishing Rack (Uncommon)", unlock = 140 },
+    { spellID = 1280342, name = "Fishing Hut (Rare)", unlock = 300 },
+  },
   waterWalk = { items = {}, auras = {} }, -- Phase 5
 }

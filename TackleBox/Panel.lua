@@ -99,6 +99,13 @@ table.insert(TB.sections, { key = "where", title = "Where to fish", build = func
   return rows
 end })
 
+table.insert(TB.sections, { key = "camp", title = "Camp", build = function()
+  for _, b in ipairs(TB.DATA.campBuffs) do if b.spellID then TB.auraState[b.spellID] = TB.ReadAura(b.spellID) end end
+  local rows = TB.CampRows(TB.DATA.campBuffs, TB.auraState, TB.skill, GetSubZoneText())
+  for _, r in ipairs(rows) do r.icon = 136245 end
+  return rows
+end })
+
 table.insert(TB.sections, { key = "catch", title = "Collection", build = function()
   local rows = TB.CollectionView(TB.DATA.fish, TB.char.catches, function(id) return C_Item.GetItemQualityByID(id) end)
   for _, r in ipairs(rows) do

@@ -62,6 +62,23 @@ TB.On("PLAYERBANKSLOTS_CHANGED", TB.Refresh)
 TB.On("ZONE_CHANGED_NEW_AREA", TB.Refresh)
 TB.On("UNIT_INVENTORY_CHANGED", function(u) if u == "player" then TB.Refresh() end end) -- pole/gear changes the skill modifier
 
+TB.auraState = {}
+function TB.ReadAura(spellID)
+  if InCombatLockdown() then return TB.auraState[spellID] or { active = false } end -- combat aura reads error on Forever (WUK probe)
+  local ok, a = pcall(C_UnitAuras.GetPlayerAuraBySpellID, spellID)
+  if not ok or not a then return { active = false } end
+  local exp = a.expirationTime
+  if TB.Secret(exp) or not exp or exp == 0 then return { active = true } end
+  return { active = true, remaining = math.max(0, exp - GetTime()) }
+end
+TB.On("UNIT_AURA", function(u) if u == "player" then TB.Refresh() end end)
+-- tick the camp countdown once a second while a camp buff is up
+table.insert(TB.inits, function()
+  C_Timer.NewTicker(1, function()
+    for _, s in pairs(TB.auraState) do if s.remaining then return TB.Refresh() end end
+  end)
+end)
+
 -- includeBank=true counts the bank too (PP probe: works on Forever)
 function TB.CountItems(ids)
   local counts = {}

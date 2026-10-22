@@ -58,4 +58,11 @@ eq(TB.CastProgress(nil, 21000, 0), nil, "nil start")
 eq(TB.IsMiss(10, nil), true, "no loot"); eq(TB.IsMiss(10, 9.7), false, "loot just before stop")
 eq(TB.IsMiss(10, 10.01), false, "loot after stop"); eq(TB.IsMiss(10, 5), true, "old loot")
 
+-- Phase 4
+local B = { { spellID = 1, name = "Rack", unlock = 140 }, { spellID = 2, name = "Hut", unlock = 300 }, { name = "Fire", unlock = 1, subzone = "Camp" } }
+local cr = TB.CampRows(B, { [1] = { active = true, remaining = 65 }, [2] = { active = false } }, { level = 200 }, "Camp")
+eq(cr[1].sub, "1:05 left", "timer"); eq(cr[2].sub, "needs skill 300", "below unlock"); eq(cr[3].sub, "active", "subzone active")
+cr = TB.CampRows(B, { [1] = { active = true } }, { level = 300 }, nil)
+eq(cr[1].sub, "active", "secret timer"); eq(cr[2].sub, "available", "eligible")
+
 print("all tests passed")
