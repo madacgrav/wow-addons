@@ -279,9 +279,9 @@ eq(#v, 1, "collapsed hides rows"); eq(v[1].text, "+ A (1)", "closed header")
 - [x] `git diff --name-only` shows only `TackleBox/**` and `.github/workflows/package-tb.yml` (plus thoughts/)
 
 #### Manual
-- [ ] Deploy with robocopy, then `/reload`. There are no Lua errors (`/console scriptErrors 1`).
-- [ ] The panel shows "Fishing N/M". Shift-drag moves it, and the position survives `/reload`.
-- [ ] The minimap button toggles the panel, and right-click prints the skill.
+- [x] Deploy with robocopy, then `/reload`. There are no Lua errors (`/console scriptErrors 1`).
+- [x] The panel shows "Fishing N/M". Shift-drag moves it, and the position survives `/reload`.
+- [x] The minimap button toggles the panel, and right-click prints the skill.
 - [ ] Run `/tb probe` at each site below. After each run, the user `/reload`s and pastes `TackleBoxDB.lastProbe` from `WTF\Account\<acct>\SavedVariables\TackleBox.lua`:
   1. Plain, with fishing gear and any quest fish, Surfer Shoes and Draught in bags.
   2. Right after catching a fish (loot window closed).
