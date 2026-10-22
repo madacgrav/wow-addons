@@ -104,8 +104,22 @@ trace: +120.71 UNIT_ADDED nameplate1 guid=Creature-0-4615-1-6-3458-32A8484EEE
 - **Same-frame events:** a `FAILED` with a `Cast-2-…` GUID (no SENT) is often followed in the same frame by a real SENT/SUCCEEDED of a different spell. These come from the client trying a spell and falling through. Harmless.
 - **Death detection:** a mid-combat `UNIT_REMOVED nameplate1` again lacks the dead flag. Still pending.
 
+## Run 5 — open world, two Razormane Stalkers, one killed mid-fight (new build with the dead flag)
+```
+trace: +0.00 UNIT_ADDED nameplate2 guid=Creature-0-4615-1-6-3457-F33C72A9A8 dead=false
+trace: +12.07 SENT 709 tgt=Razormane Stalker guid=Cast-3-4615-1-6-709-618BC49831
+trace: +12.07 FAILED player 709 guid=Cast-3-4615-1-6-709-618BC49831
+trace: +12.34 UNIT_REMOVED nameplate1 guid=Creature-0-4615-1-6-3457-D9E5AAFC6E dead=true   (still in combat)
+trace: +17.74 REGEN_ENABLED
+trace: +18.01 UNIT_REMOVED nameplate2 guid=Creature-0-4615-1-6-3457-F33C72A9A8 dead=true
+```
+**Observed:**
+- **Death detection:** `UnitIsDead(unit)` inside `NAME_PLATE_UNIT_REMOVED` is **non-secret and `true` for a kill**, both mid-combat and at the end of combat. Clearing a row by GUID on removal plus dead works.
+- **Failed casts:** `FAILED` can also carry a real `Cast-3-…` GUID right after its SENT. `CastFailed` drops the pending entry, as designed.
+- **From the previous run:** an untargeted enemy plate (Healing Ward IV) also reads GUID, name and dead as non-secret in combat.
+
 ## Pending runs
-- [ ] Kill one mob while still fighting another: does `UNIT_REMOVED ... dead=true` show for the dead plate?
+- [x] Kill one mob while still fighting another (Run 5): does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [ ] After a Nightfall proc: which overlay event fires, and its spellID.
 - [x] After a succubus Seduction: pet `SUCCEEDED` (Run 3).
 - [ ] A raid-marked mob, in combat: is `GetRaidTargetIndex` non-secret when it is set?
@@ -121,5 +135,5 @@ trace: +120.71 UNIT_ADDED nameplate1 guid=Creature-0-4615-1-6-3458-32A8484EEE
 6. `C_AssistedCombat`: **unavailable for warlocks**. Drop the fallback toggle, or keep it hidden.
 7. CLEU: **unavailable** (registering it triggers the blocked-action prompt).
 8. Nameplate texture: **ok (world)**; dungeon and BG pending.
-9. `NAME_PLATE_UNIT_REMOVED` on death: **fires, and the GUID is non-secret (world)**. Whether `UnitIsDead` is still true at removal is pending.
+9. `NAME_PLATE_UNIT_REMOVED` on death: **fires; the GUID is non-secret and `UnitIsDead` is true at removal (world)**.
 10. Pet `SUCCEEDED` for Seduction: **yes, the spellID (6358) is non-secret (world)**.
