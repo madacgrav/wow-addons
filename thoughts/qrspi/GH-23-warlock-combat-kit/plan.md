@@ -845,12 +845,12 @@ eq(WCK.CastMacro("Curse of Agony"), "/cast [@mouseover,harm,nodead][] Curse of A
 - [x] `grep -c "CLICK WCKCast" WarlockCombatKit/Bindings.xml` prints `6`.
 
 #### Manual
-- [ ] Esc > Keybindings > AddOns shows "Warlock Combat Kit" with 6 "Mouseover cast slot" entries. Bind slot 1 to a key.
-- [ ] Set slot 1 to Corruption in WCK settings, target mob A, hover mob B's nameplate, and press the key. Corruption lands on B, and the cast map row goes to B.
-- [ ] With no mouseover, the key casts on the target.
-- [ ] Press the key once: exactly one cast attempt, with no "not ready" spam. If not, apply the double-fire fallback and re-test.
-- [ ] Changing a slot spell in combat takes effect after combat, with no `ADDON_ACTION_BLOCKED`.
-- [ ] Mouseover on the player and party unit frames with a harmful spell does nothing harmful, because `harm` falls through to the target.
+- [x] Esc > Keybindings > AddOns shows "Warlock Combat Kit" with 6 "Mouseover cast slot" entries. Bind slot 1 to a key.
+- [x] Set slot 1 to Corruption in WCK settings, target mob A, hover mob B's nameplate, and press the key. Corruption lands on B, and the cast map row goes to B.
+- [x] With no mouseover, the key casts on the target.
+- [x] Press the key once: exactly one cast attempt, with no "not ready" spam. If not, apply the double-fire fallback and re-test.
+- [x] Changing a slot spell in combat takes effect after combat, with no `ADDON_ACTION_BLOCKED`.
+- [x] Mouseover on the player and party unit frames with a harmful spell does nothing harmful, because `harm` falls through to the target.
 
 ---
 
