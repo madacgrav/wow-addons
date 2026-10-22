@@ -873,7 +873,7 @@ eq(WCK.CastMacro("Curse of Agony"), "/cast [@mouseover,harm,nodead][] Curse of A
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
+- [x] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
 - [ ] After the merge to main, the "Package Warlock Combat Kit" run is green, and `gh release view wck-v0.1.0` lists `WarlockCombatKit-0.1.0.zip`.
 - [ ] `unzip -l WarlockCombatKit-0.1.0.zip | grep -c tests/` prints `0`.
 
