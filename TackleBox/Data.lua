@@ -30,5 +30,10 @@ TB.DATA = {
     { spellID = 1280341, name = "Fishing Rack (Uncommon)", unlock = 140 },
     { spellID = 1280342, name = "Fishing Hut (Rare)", unlock = 300 },
   },
-  waterWalk = { items = {}, auras = {} }, -- Phase 5
+  -- items in preference order; on-use spells from ItemEffect (Draught -> 11319, Surfer Shoes -> 1299351);
+  -- auras = every DB2 "Water Walking"/"Water Walk" aura (type 104), so other sources (shaman, new items) also count
+  waterWalk = {
+    items = { 8827, 276274 }, -- Draught of Water Walking, Surfer Shoes
+    auras = { 11319, 1299351, 1310296, 546, 1221095 },
+  },
 }

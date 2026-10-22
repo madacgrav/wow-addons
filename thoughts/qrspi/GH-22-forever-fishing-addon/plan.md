@@ -722,9 +722,9 @@ eq(cr[1].sub, "active", "secret timer"); eq(cr[2].sub, "available", "eligible")
 - [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
-- [ ] Deploy, then `/reload`. At a Rack, the row shows a countdown, or "active" if the timer is secret.
-- [ ] Away from a camp, the row shows "available" or "needs skill N".
-- [ ] Entering combat with the buff up produces no error, and the row freezes until combat ends.
+- [x] Deploy, then `/reload`. At a Rack, the row shows a countdown, or "active" if the timer is secret.
+- [x] Away from a camp, the row shows "available" or "needs skill N".
+- [x] Entering combat with the buff up produces no error, and the row freezes until combat ends.
 
 ---
 
@@ -787,7 +787,7 @@ eq(TB.WaterWalkPick({ 1 }, { [1] = 1 }, true), nil, "aura active")
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 TackleBox/tests/run.lua` passes
+- [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
 - [ ] Deploy, then `/reload`. With the Draught in bags and no buff, the button shows. Clicking it drinks the Draught, and the button hides once the aura is up.

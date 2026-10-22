@@ -148,3 +148,8 @@ function TB.CampRows(buffs, state, skill, subzone)
   end
   return rows
 end
+
+function TB.WaterWalkPick(items, counts, auraActive)
+  if auraActive then return nil end
+  for _, id in ipairs(items) do if (counts[id] or 0) > 0 then return id end end
+end

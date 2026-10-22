@@ -65,4 +65,10 @@ eq(cr[1].sub, "1:05 left", "timer"); eq(cr[2].sub, "needs skill 300", "below unl
 cr = TB.CampRows(B, { [1] = { active = true } }, { level = 300 }, nil)
 eq(cr[1].sub, "active", "secret timer"); eq(cr[2].sub, "available", "eligible")
 
+-- Phase 5
+eq(TB.WaterWalkPick({ 1, 2 }, {}, false), nil, "none owned")
+eq(TB.WaterWalkPick({ 1, 2 }, { [2] = 1 }, false), 2, "first present")
+eq(TB.WaterWalkPick({ 1, 2 }, { [1] = 3, [2] = 1 }, false), 1, "preference order")
+eq(TB.WaterWalkPick({ 1 }, { [1] = 1 }, true), nil, "aura active")
+
 print("all tests passed")

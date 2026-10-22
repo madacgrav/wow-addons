@@ -106,6 +106,43 @@ table.insert(TB.sections, { key = "camp", title = "Camp", build = function()
   return rows
 end })
 
+-- secure item button on UIParent, not the panel: a secure child would make the panel protected in combat
+table.insert(TB.inits, function()
+  local b = CreateFrame("Button", "TBWaterButton", UIParent, "SecureActionButtonTemplate")
+  b:SetSize(36, 36); b:RegisterForClicks("AnyUp", "AnyDown"); b:SetAttribute("type", "item")
+  b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints()
+  TB.MakeMovable(b, "water", 0, -220)
+  b:SetScript("OnEnter", function(self)
+    if not self.itemID then return end
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:SetItemByID(self.itemID); GameTooltip:Show()
+  end)
+  b:SetScript("OnLeave", GameTooltip_Hide)
+  b:Hide()
+  TB.waterButton = b
+end)
+
+-- attributes and visibility only out of combat; PLAYER_REGEN_ENABLED -> Refresh re-applies
+local function ApplyWater(id)
+  local b = TB.waterButton
+  if not b or InCombatLockdown() then return end
+  b.itemID = id
+  if id then b:SetAttribute("item", "item:" .. id); b.icon:SetTexture(C_Item.GetItemIconByID(id)); b:Show() else b:Hide() end
+end
+
+table.insert(TB.sections, { key = "water", title = "Water-walking", build = function()
+  local ww, counts, active = TB.DATA.waterWalk, {}, false
+  for _, id in ipairs(ww.items) do counts[id] = C_Item.GetItemCount(id) + (C_Item.IsEquippedItem(id) and 1 or 0) end
+  for _, sid in ipairs(ww.auras) do if TB.ReadAura(sid).active then active = true end end
+  local id = TB.WaterWalkPick(ww.items, counts, active)
+  ApplyWater(id)
+  if active then return { { text = "Water-walking active", icon = 136245, color = { 0.25, 0.75, 0.25 } } } end
+  if id then
+    local name, icon = TB.ItemName(id)
+    return { { itemID = id, text = name, icon = icon, sub = "click the water button to use (shift-drag to move)" } }
+  end
+  return {}
+end })
+
 table.insert(TB.sections, { key = "catch", title = "Collection", build = function()
   local rows = TB.CollectionView(TB.DATA.fish, TB.char.catches, function(id) return C_Item.GetItemQualityByID(id) end)
   for _, r in ipairs(rows) do
