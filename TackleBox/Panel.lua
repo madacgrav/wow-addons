@@ -66,7 +66,7 @@ local function Build()
 
   local close = CreateFrame("Button", nil, panel, "UIPanelCloseButton")
   close:SetPoint("TOPRIGHT", 2, 2)
-  close:HookScript("OnClick", function() TB.db.shown = false end)
+  close:HookScript("OnClick", function() TB.db.shown = false; TB.Refresh() end)
 
   -- round fishing portrait: the minimap-button layout (31px frame, 20px icon, 53px border at TOPLEFT) scaled x2
   local holder = CreateFrame("Frame", nil, panel)

@@ -69,7 +69,7 @@ local function Apply()
     end
   end
   bar:SetHeight(math.max(52, y + 2))
-  bar:SetShown(y > 6)
+  bar:SetShown(y > 6 and TB.db.shown) -- only with the panel open; a combat close hides it once combat ends
 end
 
 local function BagItems()
