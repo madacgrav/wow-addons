@@ -10,3 +10,4 @@ Data.lua
 Logic.lua
 Core.lua
 Panel.lua
+CastBar.lua

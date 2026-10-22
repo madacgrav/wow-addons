@@ -96,6 +96,28 @@ end)
 TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
   if unit == "player" and TB.lastChannel then TB.lastChannel.stopT = GetTime() end
 end)
+-- cast bar + got-away: a fishing cast that ends with no fishing loot within 1s counts as a miss
+TB.session = { misses = 0 }
+local function IsFishing(spellID) return spellID and not TB.Secret(spellID) and TB.DATA.fishingSpells[spellID] end
+TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit, _, spellID)
+  if unit ~= "player" or not IsFishing(spellID) then return end
+  local _, _, _, st, et = UnitChannelInfo("player")
+  if not st or TB.Secret(st) or TB.Secret(et) then st = GetTime() * 1000; et = st + TB.DATA.castSeconds * 1000 end
+  TB.StartCastBar(st, et)
+end)
+TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
+  if unit ~= "player" or not (TB.lastChannel and IsFishing(TB.lastChannel.spellID)) then return end
+  TB.StopCastBar()
+  local stopT = GetTime()
+  C_Timer.After(1, function()
+    if TB.IsMiss(stopT, TB.lastLootT) then
+      TB.session.misses = TB.session.misses + 1
+      if TB.db.flash then TB.Flash() end
+      TB.Refresh()
+    end
+  end)
+end)
+
 local looted = false -- LOOT_READY can fire twice per window
 TB.On("LOOT_CLOSED", function() looted = false end)
 TB.On("LOOT_READY", function()
@@ -203,5 +225,6 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "lock" then TB.db.locked = not TB.db.locked; TB.Print(TB.db.locked and "locked" or "unlocked")
   elseif cmd == "reset" then wipe(TB.db.frames); TB.Print("positions reset; /reload to apply")
   elseif cmd == "probe" then TB.Probe()
-  else TB.Print("/tb show||hide||lock||reset||probe") end -- || prints one pipe; a bare |h starts a chat link escape
+  elseif cmd == "flash" then TB.db.flash = not TB.db.flash; TB.Print("flash " .. (TB.db.flash and "on" or "off"))
+  else TB.Print("/tb show||hide||lock||reset||probe||flash") end -- || prints one pipe; a bare |h starts a chat link escape
 end

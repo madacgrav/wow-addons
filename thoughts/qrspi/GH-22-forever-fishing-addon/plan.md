@@ -545,9 +545,9 @@ eq(cv[1].itemID, 9, "rare first"); eq(cv[1].caught, false, "not caught"); eq(cv[
 - [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
-- [ ] Deploy, then `/reload`. Catching a fish increments its row, and the tooltip shows the zone/subzone.
-- [ ] Looting a mob or a chest records nothing.
-- [ ] The catch survives `/reload` and is per-character, so an alt shows an empty collection.
+- [x] Deploy, then `/reload`. Catching a fish increments its row, and the tooltip shows the zone/subzone.
+- [x] Looting a mob or a chest records nothing.
+- [x] The catch survives `/reload` and is per-character, so an alt shows an empty collection.
 
 ---
 
@@ -648,7 +648,7 @@ eq(TB.IsMiss(10, 10.2), false, "loot after stop"); eq(TB.IsMiss(10, 5), true, "o
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 TackleBox/tests/run.lua` passes
+- [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
 - [ ] Deploy, then `/reload`. A cast shows the bar counting down, and the bar hides on stop.

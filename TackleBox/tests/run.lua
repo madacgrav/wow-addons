@@ -50,4 +50,12 @@ eq(cv[1].itemID, 5, "loot quality 2 -> uncommon first"); eq(cv[2].itemID, 9, "ra
 eq(cv[3].knife, 77, "knife"); eq(cv[4].tier, "other", "other bucket"); eq(cv[4].quality, 1, "base quality fallback")
 local tz = TB.TopZones({ A = 1, B = 5, C = 3, D = 2 }, 3); eq(#tz, 3, "top 3"); eq(tz[1].zone, "B", "most first")
 
+-- Phase 3b
+local f, left = TB.CastProgress(1000, 21000, 1000); eq(f, 0, "start"); eq(left, 20, "left at start")
+f = TB.CastProgress(1000, 21000, 11000); eq(f, 0.5, "mid")
+f, left = TB.CastProgress(1000, 21000, 30000); eq(f, 1, "clamped end"); eq(left, 0, "no negative")
+eq(TB.CastProgress(nil, 21000, 0), nil, "nil start")
+eq(TB.IsMiss(10, nil), true, "no loot"); eq(TB.IsMiss(10, 9.7), false, "loot just before stop")
+eq(TB.IsMiss(10, 10.01), false, "loot after stop"); eq(TB.IsMiss(10, 5), true, "old loot")
+
 print("all tests passed")

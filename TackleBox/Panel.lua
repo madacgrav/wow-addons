@@ -119,7 +119,7 @@ table.insert(TB.refreshers, function()
   if not TB.db.shown then if panel then panel:Hide() end return end
   local secs = {}
   for _, s in ipairs(TB.sections) do secs[#secs + 1] = { key = s.key, title = s.title, rows = s.build() } end
-  TB.RenderPanel(TB.BuildView(secs, TB.db.collapsed), TB.SkillText(TB.skill))
+  TB.RenderPanel(TB.BuildView(secs, TB.db.collapsed), TB.SkillText(TB.skill) .. "   got away: " .. TB.session.misses)
 end)
 
 table.insert(TB.inits, function()

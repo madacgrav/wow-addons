@@ -120,3 +120,16 @@ function TB.TopZones(zones, n)
   for i = #list, n + 1, -1 do list[i] = nil end
   return list
 end
+
+-- channel times are ms (UnitChannelInfo); nil when unusable
+function TB.CastProgress(startMs, endMs, nowMs)
+  if type(startMs) ~= "number" or type(endMs) ~= "number" or endMs <= startMs then return nil end
+  local f = (nowMs - startMs) / (endMs - startMs)
+  f = math.max(0, math.min(1, f))
+  return f, math.max(0, (endMs - nowMs) / 1000)
+end
+
+-- loot lands ~10ms after CHANNEL_STOP (probe run 4); allow 0.5s either way
+function TB.IsMiss(stopT, lastLootT)
+  return not (lastLootT and lastLootT >= stopT - 0.5)
+end
