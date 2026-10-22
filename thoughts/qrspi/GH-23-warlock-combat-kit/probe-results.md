@@ -99,6 +99,11 @@ trace: +120.71 UNIT_ADDED nameplate1 guid=Creature-0-4615-1-6-3458-32A8484EEE
 - **Plate removal:** `NAME_PLATE_UNIT_REMOVED` also fires mid-combat (nameplate3, nameplate2), for deaths or for plates leaving view. Telling those apart still needs the dead flag.
 - **`IsSpellInRange`:** `true` when in range.
 
+## Run 4 — open world, Razormane pack (client still on the pre-`dead=` build)
+- **Pet casts:** pet SUCCEEDED fires for every succubus ability (7809, 17735), not only Seduction. The pet handler must filter to tracked spells, which the plan already does.
+- **Same-frame events:** a `FAILED` with a `Cast-2-…` GUID (no SENT) is often followed in the same frame by a real SENT/SUCCEEDED of a different spell. These come from the client trying a spell and falling through. Harmless.
+- **Death detection:** a mid-combat `UNIT_REMOVED nameplate1` again lacks the dead flag. Still pending.
+
 ## Pending runs
 - [ ] Kill one mob while still fighting another: does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [ ] After a Nightfall proc: which overlay event fires, and its spellID.
