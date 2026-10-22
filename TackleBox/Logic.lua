@@ -44,3 +44,32 @@ function TB.QuestRows(list, counts)
   table.sort(rows, function(a, b) if a.done ~= b.done then return not a.done end return a.order < b.order end)
   return rows
 end
+
+local function LureFor(lures, need)
+  for _, l in ipairs(lures) do if l.bonus >= need then return l end end
+end
+
+-- recommended = groups whose band contains the base skill; the current zone always gets a row with a flag
+function TB.WhereRows(zones, lures, skill, currentZone)
+  if not skill then return {} end
+  local eff, rows, seen = skill.level + (skill.modifier or 0), {}, {}
+  local function row(z, name)
+    local sub
+    if z.noLoss then sub = "no get-aways at " .. z.noLoss else sub = "skill " .. z.band .. "-" .. z.max end
+    if z.lure and (skill.modifier or 0) < z.lure then
+      local l = LureFor(lures, z.lure); sub = sub .. ", needs " .. (l and l.name or ("+" .. z.lure .. " lure"))
+    end
+    local flag
+    if name == currentZone then
+      if eff < (z.cast or 1) then flag = "too low" elseif skill.level >= z.max then flag = "outgrown" else flag = "here" end
+    end
+    rows[#rows + 1] = { text = name .. (flag and (" [" .. flag .. "]") or ""), sub = sub, flag = flag }
+    seen[name] = true
+  end
+  for _, z in ipairs(zones) do
+    if skill.level >= z.band and skill.level < z.max then for _, n in ipairs(z.names) do row(z, n) end end
+  end
+  -- current zone outside the band: appended last so the flag still shows
+  for _, z in ipairs(zones) do for _, n in ipairs(z.names) do if n == currentZone and not seen[n] then row(z, n) end end end
+  return rows
+end

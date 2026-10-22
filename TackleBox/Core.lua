@@ -59,6 +59,8 @@ TB.On("PLAYER_REGEN_ENABLED", TB.Refresh)
 TB.On("BAG_UPDATE_DELAYED", TB.Refresh)
 TB.On("BANKFRAME_OPENED", TB.Refresh)
 TB.On("PLAYERBANKSLOTS_CHANGED", TB.Refresh)
+TB.On("ZONE_CHANGED_NEW_AREA", TB.Refresh)
+TB.On("UNIT_INVENTORY_CHANGED", function(u) if u == "player" then TB.Refresh() end end) -- pole/gear changes the skill modifier
 
 -- includeBank=true counts the bank too (PP probe: works on Forever)
 function TB.CountItems(ids)

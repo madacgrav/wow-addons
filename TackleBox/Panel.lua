@@ -91,6 +91,13 @@ table.insert(TB.sections, { key = "quest", title = "Quest fish", build = functio
   for _, r in ipairs(rows) do r.text, r.icon = TB.ItemName(r.itemID) end
   return rows
 end })
+
+local FLAG_COLORS = { here = { 0.25, 0.75, 0.25 }, outgrown = { 0.5, 0.5, 0.5 }, ["too low"] = { 1, 0.3, 0.3 } }
+table.insert(TB.sections, { key = "where", title = "Where to fish", build = function()
+  local rows = TB.WhereRows(TB.DATA.zones, TB.DATA.lures, TB.skill, GetRealZoneText())
+  for _, r in ipairs(rows) do r.color, r.icon = FLAG_COLORS[r.flag], 136245 end -- 136245 = Fishing profession icon (probe run 1)
+  return rows
+end })
 table.insert(TB.refreshers, function()
   if not TB.db.shown then if panel then panel:Hide() end return end
   local secs = {}

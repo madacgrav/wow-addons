@@ -10,7 +10,20 @@ TB.DATA = {
     { id = 16968, need = 1, zone = "Desolace" },           -- Sar'theris Striker
     { id = 16969, need = 1, zone = "Stranglethorn Vale" }, -- Savage Coast Blue Sailfin
   },
-  zones = {}, lures = {}, -- Phase 2b
+  -- skill bands from third-party Forever guides (fishing-gaps research.md:70-73); band/max use base skill,
+  -- cast = min effective skill to catch anything, noLoss = skill where fish stop getting away, lure = bonus needed
+  -- ponytail: enUS zone names matched against GetRealZoneText; add a locale table if non-English clients matter
+  zones = {
+    { band = 1, max = 75, noLoss = 25, names = { "Elwynn Forest", "Dun Morogh", "Teldrassil", "Durotar", "Mulgore", "Tirisfal Glades" } },
+    { band = 75, max = 150, noLoss = 75, names = { "Stormwind City", "Ironforge", "Darnassus", "Orgrimmar", "Thunder Bluff", "Undercity" } },
+    { band = 75, max = 150, names = { "The Barrens", "Darkshore", "Loch Modan", "Silverpine Forest", "Westfall" } },
+    { band = 75, max = 150, cast = 55, noLoss = 150, names = { "Redridge Mountains" } },
+    { band = 150, max = 225, names = { "Dustwallow Marsh", "Alterac Mountains", "Arathi Highlands", "Desolace",
+      "Stranglethorn Vale", "Swamp of Sorrows", "Thousand Needles" } },
+    { band = 225, max = 300, lure = 75, names = { "Felwood", "Feralas", "The Hinterlands", "Tanaris", "Un'Goro Crater", "Western Plaguelands" } },
+  },
+  lures = { { name = "Shiny Bauble", bonus = 25 }, { name = "Nightcrawlers", bonus = 50 }, { name = "Bright Baubles", bonus = 75 },
+    { name = "Aquadynamic Fish Attractor", bonus = 100 } },
   fish = {},          -- Phase 3
   campBuffs = {},     -- Phase 4
   waterWalk = { items = {}, auras = {} }, -- Phase 5

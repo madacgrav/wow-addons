@@ -351,7 +351,7 @@ eq(q[1].itemID, 2, "incomplete first"); eq(q[2].done, true, "complete"); eq(q[1]
 - [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
-- [ ] Deploy, then `/reload`. The Quest fish section lists 4 fish with the correct have counts.
+- [x] Deploy, then `/reload`. The Quest fish section lists 4 fish with the correct have counts.
 - [ ] Moving a fish to the bank keeps the count (bank included). Looting one increments it.
 
 ---
@@ -438,7 +438,7 @@ eq(#TB.WhereRows(Z, L, nil, "x"), 0, "no skill")
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 TackleBox/tests/run.lua` passes
+- [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
 - [ ] Deploy, then `/reload`. "Where to fish" lists the zones for the current band, and the current zone row is flagged.
