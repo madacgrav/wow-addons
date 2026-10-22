@@ -24,12 +24,13 @@ TB.DATA = {
   },
   -- sorted by bonus; IDs from wago DB2 build 70450, bonuses from Forever guides (Classic values)
   lures = {
-    { id = 6529, name = "Shiny Bauble", bonus = 25 },
-    { id = 6530, name = "Nightcrawlers", bonus = 50 },
-    { id = 6811, name = "Aquadynamic Fish Lens", bonus = 50 },
-    { id = 6532, name = "Bright Baubles", bonus = 75 },
-    { id = 7307, name = "Flesh Eating Worm", bonus = 75 },
-    { id = 6533, name = "Aquadynamic Fish Attractor", bonus = 100 },
+    -- req = ItemSparse RequiredSkillRank on Fishing (356)
+    { id = 6529, name = "Shiny Bauble", bonus = 25, req = 0 },
+    { id = 6530, name = "Nightcrawlers", bonus = 50, req = 50 },
+    { id = 6811, name = "Aquadynamic Fish Lens", bonus = 50, req = 50 },
+    { id = 6532, name = "Bright Baubles", bonus = 75, req = 100 },
+    { id = 7307, name = "Flesh Eating Worm", bonus = 75, req = 100 },
+    { id = 6533, name = "Aquadynamic Fish Attractor", bonus = 100, req = 100 },
   },
   fish = {},          -- Phase 3
   -- unlock = ItemSparse RequiredSkillRank; aura IDs are the DB2 "Uncommon/Rare Fishing" dummies, mapping unverified in game
@@ -41,6 +42,7 @@ TB.DATA = {
   -- auras = every DB2 "Water Walking"/"Water Walk" aura (type 104), so other sources (shaman, new items) also count
   waterWalk = {
     items = { 8827, 276274 }, -- Draught of Water Walking, Surfer Shoes
+    minLevel = { [8827] = 24, [276274] = 1 }, -- ItemSparse RequiredLevel
     auras = { 11319, 1299351, 1310296, 546, 1221095 },
   },
 }

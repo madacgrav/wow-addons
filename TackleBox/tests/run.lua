@@ -71,13 +71,20 @@ eq(TB.WaterWalkPick({ 1, 2 }, {}, false), nil, "none owned")
 eq(TB.WaterWalkPick({ 1, 2 }, { [2] = 1 }, false), 2, "first present")
 eq(TB.WaterWalkPick({ 1, 2 }, { [1] = 3, [2] = 1 }, false), 1, "preference order")
 eq(TB.WaterWalkPick({ 1 }, { [1] = 1 }, true), nil, "aura active")
+local wid, wok = TB.WaterWalkPick({ 1, 2 }, { [1] = 1, [2] = 1 }, false, 10, { [1] = 24 })
+eq(wid, 2, "skips item above level"); eq(wok, true, "usable")
+wid, wok = TB.WaterWalkPick({ 1 }, { [1] = 1 }, false, 10, { [1] = 24 })
+eq(wid, 1, "locked water item"); eq(wok, false, "water locked flag")
 
 -- Action bar
 eq(TB.PickPole({ { id = 1, classID = 2, subID = 7 }, { id = 6256, classID = 2, subID = 20 } }), 6256, "pole found")
 eq(TB.PickPole({ { id = 1, classID = 7, subID = 8 } }), nil, "no pole")
-local LL = { { id = 1, bonus = 25 }, { id = 2, bonus = 75 }, { id = 3, bonus = 50 } }
-eq(TB.PickLure(LL, { [1] = 5, [3] = 1 }, false), 3, "best owned lure")
-eq(TB.PickLure(LL, { [1] = 5 }, true), nil, "lure already on pole")
-eq(TB.PickLure(LL, {}, false), nil, "no lures")
+local LL = { { id = 1, bonus = 25, req = 0 }, { id = 2, bonus = 75, req = 100 }, { id = 3, bonus = 50, req = 50 } }
+eq(TB.PickLure(LL, { [1] = 5, [3] = 1 }, false, 60), 3, "best usable lure")
+eq(TB.PickLure(LL, { [1] = 5, [2] = 1 }, false, 5), 1, "skips lure above skill")
+local lid, ok, req = TB.PickLure(LL, { [3] = 1, [2] = 1 }, false, 5)
+eq(lid, 3, "locked: lowest requirement"); eq(ok, false, "locked flag"); eq(req, 50, "locked req")
+eq(TB.PickLure(LL, { [1] = 5 }, true, 300), nil, "lure already on pole")
+eq(TB.PickLure(LL, {}, false, 300), nil, "no lures")
 
 print("all tests passed")

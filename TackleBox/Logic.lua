@@ -145,9 +145,17 @@ function TB.CampRows(buffs, state, skill, subzone)
   return rows
 end
 
-function TB.WaterWalkPick(items, counts, auraActive)
+-- first owned item the player can use; if none is usable, the first owned one with usable=false (button greys out)
+function TB.WaterWalkPick(items, counts, auraActive, level, minLevel)
   if auraActive then return nil end
-  for _, id in ipairs(items) do if (counts[id] or 0) > 0 then return id end end
+  local locked
+  for _, id in ipairs(items) do
+    if (counts[id] or 0) > 0 then
+      if (level or 0) >= ((minLevel or {})[id] or 0) then return id, true end
+      locked = locked or id
+    end
+  end
+  return locked, false
 end
 
 -- items = { {id, classID, subID} }; fishing poles are weapon class 2, subclass 20 (probe run 1: Fishing Pole 6256)
@@ -156,12 +164,20 @@ function TB.PickPole(items)
   for _, it in ipairs(items) do if it.classID == 2 and it.subID == 20 then return it.id end end
 end
 
--- best-bonus lure in bags, nil while the pole already has a lure on it
-function TB.PickLure(lures, counts, lureActive)
+-- best-bonus lure the skill allows, nil while the pole already has a lure on it;
+-- if only too-advanced lures are owned, the lowest-requirement one with usable=false (button greys out)
+function TB.PickLure(lures, counts, lureActive, skill)
   if lureActive then return nil end
-  local best
+  local best, locked
   for _, l in ipairs(lures) do
-    if l.id and (counts[l.id] or 0) > 0 and (not best or l.bonus > best.bonus) then best = l end
+    if l.id and (counts[l.id] or 0) > 0 then
+      if (skill or 0) >= (l.req or 0) then
+        if not best or l.bonus > best.bonus then best = l end
+      elseif not locked or l.req < locked.req then
+        locked = l
+      end
+    end
   end
-  return best and best.id
+  if best then return best.id, true end
+  if locked then return locked.id, false, locked.req end
 end

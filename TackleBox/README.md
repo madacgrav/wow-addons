@@ -22,8 +22,8 @@ A rope-framed strip on the left side of the panel holds up to four click-to-use 
 | Button | Shows when | Click |
 |---|---|---|
 | Pole | A fishing pole is in your bags and not equipped | Equips it |
-| Lure | A pole is equipped, it has no lure, and you carry one | Applies your best lure to the pole |
-| Water | You carry a Draught of Water Walking or Surfer Shoes and are not water-walking | Uses it |
+| Lure | A pole is equipped, it has no lure, and you carry one | Applies the best lure your Fishing skill allows. Greyed out (does nothing) when you only carry lures above your skill; the tooltip shows the skill needed |
+| Water | You carry a Draught of Water Walking or Surfer Shoes and are not water-walking | Uses it. Greyed out below the item's required level (Draught: 24) |
 | Cast | You know Fishing | Casts Fishing |
 
 The buttons only update out of combat. Every action needs your click; TackleBox never casts or reacts to a bite on its own.

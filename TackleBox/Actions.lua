@@ -27,7 +27,8 @@ local function MakeButton(key)
   b:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
     if self.itemID then GameTooltip:SetItemByID(self.itemID) else GameTooltip:AddLine(TIPS[key], T.sand[1], T.sand[2], T.sand[3]) end
-    GameTooltip:AddLine(TIPS[key], 1, 1, 1); GameTooltip:Show()
+    if self.need then GameTooltip:AddLine(self.need, 1, 0.3, 0.3) else GameTooltip:AddLine(TIPS[key], 1, 1, 1) end
+    GameTooltip:Show()
   end)
   b:SetScript("OnLeave", GameTooltip_Hide)
   b:Hide()
@@ -49,7 +50,9 @@ local function Apply()
   for _, key in ipairs(ORDER) do
     local b, a = buttons[key], TB.actions[key]
     if a then
-      if key == "pole" then
+      if a.usable == false then
+        b:SetAttribute("type", nil) -- greyed out: visible, does nothing
+      elseif key == "pole" then
         b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", "/equip item:" .. a.item)
       elseif key == "lure" then
         -- use the lure, then put it on the main-hand slot (16 = the equipped pole)
@@ -59,8 +62,9 @@ local function Apply()
       else
         b:SetAttribute("type", "spell"); b:SetAttribute("spell", a.spell)
       end
-      b.itemID = a.item
+      b.itemID, b.need = a.item, a.need
       b.icon:SetTexture(a.item and C_Item.GetItemIconByID(a.item) or a.icon)
+      b.icon:SetDesaturated(a.usable == false); b.icon:SetAlpha(a.usable == false and 0.5 or 1)
       b.count:SetText(a.item and key ~= "pole" and C_Item.GetItemCount(a.item) or "")
       b:ClearAllPoints(); b:SetPoint("TOP", bar, "TOP", 0, -y); b:Show()
       y = y + 44
@@ -101,15 +105,16 @@ table.insert(TB.refreshers, function()
   else
     local counts = {}
     for _, l in ipairs(TB.DATA.lures) do counts[l.id] = C_Item.GetItemCount(l.id) end
-    local lure = TB.PickLure(TB.DATA.lures, counts, (GetWeaponEnchantInfo())) -- 1st return: main hand has a temp enchant
-    if lure then A.lure = { item = lure } end
+    -- 1st return of GetWeaponEnchantInfo: the main hand already has a temp enchant (a lure)
+    local lure, ok, req = TB.PickLure(TB.DATA.lures, counts, (GetWeaponEnchantInfo()), TB.skill and TB.skill.level)
+    if lure then A.lure = { item = lure, usable = ok, need = not ok and ("Requires Fishing " .. req) or nil } end
   end
 
   local ww, wcounts, active = TB.DATA.waterWalk, {}, false
   for _, id in ipairs(ww.items) do wcounts[id] = C_Item.GetItemCount(id) + (C_Item.IsEquippedItem(id) and 1 or 0) end
   for _, sid in ipairs(ww.auras) do if TB.ReadAura(sid).active then active = true end end
-  local water = TB.WaterWalkPick(ww.items, wcounts, active)
-  if water then A.water = { item = water } end
+  local water, wok = TB.WaterWalkPick(ww.items, wcounts, active, UnitLevel("player"), ww.minLevel)
+  if water then A.water = { item = water, usable = wok, need = not wok and ("Requires level " .. ww.minLevel[water]) or nil } end
   TB.waterActive = active
 
   if TB.skill then
