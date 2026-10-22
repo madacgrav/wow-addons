@@ -790,10 +790,10 @@ eq(TB.WaterWalkPick({ 1 }, { [1] = 1 }, true), nil, "aura active")
 - [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
-- [ ] Deploy, then `/reload`. With the Draught in bags and no buff, the button shows. Clicking it drinks the Draught, and the button hides once the aura is up.
-- [ ] When the aura expires, the button reappears. This runs out of combat.
-- [ ] Entering combat while the button is shown produces no `ADDON_ACTION_BLOCKED`. The button state changes only after combat ends.
-- [ ] If Forever blocks the item click, record it in probe-results, hide the section, and move the item to the README Notes as a known limit.
+- [x] Deploy, then `/reload`. With the Draught in bags and no buff, the button shows. Clicking it drinks the Draught, and the button hides once the aura is up.
+- [x] When the aura expires, the button reappears. This runs out of combat.
+- [x] Entering combat while the button is shown produces no `ADDON_ACTION_BLOCKED`. The button state changes only after combat ends.
+- [x] If Forever blocks the item click, record it in probe-results, hide the section, and move the item to the README Notes as a known limit.
 
 ---
 
@@ -811,7 +811,7 @@ eq(TB.WaterWalkPick({ 1 }, { [1] = 1 }, true), nil, "aura active")
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 TackleBox/tests/run.lua` passes
+- [x] `lua5.1 TackleBox/tests/run.lua` passes
 - [ ] After merge to main, `gh run list --workflow package-tb.yml -L 1` shows success
 - [ ] `gh release view tb-v1.0.0 --json assets -q '.assets[].name'` prints `TackleBox-1.0.0.zip`
 - [ ] `unzip -l TackleBox-1.0.0.zip | grep tests` prints nothing
