@@ -128,6 +128,14 @@ trace: +16.25 UNIT_REMOVED nameplate4 guid=Creature-0-4615-1-6-3457-0D9461C413 d
 - **`GetRaidTargetIndex` is SECRET in combat when a mark is set**, but plain `nil` when no mark is set (Runs 1-5). GUID and name stay non-secret on the same unit.
 - **What this means:** the mark cannot be used as a table key or compared in combat. "Is marked" can still be known without comparing: `Secret(mark) or mark ~= nil`, with the `Secret` check run first. A mark icon could still be shown by passing the secret index straight to a Blizzard texture call, but that is unverified.
 
+## Run 7 — open world, probe right after a Nightfall proc
+- **No overlay events in the trace:** no `OVERLAY_SHOW` or `GLOW_SHOW` entries appear between the casts, even though the user reported a proc just before the probe. **Inconclusive**: the trace dropped every overlay event whose spellID was nil, so a nil-payload SHOW would have been hidden too.
+- **Probe changes (next build):**
+  - Overlay events are traced even when their spellID is nil; only `OVERLAY_HIDE` with nil is still skipped.
+  - The probe prints which overlay events registered.
+  - It post-hooks Blizzard's proc alert on action buttons (`ActionButtonSpellAlertManager:ShowAlert`/`HideAlert`, or `ActionButton_ShowOverlayGlow` on older UIs) and traces `ALERT_SHOW` with the button's action.
+- Re-run needed: a probe right after a Nightfall proc on the new build.
+
 ## Pending runs
 - [x] Kill one mob while still fighting another (Run 5): does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [ ] After a Nightfall proc: which overlay event fires, and its spellID.

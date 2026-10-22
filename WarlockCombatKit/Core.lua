@@ -68,13 +68,34 @@ for _, ev in ipairs({ "UNIT_SPELLCAST_SUCCEEDED", "UNIT_SPELLCAST_FAILED", "UNIT
     if unit == "player" or unit == "pet" then WCK.Trace(ev:sub(16), unit .. " " .. S(spellID) .. " guid=" .. S(castGUID)) end
   end))
 end
--- OVERLAY_HIDE fires every few seconds with a nil spellID; skip those so they don't flood the 20-entry ring
+-- OVERLAY_HIDE fires every few seconds with a nil spellID; skip only that one so it doesn't flood the 20-entry ring
+WCK.overlayReg = {}
 for _, ev in ipairs({ "SPELL_ACTIVATION_OVERLAY_SHOW", "SPELL_ACTIVATION_OVERLAY_HIDE",
     "SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", "SPELL_ACTIVATION_OVERLAY_GLOW_HIDE" }) do
-  if not WCK.On(ev, Safe(function(spellID) if spellID ~= nil then WCK.Trace(ev:sub(18), S(spellID)) end end)) then
-    WCK.Trace("noevent", ev)
-  end
+  WCK.overlayReg[ev] = WCK.On(ev, Safe(function(spellID)
+    if spellID ~= nil or ev ~= "SPELL_ACTIVATION_OVERLAY_HIDE" then WCK.Trace(ev:sub(18), S(spellID)) end
+  end))
 end
+
+-- Blizzard's own proc glow on action buttons (GlowWatcher-style): post-hooks only, never replace
+local function ButtonSpell(b)
+  local action = b and (b.action or (b.GetAction and b:GetAction()))
+  if not action or WCK.Secret(action) then return "?" end
+  local kind, id = GetActionInfo(action)
+  return S(kind) .. ":" .. S(id)
+end
+WCK.On("PLAYER_LOGIN", function()
+  local M = ActionButtonSpellAlertManager
+  if M and M.ShowAlert then
+    hooksecurefunc(M, "ShowAlert", Safe(function(_, b) WCK.Trace("ALERT_SHOW", ButtonSpell(b)) end))
+    hooksecurefunc(M, "HideAlert", Safe(function(_, b) WCK.Trace("ALERT_HIDE", ButtonSpell(b)) end))
+    WCK.alertHook = "ActionButtonSpellAlertManager"
+  elseif ActionButton_ShowOverlayGlow then
+    hooksecurefunc("ActionButton_ShowOverlayGlow", Safe(function(b) WCK.Trace("GLOW_SHOW_BTN", ButtonSpell(b)) end))
+    hooksecurefunc("ActionButton_HideOverlayGlow", Safe(function(b) WCK.Trace("GLOW_HIDE_BTN", ButtonSpell(b)) end))
+    WCK.alertHook = "ActionButton_ShowOverlayGlow"
+  end
+end)
 for _, ev in ipairs({ "NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED" }) do
   WCK.On(ev, Safe(function(unit) WCK.Trace(ev:sub(12), S(unit) .. " guid=" .. S(UnitGUID(unit)) .. " dead=" .. S(UnitIsDead(unit))) end))
 end
@@ -151,6 +172,11 @@ function WCK.Probe()
   if C_LossOfControl and C_LossOfControl.GetActiveLossOfControlDataCountByUnit then
     Try("loc", function() P("loc target", S(C_LossOfControl.GetActiveLossOfControlDataCountByUnit("target"))) end)
   end
+
+  local reg = {}
+  for ev, ok in pairs(WCK.overlayReg) do reg[#reg + 1] = ev:sub(26) .. "=" .. tostring(ok) end
+  P("overlay events", table.concat(reg, " "))
+  P("alert hook", WCK.alertHook or "none")
 
   local t0 = WCK.trace[1] and WCK.trace[1][1] or 0
   for _, e in ipairs(WCK.trace) do P("trace", string.format("+%.2f %s %s", e[1] - t0, e[2], tostring(e[3] or ""))) end
