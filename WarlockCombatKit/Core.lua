@@ -57,21 +57,26 @@ function WCK.Trace(ev, d)
 end
 local function S(v) if WCK.Secret(v) then return "SECRET" end return tostring(v) end
 WCK.S = S
+-- trace handlers are diagnostics: a failing read must never error on every event
+local function Safe(fn) return function(...) pcall(fn, ...) end end
 
-WCK.On("UNIT_SPELLCAST_SENT", function(unit, target, castGUID, spellID)
+WCK.On("UNIT_SPELLCAST_SENT", Safe(function(unit, target, castGUID, spellID)
   if unit == "player" then WCK.Trace("SENT", S(spellID) .. " tgt=" .. S(target) .. " guid=" .. S(castGUID)) end
-end)
+end))
 for _, ev in ipairs({ "UNIT_SPELLCAST_SUCCEEDED", "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTED" }) do
-  WCK.On(ev, function(unit, castGUID, spellID)
+  WCK.On(ev, Safe(function(unit, castGUID, spellID)
     if unit == "player" or unit == "pet" then WCK.Trace(ev:sub(16), unit .. " " .. S(spellID) .. " guid=" .. S(castGUID)) end
-  end)
+  end))
 end
+-- OVERLAY_HIDE fires every few seconds with a nil spellID; skip those so they don't flood the 20-entry ring
 for _, ev in ipairs({ "SPELL_ACTIVATION_OVERLAY_SHOW", "SPELL_ACTIVATION_OVERLAY_HIDE",
     "SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", "SPELL_ACTIVATION_OVERLAY_GLOW_HIDE" }) do
-  if not WCK.On(ev, function(spellID) WCK.Trace(ev:sub(18), S(spellID)) end) then WCK.Trace("noevent", ev) end
+  if not WCK.On(ev, Safe(function(spellID) if spellID ~= nil then WCK.Trace(ev:sub(18), S(spellID)) end end)) then
+    WCK.Trace("noevent", ev)
+  end
 end
 for _, ev in ipairs({ "NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED" }) do
-  WCK.On(ev, function(unit) WCK.Trace(ev:sub(12), S(unit) .. " guid=" .. S(UnitGUID(unit))) end)
+  WCK.On(ev, Safe(function(unit) WCK.Trace(ev:sub(12), S(unit) .. " guid=" .. S(UnitGUID(unit))) end))
 end
 WCK.On("PLAYER_REGEN_DISABLED", function() WCK.Trace("REGEN_DISABLED") end)
 WCK.On("PLAYER_REGEN_ENABLED", function() WCK.Trace("REGEN_ENABLED") end)
@@ -132,10 +137,7 @@ function WCK.Probe()
     P("C_AssistedCombat", "missing")
   end
 
-  local f = CreateFrame("Frame")
-  local okC, errC = pcall(f.RegisterEvent, f, "COMBAT_LOG_EVENT_UNFILTERED")
-  P("CLEU register", okC and "ok" or tostring(errC))
-  f:UnregisterAllEvents()
+  -- no CLEU test: registering it is a forbidden action on Midnight-era clients (blocked-action popup, not a Lua error)
 
   Try("plate", function()
     local p = C_NamePlate.GetNamePlateForUnit("target")

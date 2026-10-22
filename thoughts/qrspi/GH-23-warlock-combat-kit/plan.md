@@ -128,7 +128,7 @@ WCK.On("PLAYER_REGEN_ENABLED", function() WCK.Trace("REGEN_ENABLED") end)
     - `C_Spell.GetSpellCooldown(n)`: `isActive`, `isOnGCD`, `isEnabled` and `startTime`, each through `S`.
   - `secrets`: `C_Secrets.GetSpellAuraSecrecy(17941)` (Shadow Trance), plus `C_Secrets.GetSpellAuraSecrecy("Shadow Trance")`.
   - `assisted`: if `C_AssistedCombat` exists, print `IsAvailable()`, then `GetRotationSpells()` (count, then names via `C_Spell.GetSpellInfo`), then `GetNextCastSpell()`, each in its own `Try`. Otherwise print `P("C_AssistedCombat", "missing")`.
-  - `cleu`: `local f = CreateFrame("Frame"); local ok, err = pcall(f.RegisterEvent, f, "COMBAT_LOG_EVENT_UNFILTERED"); P("CLEU register", ok and "ok" or err); f:UnregisterAllEvents()`.
+  - `cleu`: removed after the first in-game run. Registering CLEU is a forbidden action on Forever: it raises the blocked-action popup and `pcall` still reports `ok`. Treat CLEU as unavailable.
   - `plate`: `local p = C_NamePlate.GetNamePlateForUnit("target")`, then print:
     - whether `p` is nil;
     - whether `p.UnitFrame` exists;
@@ -186,7 +186,7 @@ Later phases insert their blocks above `print`. A later phase may also need `Dat
   4. `UnitGUID`, `UnitName`, `GetRaidTargetIndex` and `UnitIsDead` on `target`/`mouseover`/`nameplateN`, in combat, per instance type.
   5. `IsSpellUsable`/`IsSpellInRange` in combat.
   6. Results from `C_AssistedCombat`.
-  7. Whether CLEU registration succeeds.
+  7. CLEU: unavailable (registering it is blocked; see the `cleu` note above).
   8. Whether a texture can be created on a nameplate per instance type.
   9. The `NAME_PLATE_UNIT_REMOVED` payload when a mob dies.
   10. Whether pet `UNIT_SPELLCAST_SUCCEEDED` fires for Seduction.
