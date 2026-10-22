@@ -1,0 +1,12 @@
+## Interface: 16001
+## Title: TackleBox
+## Notes: Forever fishing companion: skill, where to fish, quest fish, catches, camp buffs, water-walking.
+## Version: 0.1.0
+## IconTexture: Interface\Icons\Trade_Fishing
+## SavedVariables: TackleBoxDB
+## SavedVariablesPerCharacter: TackleBoxCharDB
+
+Data.lua
+Logic.lua
+Core.lua
+Panel.lua
