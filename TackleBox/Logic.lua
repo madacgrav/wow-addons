@@ -19,18 +19,14 @@ function TB.SkillText(s)
   return "Fishing " .. s.level .. "/" .. s.max .. mod
 end
 
--- sections = { {key, title, rows={...}} }; collapsed = {[key]=true}
--- flattens to panel rows; header rows carry .header=key so a click can toggle them
-function TB.BuildView(sections, collapsed)
-  local out = {}
-  for _, s in ipairs(sections) do
-    if #s.rows > 0 then
-      local closed = collapsed[s.key]
-      out[#out + 1] = { header = s.key, text = (closed and "+ " or "- ") .. s.title .. " (" .. #s.rows .. ")" }
-      if not closed then for _, r in ipairs(s.rows) do out[#out + 1] = r end end
-    end
-  end
-  return out
+-- sections = { {key, title, empty?, rows={...}} }; returns the active tab's rows and its key
+-- unknown key falls back to the first tab; an empty tab gets one placeholder row
+function TB.TabRows(sections, active)
+  local pick = sections[1]
+  for _, s in ipairs(sections) do if s.key == active then pick = s end end
+  if not pick then return {}, nil end
+  if #pick.rows == 0 then return { { text = pick.empty or "Nothing here yet.", empty = true } }, pick.key end
+  return pick.rows, pick.key
 end
 
 -- rows sorted incomplete first, then by data order

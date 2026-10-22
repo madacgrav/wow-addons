@@ -12,10 +12,11 @@ local t = TB.MergeDefaults(nil, { a = 1, f = {} }); eq(t.a, 1, "defaults scalar"
 eq(TB.FormatTime(75), "1:15", "format time")
 eq(TB.SkillText(nil), "No Fishing skill", "no skill")
 eq(TB.SkillText({ level = 120, max = 150, modifier = 25 }), "Fishing 120/150 (+25)", "skill with mod")
-local v = TB.BuildView({ { key = "a", title = "A", rows = { { text = "x" } } }, { key = "b", title = "B", rows = {} } }, {})
-eq(#v, 2, "empty section hidden"); eq(v[1].header, "a", "header row"); eq(v[1].text, "- A (1)", "open header")
-v = TB.BuildView({ { key = "a", title = "A", rows = { { text = "x" } } } }, { a = true })
-eq(#v, 1, "collapsed hides rows"); eq(v[1].text, "+ A (1)", "closed header")
+local secs = { { key = "a", title = "A", rows = { { text = "x" } } }, { key = "b", title = "B", empty = "none", rows = {} } }
+local v, k = TB.TabRows(secs, "a"); eq(#v, 1, "active rows"); eq(k, "a", "active key")
+v, k = TB.TabRows(secs, "b"); eq(v[1].text, "none", "empty placeholder"); eq(v[1].empty, true, "empty flag")
+v, k = TB.TabRows(secs, "zzz"); eq(k, "a", "unknown falls back to first")
+eq(#TB.TabRows({}, "a"), 0, "no sections")
 
 -- Phase 2
 local q = TB.QuestRows({ { id = 1, need = 2, zone = "Z" }, { id = 2, need = 1, zone = "Y" } }, { [1] = 2 })

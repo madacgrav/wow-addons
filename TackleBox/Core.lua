@@ -14,7 +14,7 @@ events:SetScript("OnEvent", function(_, event, ...)
   for _, fn in ipairs(handlers[event]) do fn(...) end
 end)
 
-local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 200, collapsed = {}, flash = true }
+local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 200, tab = "where", flash = true }
 local CHAR_DEFAULTS = { catches = {} }
 
 TB.On("ADDON_LOADED", function(name)

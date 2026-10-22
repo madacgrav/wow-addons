@@ -1,13 +1,25 @@
 local ADDON, TB = ...
 local bar, flash
+local T = TB.THEME
 
 table.insert(TB.inits, function()
-  bar = CreateFrame("StatusBar", "TBCastBar", UIParent)
-  bar:SetSize(200, 14); bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar"); bar:SetStatusBarColor(0.25, 0.65, 0.9)
-  bar:SetMinMaxValues(0, 1)
-  local bg = bar:CreateTexture(nil, "BACKGROUND"); bg:SetAllPoints(); bg:SetColorTexture(0, 0, 0, 0.5)
-  bar.text = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); bar.text:SetPoint("CENTER")
-  bar:Hide()
+  -- rope-framed holder; the line drains from right to left with a bobber riding its end
+  local holder = CreateFrame("Frame", "TBCastBar", UIParent, "BackdropTemplate")
+  holder:SetSize(220, 24); TB.Skin(holder, 12); holder:Hide()
+  bar = CreateFrame("StatusBar", nil, holder)
+  bar:SetPoint("TOPLEFT", 5, -5); bar:SetPoint("BOTTOMRIGHT", -5, 5); bar:SetMinMaxValues(0, 1)
+  bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar"); bar:SetStatusBarColor(T.line[1], T.line[2], T.line[3])
+  local fill = bar:GetStatusBarTexture()
+  fill:SetGradient("HORIZONTAL", CreateColor(0.05, 0.3, 0.5, 1), CreateColor(T.line[1], T.line[2] + 0.15, T.line[3] + 0.15, 1))
+  local bob = bar:CreateTexture(nil, "OVERLAY"); bob:SetSize(14, 14); bob:SetPoint("CENTER", fill, "RIGHT", 0, 0)
+  bob:SetTexture("Interface\\Icons\\INV_Misc_Fish_02"); bob:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+  local mask = bar:CreateMaskTexture()
+  mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+  mask:SetAllPoints(bob); bob:AddMaskTexture(mask)
+  bar.label = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); bar.label:SetPoint("LEFT", 4, 0)
+  bar.label:SetText("Line in the water"); bar.label:SetTextColor(T.foam[1], T.foam[2], T.foam[3])
+  bar.text = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); bar.text:SetPoint("RIGHT", -4, 0)
+  bar.holder = holder
 
   -- blue screen-edge vignette; mouse-transparent so it never blocks a click
   flash = CreateFrame("Frame", "TBFlash", UIParent)
@@ -24,18 +36,19 @@ end)
 
 -- docked under the TackleBox panel; centered low on screen while the panel is hidden
 function TB.StartCastBar(st, et)
-  bar:ClearAllPoints()
+  local h = bar.holder
+  h:ClearAllPoints()
   if TBPanel and TBPanel:IsShown() then
-    bar:SetPoint("TOPLEFT", TBPanel, "BOTTOMLEFT", 4, -2); bar:SetPoint("TOPRIGHT", TBPanel, "BOTTOMRIGHT", -4, -2)
+    h:SetPoint("TOPLEFT", TBPanel, "BOTTOMLEFT", 0, 2); h:SetPoint("TOPRIGHT", TBPanel, "BOTTOMRIGHT", 0, 2)
   else
-    bar:SetPoint("CENTER", UIParent, "CENTER", 0, -180)
+    h:SetPoint("CENTER", UIParent, "CENTER", 0, -180)
   end
-  bar:Show()
+  h:Show()
   bar:SetScript("OnUpdate", function(self)
     local f, left = TB.CastProgress(st, et, GetTime() * 1000)
     if not f then return end
     self:SetValue(1 - f); self.text:SetText(string.format("%.0fs", left))
   end)
 end
-function TB.StopCastBar() bar:SetScript("OnUpdate", nil); bar:Hide() end
+function TB.StopCastBar() bar:SetScript("OnUpdate", nil); bar.holder:Hide() end
 function TB.Flash() flash.anim:Stop(); flash.anim:Play() end

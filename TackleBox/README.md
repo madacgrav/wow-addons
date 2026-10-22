@@ -13,7 +13,7 @@ Fishing companion for WoW Forever. One movable panel shows your fishing skill an
 
 ## The panel
 
-The header shows `Fishing level/max (+modifier)`. Shift-drag the panel to move it; the position is saved. Click a section header to collapse or expand it. The close button or `/tb hide` hides the panel.
+The header shows your fishing skill as a water-filled bar (`Fishing level/max (+modifier)`) and the session's "got away" count. Below it, five tabs switch between Quest, Where, Camp, Water and Catch; each tab shows how many rows it holds, and the last tab you picked is remembered. Shift-drag the panel to move it; the position is saved. The close button or `/tb hide` hides the panel.
 
 The minimap button toggles the panel (left-click) and prints your skill (right-click). Drag it around the minimap.
 
