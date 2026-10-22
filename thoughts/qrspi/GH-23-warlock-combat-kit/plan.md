@@ -452,7 +452,7 @@ WCK.ClearAll(map); eq(next(map.rows), nil, "clear all")
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
+- [x] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
 
 #### Manual
 - [ ] Deploy and `/reload`. The panel shows with an empty desaturated core; Shift+drag moves it, it does not move after `/wck lock`, and its position survives a `/reload`.

@@ -106,6 +106,63 @@ end
 WCK.On("PLAYER_REGEN_DISABLED", function() WCK.Trace("REGEN_DISABLED") end)
 WCK.On("PLAYER_REGEN_ENABLED", function() WCK.Trace("REGEN_ENABLED") end)
 
+-- cast map: what I cast on which enemy, from my own cast events (enemy auras are unreadable in combat)
+local function NonSecret(v) if WCK.Secret(v) then return nil end return v end
+
+function WCK.SpellName(spellID)
+  if not spellID or WCK.Secret(spellID) then return nil end
+  local info = C_Spell.GetSpellInfo(spellID)
+  return info and info.name
+end
+
+-- key, label, guid, marked; marks are secret in combat once set, so only "is there one" is known
+function WCK.Identify(unit)
+  local okG, guid = pcall(UnitGUID, unit)
+  local okN, name = pcall(UnitName, unit)
+  local okM, m = pcall(GetRaidTargetIndex, unit)
+  guid, name = okG and NonSecret(guid) or nil, okN and NonSecret(name) or nil
+  local key, label = WCK.EnemyKey(guid, name)
+  return key, label, guid, okM and (WCK.Secret(m) or m ~= nil) or false
+end
+
+table.insert(WCK.inits, function()
+  WCK.map = WCK.NewCastMap()
+  WCK.On("UNIT_SPELLCAST_SENT", function(unit, target, castGUID, spellID)
+    if unit ~= "player" then return end
+    local spell = WCK.SpellName(spellID)
+    if not spell or not WCK.DATA.tracked[spell] or WCK.Secret(castGUID) then return end
+    local names = {}
+    for _, u in ipairs({ "mouseover", "target", "focus" }) do names[u] = NonSecret(UnitName(u)) end
+    local u = WCK.PickUnit(NonSecret(target), names)
+    local key, label, guid = WCK.Identify(u)
+    WCK.CastSent(WCK.map, castGUID, spell, key, label or NonSecret(target), guid, GetTime())
+  end)
+  WCK.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, castGUID, spellID)
+    if unit == "player" and not WCK.Secret(castGUID) then WCK.CastSucceeded(WCK.map, castGUID, GetTime()); WCK.Refresh()
+    elseif unit == "pet" then -- Seduction: pet casts have no SENT; key on the pet's target
+      local spell = WCK.SpellName(spellID)
+      if spell and WCK.DATA.tracked[spell] then
+        local key, label, guid = WCK.Identify("pettarget")
+        WCK.CastLanded(WCK.map, key, label, guid, spell, GetTime()); WCK.Refresh()
+      end
+    end
+  end)
+  for _, ev in ipairs({ "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTED" }) do
+    WCK.On(ev, function(unit, castGUID) if unit == "player" and not WCK.Secret(castGUID) then WCK.CastFailed(WCK.map, castGUID) end end)
+  end
+  -- probe: removal on a kill reads dead=true; a leash/evade reads dead=false and keeps the row
+  WCK.On("NAME_PLATE_UNIT_REMOVED", function(unit)
+    local guid = NonSecret(UnitGUID(unit))
+    if guid and UnitIsDead(unit) == true then WCK.ClearGUID(WCK.map, guid); WCK.Refresh() end
+  end)
+  WCK.On("PLAYER_REGEN_ENABLED", function() WCK.ClearAll(WCK.map) end) -- Refresh is debounced 0.1s, so this clear lands before the redraw
+  C_Timer.NewTicker(0.5, function()
+    if next(WCK.map.rows) == nil then return end
+    if UnitExists("target") and UnitIsDead("target") == true then WCK.ClearRow(WCK.map, (WCK.Identify("target"))) end
+    WCK.Refresh()
+  end)
+end)
+
 local function SpellName(id)
   local info = id and not WCK.Secret(id) and C_Spell.GetSpellInfo(id)
   return info and info.name or S(id)
@@ -201,5 +258,7 @@ SlashCmdList.WARLOCKCOMBATKIT = function(msg)
   if cmd == "probe" then WCK.Probe()
   elseif cmd == "lock" then WCK.db.locked = not WCK.db.locked; WCK.Print(WCK.db.locked and "locked" or "unlocked")
   elseif cmd == "reset" then wipe(WCK.db.frames); WCK.Print("positions reset - /reload to apply")
-  else WCK.Print("/wck probe||lock||reset") end -- || prints one pipe; a bare |h starts a chat link escape
+  elseif cmd == "config" then WCK.ToggleSettings()
+  elseif cmd == "show" or cmd == "hide" then WCK.db.shown = (cmd == "show"); WCK.Refresh()
+  else WCK.Print("/wck config||show||hide||lock||reset||probe") end -- || prints one pipe; a bare |h starts a chat link escape
 end

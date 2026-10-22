@@ -6,5 +6,8 @@
 ## SavedVariables: WarlockCombatKitDB
 ## SavedVariablesPerCharacter: WarlockCombatKitCharDB
 
+Data.lua
 Logic.lua
 Core.lua
+Panel.lua
+Settings.lua
