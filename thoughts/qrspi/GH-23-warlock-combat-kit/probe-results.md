@@ -181,9 +181,13 @@ trace: +10.12 SENT/SUCCEEDED 6217 tgt=Nak; REGEN_DISABLED; UNIT_ADDED nameplate1
   - `GetPlayerAuraBySpellID(17941)` does not error in combat, but returned nil while the proc was (apparently) up, so it is hidden or unusable.
 - **Still to confirm:** castTime reads 3000 in combat **without** a proc. That rules out "always 0 in combat".
 
+## Run 12 — in combat, no proc
+- `ctx ... combat true`; `castTime Shadow Bolt: 3000`; `aura 17941: nil`.
+- **Confirmed:** castTime is not forced to 0 in combat. **Shadow Bolt castTime 0 means Nightfall is up.** It is non-secret in combat.
+
 ## Pending runs
 - [x] Kill one mob while still fighting another (Run 5): does `UNIT_REMOVED ... dead=true` show for the dead plate?
-- [ ] After a Nightfall proc: which overlay event fires, and its spellID.
+- [x] After a Nightfall proc (Runs 7-12): no overlay event; castTime signal works.
 - [x] After a succubus Seduction: pet `SUCCEEDED` (Run 3).
 - [x] A raid-marked mob, in combat (Run 6): **SECRET when set**.
 - [ ] Dungeon, in combat: unit identity, SENT target, plate texture.
@@ -192,7 +196,7 @@ trace: +10.12 SENT/SUCCEEDED 6217 tgt=Nak; REGEN_DISABLED; UNIT_ADDED nameplate1
 ## Conclusions (filled as runs land)
 1. SENT `target` non-secret in combat: **yes (world)**; dungeon and BG pending.
 2. `castGUID` non-secret, and SENT matches SUCCEEDED: **yes (world)**.
-3. Nightfall overlay event: **none**. Nightfall only shows a buff icon (no button glow, no overlay). Testing castTime and a direct aura lookup instead.
+3. Nightfall: **no overlay event and no button glow** (buff icon only). **Signal: `C_Spell.GetSpellInfo("Shadow Bolt").castTime == 0`** (3000 normally, 0 with the proc; non-secret in combat). `GetPlayerAuraBySpellID(17941)` returns nil (no error).
 4. Enemy GUID, name and dead state in combat: **non-secret (world)**. Mark: **SECRET when set**, nil when unset. Dungeon and BG: pending.
 5. `IsSpellUsable` and `IsSpellInRange` in combat: **non-secret (world)**, so `WCK.USABLE_OK` can be true.
 6. `C_AssistedCombat`: **unavailable for warlocks**. Drop the fallback toggle, or keep it hidden.
