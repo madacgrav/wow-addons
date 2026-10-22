@@ -78,17 +78,18 @@ local function Build()
 
   -- skill as a water-filled bar
   local sk = CreateFrame("StatusBar", nil, panel)
-  sk:SetSize(ROW_W - 74, 14); sk:SetPoint("TOPLEFT", 12, -58)
+  sk:SetHeight(14); sk:SetPoint("TOPLEFT", 12, -58) -- right edge set below, against the got-away counter
   sk:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar"); sk:SetStatusBarColor(T.line[1], T.line[2], T.line[3])
   local skbg = sk:CreateTexture(nil, "BACKGROUND"); skbg:SetAllPoints(); skbg:SetColorTexture(0, 0, 0, 0.55)
   sk.text = sk:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); sk.text:SetPoint("CENTER")
   panel.skill = sk
 
-  -- got-away counter with a fish
-  local fish = panel:CreateTexture(nil, "ARTWORK")
-  fish:SetSize(16, 16); fish:SetPoint("LEFT", sk, "RIGHT", 8, 0); fish:SetTexture("Interface\\Icons\\INV_Misc_Fish_02")
+  -- got-away counter pinned to the right edge; the skill bar takes whatever width is left
   panel.misses = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  panel.misses:SetPoint("LEFT", fish, "RIGHT", 4, 0)
+  panel.misses:SetPoint("RIGHT", panel, "TOPRIGHT", -12, -65); panel.misses:SetJustifyH("RIGHT")
+  local fish = panel:CreateTexture(nil, "ARTWORK")
+  fish:SetSize(16, 16); fish:SetPoint("RIGHT", panel.misses, "LEFT", -4, 0); fish:SetTexture("Interface\\Icons\\INV_Misc_Fish_02")
+  sk:SetPoint("RIGHT", fish, "LEFT", -8, 0)
 
   local rule = panel:CreateTexture(nil, "ARTWORK")
   rule:SetHeight(1); rule:SetPoint("TOPLEFT", 10, -TOP + 8); rule:SetPoint("TOPRIGHT", -10, -TOP + 8)
