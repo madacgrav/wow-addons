@@ -87,8 +87,12 @@ end
 WCK.On("PLAYER_LOGIN", function()
   local M = ActionButtonSpellAlertManager
   if M and M.ShowAlert then
-    hooksecurefunc(M, "ShowAlert", Safe(function(_, b) WCK.Trace("ALERT_SHOW", ButtonSpell(b)) end))
-    hooksecurefunc(M, "HideAlert", Safe(function(_, b) WCK.Trace("ALERT_HIDE", ButtonSpell(b)) end))
+    -- HideAlert runs on every button on each bar update; trace a hide only for a button we saw shown
+    local shown = {}
+    hooksecurefunc(M, "ShowAlert", Safe(function(_, b) shown[b] = true; WCK.Trace("ALERT_SHOW", ButtonSpell(b)) end))
+    hooksecurefunc(M, "HideAlert", Safe(function(_, b)
+      if shown[b] then shown[b] = nil; WCK.Trace("ALERT_HIDE", ButtonSpell(b)) end
+    end))
     WCK.alertHook = "ActionButtonSpellAlertManager"
   elseif ActionButton_ShowOverlayGlow then
     hooksecurefunc("ActionButton_ShowOverlayGlow", Safe(function(b) WCK.Trace("GLOW_SHOW_BTN", ButtonSpell(b)) end))

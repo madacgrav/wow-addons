@@ -136,6 +136,18 @@ trace: +16.25 UNIT_REMOVED nameplate4 guid=Creature-0-4615-1-6-3457-0D9461C413 d
   - It post-hooks Blizzard's proc alert on action buttons (`ActionButtonSpellAlertManager:ShowAlert`/`HideAlert`, or `ActionButton_ShowOverlayGlow` on older UIs) and traces `ALERT_SHOW` with the button's action.
 - Re-run needed: a probe right after a Nightfall proc on the new build.
 
+## Run 8 — open world, Nak, instant Shadow Bolt (Nightfall consumed)
+```
+overlay events: GLOW_HIDE=true HIDE=true GLOW_SHOW=true SHOW=true
+alert hook: ActionButtonSpellAlertManager
+trace: ALERT_HIDE spell:2941 / spell:1098 / spell:5740 / macro:709 / nil:nil ... (every button, repeatedly)
+trace: +2.30 SENT 1106 tgt=Nak ...; +2.30 SUCCEEDED player 1106   (instant Shadow Bolt = Nightfall consumed)
+```
+**Observed:**
+- **Overlay events:** all four `SPELL_ACTIVATION_OVERLAY_*` events register on Forever.
+- **Proc alert hook:** `ActionButtonSpellAlertManager` exists and its `ShowAlert`/`HideAlert` hooks attach. `GetActionInfo` on the buttons is non-secret (`spell:<id>`, `macro:<id>`).
+- **Trace flooded:** `HideAlert` runs for every action button on each bar update, which filled the 20-entry ring, so any `ALERT_SHOW` or `OVERLAY_SHOW` from before the instant Shadow Bolt was pushed out. Still inconclusive. The next build traces `ALERT_HIDE` only for a button that was shown.
+
 ## Pending runs
 - [x] Kill one mob while still fighting another (Run 5): does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [ ] After a Nightfall proc: which overlay event fires, and its spellID.
