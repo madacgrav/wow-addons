@@ -162,12 +162,13 @@ table.insert(WCK.inits, function()
     if guid and WCK.IsDead(unit) then WCK.Trace("CLR_PLATE", guid .. " rows=" .. WCK.ClearGUID(WCK.map, guid)); WCK.Refresh() end
   end)
   WCK.On("PLAYER_REGEN_ENABLED", function() WCK.ClearAll(WCK.map) end) -- Refresh is debounced 0.1s, so this clear lands before the redraw
+  local lastDeadTarget -- trace each dead target once, matched or not
   C_Timer.NewTicker(0.5, function()
     if next(WCK.map.rows) == nil then return end
     if WCK.IsDead("target") then
       local _, _, guid = WCK.Identify("target")
       local n = guid and WCK.ClearGUID(WCK.map, guid) or 0
-      if n > 0 or not guid then WCK.Trace("CLR_TARGET", tostring(guid) .. " rows=" .. n) end
+      if guid ~= lastDeadTarget then lastDeadTarget = guid; WCK.Trace("CLR_TARGET", tostring(guid) .. " rows=" .. n) end
     end
     WCK.Refresh()
   end)
