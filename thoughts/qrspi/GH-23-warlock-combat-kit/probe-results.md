@@ -118,11 +118,21 @@ trace: +18.01 UNIT_REMOVED nameplate2 guid=Creature-0-4615-1-6-3457-F33C72A9A8 d
 - **Failed casts:** `FAILED` can also carry a real `Cast-3-…` GUID right after its SENT. `CastFailed` drops the pending entry, as designed.
 - **From the previous run:** an untargeted enemy plate (Healing Ward IV) also reads GUID, name and dead as non-secret in combat.
 
+## Run 6 — open world, raid-marked Razormane Stalker, in combat
+```
+unit target: guid Creature-0-4615-1-6-3457-0E615DFAE6 name Razormane Stalker mark SECRET dead false hostile true isTarget true
+unit nameplate1: guid Creature-0-4615-1-6-3457-0E615DFAE6 name Razormane Stalker mark SECRET dead false hostile true isTarget true
+trace: +16.25 UNIT_REMOVED nameplate4 guid=Creature-0-4615-1-6-3457-0D9461C413 dead=true
+```
+**Observed:**
+- **`GetRaidTargetIndex` is SECRET in combat when a mark is set**, but plain `nil` when no mark is set (Runs 1-5). GUID and name stay non-secret on the same unit.
+- **What this means:** the mark cannot be used as a table key or compared in combat. "Is marked" can still be known without comparing: `Secret(mark) or mark ~= nil`, with the `Secret` check run first. A mark icon could still be shown by passing the secret index straight to a Blizzard texture call, but that is unverified.
+
 ## Pending runs
 - [x] Kill one mob while still fighting another (Run 5): does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [ ] After a Nightfall proc: which overlay event fires, and its spellID.
 - [x] After a succubus Seduction: pet `SUCCEEDED` (Run 3).
-- [ ] A raid-marked mob, in combat: is `GetRaidTargetIndex` non-secret when it is set?
+- [x] A raid-marked mob, in combat (Run 6): **SECRET when set**.
 - [ ] Dungeon, in combat: unit identity, SENT target, plate texture.
 - [ ] Battleground, in combat: same as the dungeon run.
 
@@ -130,7 +140,7 @@ trace: +18.01 UNIT_REMOVED nameplate2 guid=Creature-0-4615-1-6-3457-F33C72A9A8 d
 1. SENT `target` non-secret in combat: **yes (world)**; dungeon and BG pending.
 2. `castGUID` non-secret, and SENT matches SUCCEEDED: **yes (world)**.
 3. Nightfall overlay event: pending.
-4. Enemy GUID, name and dead state in combat: **non-secret (world)**. Mark when set: pending. Dungeon and BG: pending.
+4. Enemy GUID, name and dead state in combat: **non-secret (world)**. Mark: **SECRET when set**, nil when unset. Dungeon and BG: pending.
 5. `IsSpellUsable` and `IsSpellInRange` in combat: **non-secret (world)**, so `WCK.USABLE_OK` can be true.
 6. `C_AssistedCombat`: **unavailable for warlocks**. Drop the fallback toggle, or keep it hidden.
 7. CLEU: **unavailable** (registering it triggers the blocked-action prompt).
