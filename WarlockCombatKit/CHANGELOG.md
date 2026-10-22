@@ -7,6 +7,9 @@ All notable changes to this addon. Versions match `## Version` in `WarlockCombat
 First release: an in-combat helper for warlocks, separate from Warlock Utility Kit.
 
 ### Added
+- **Summoning-circle panel.** No box:
+  - a breathing purple aura, a turning rune ring and a shadow swirl around a round next-spell core;
+  - enemy rows hang off a fading cord as purple soul bands with round spell icons.
 - **Cast map panel.**
   - One row per enemy you cast on, keyed by GUID. Rows show icons for your DoTs, curses, banes and CC, fading with age.
   - Casts are paired from your own cast events.

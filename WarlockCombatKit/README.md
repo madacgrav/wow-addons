@@ -14,10 +14,10 @@ The addon only loads for warlocks.
 
 ## The panel
 
-One movable panel. **Shift+drag** moves it; `/wck lock` or the settings checkbox locks it in place.
+One movable panel shaped like a summoning circle, with your enemies hanging below it as soul bands. **Shift+drag** moves it; `/wck lock` or the settings checkbox locks it in place.
 
-- **Core** (top left): the next spell from your rotation rules. It is grey when no rule matches. Hover it for the spell name.
-- **Proc icon** (right of the core): lights up and pulses while Nightfall is up.
+- **Core** (centre of the circle): the next spell from your rotation rules. It is grey when no rule matches, and pops when the suggestion changes. Hover it for the spell name.
+- **Proc orb** (lower-right edge of the circle): glows fel green and pulses while Nightfall is up.
 - **Cast map** (rows below): one row per enemy you have cast on, up to 8 rows.
   - Each row shows the mob's name and icons for your DoTs, curses, banes and crowd control on that mob. The newest icon is on the left.
   - Icons fade as the cast gets older. They are not timers: an icon at its faintest means "cast a while ago, may have expired".
