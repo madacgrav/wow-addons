@@ -166,6 +166,21 @@ trace: +10.12 SENT/SUCCEEDED 6217 tgt=Nak; REGEN_DISABLED; UNIT_ADDED nameplate1
   - `C_Spell.GetSpellInfo("Shadow Bolt").castTime`: is it 0 while the proc is up, and is it non-secret?
   - `pcall(C_UnitAuras.GetPlayerAuraBySpellID, 17941)` in combat: does it error like `GetAuraDataByIndex`?
 
+## Run 11 — castTime / direct aura lookup
+- **In combat, user probed after a Nightfall proc:**
+  - `castTime Shadow Bolt: 0`
+  - `castTime Corruption: 0`
+  - `aura 17941: nil`, with **no error**
+- **Out of combat, no proc (baseline):**
+  - `castTime Shadow Bolt: 3000`
+  - `castTime Corruption: 0` (instant through the talent)
+  - `aura 17941: nil`
+- **Reading:**
+  - `GetSpellInfo(...).castTime` is non-secret and reflects cast-time modifiers.
+  - Shadow Bolt at 0 in combat after a proc points to **castTime as a Nightfall signal**.
+  - `GetPlayerAuraBySpellID(17941)` does not error in combat, but returned nil while the proc was (apparently) up, so it is hidden or unusable.
+- **Still to confirm:** castTime reads 3000 in combat **without** a proc. That rules out "always 0 in combat".
+
 ## Pending runs
 - [x] Kill one mob while still fighting another (Run 5): does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [ ] After a Nightfall proc: which overlay event fires, and its spellID.
