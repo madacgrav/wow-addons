@@ -13,19 +13,30 @@ local T = TB.THEME
 local QUIPS = { "Tight lines!", "Patience is the best bait.", "The big one's still out there.",
   "Hook, line and sinker.", "Reel it in.", "A bad day fishing beats a good day questing." }
 
-function TB.MakeMovable(f, key, x, y)
-  f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
-  f:SetScript("OnDragStart", function(self)
-    if IsShiftKeyDown() and not TB.db.locked and not InCombatLockdown() then self:StartMoving() end
+-- 1x1 anchor that the panel and the action bar both hang off. The secure bar anchors here, never to the panel:
+-- anchoring a secure frame to the panel would make the panel protected in combat (no tab switches, no resize).
+function TB.Dock()
+  if TB.dock then return TB.dock end
+  local d = CreateFrame("Frame", "TBDock", UIParent)
+  d:SetSize(1, 1); d:SetMovable(true)
+  local pos = TB.db.frames.dock
+  if pos then d:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else d:SetPoint("TOPLEFT", UIParent, "CENTER", 140, 150) end
+  TB.dock = d
+  return d
+end
+
+-- shift-dragging any docked frame moves the whole dock
+function TB.DockDrag(f)
+  f:EnableMouse(true); f:RegisterForDrag("LeftButton")
+  f:SetScript("OnDragStart", function()
+    if IsShiftKeyDown() and not TB.db.locked and not InCombatLockdown() then TB.Dock():StartMoving() end
   end)
-  f:SetScript("OnDragStop", function(self)
-    self:StopMovingOrSizing()
-    local p, _, rp, px, py = self:GetPoint()
-    TB.db.frames[key] = { p, rp, px, py }
+  f:SetScript("OnDragStop", function()
+    local d = TB.Dock()
+    d:StopMovingOrSizing()
+    local p, _, rp, px, py = d:GetPoint()
+    TB.db.frames.dock = { p, rp, px, py }
   end)
-  local pos = TB.db.frames[key]
-  f:ClearAllPoints()
-  if pos then f:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else f:SetPoint("CENTER", UIParent, "CENTER", x, y) end
 end
 
 -- tooltip-style backdrop: dark sea fill, rope-coloured edge
@@ -46,7 +57,7 @@ local function Build()
   panel = CreateFrame("Frame", "TBPanel", UIParent, "BackdropTemplate")
   panel:SetWidth(WIDTH); panel:SetFrameStrata("MEDIUM")
   TB.Skin(panel)
-  TB.MakeMovable(panel, "panel", 300, 0)
+  panel:SetPoint("TOPLEFT", TB.Dock(), "TOPLEFT"); TB.DockDrag(panel)
 
   -- shallow water glow along the bottom
   local glow = panel:CreateTexture(nil, "BACKGROUND", nil, 1)

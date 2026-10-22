@@ -17,7 +17,7 @@ The header shows your fishing skill as a water-filled bar (`Fishing level/max (+
 
 ## Fishing bar
 
-A small rope-framed bar (shift-drag to move) holds up to four click-to-use buttons. Each one shows only when it is useful:
+A rope-framed strip on the left side of the panel holds up to four click-to-use buttons, stacked top to bottom. It moves with the panel (shift-drag either one), stays visible if you close the panel, and shows each button only when it is useful:
 
 | Button | Shows when | Click |
 |---|---|---|

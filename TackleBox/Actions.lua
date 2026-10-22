@@ -25,7 +25,7 @@ local function MakeButton(key)
   local a = ag:CreateAnimation("Alpha"); a:SetFromAlpha(0.1); a:SetToAlpha(0.6); a:SetDuration(1.2)
   ag:Play()
   b:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
     if self.itemID then GameTooltip:SetItemByID(self.itemID) else GameTooltip:AddLine(TIPS[key], T.sand[1], T.sand[2], T.sand[3]) end
     GameTooltip:AddLine(TIPS[key], 1, 1, 1); GameTooltip:Show()
   end)
@@ -37,14 +37,15 @@ end
 table.insert(TB.inits, function()
   bar = CreateFrame("Frame", "TBActionBar", UIParent, "BackdropTemplate")
   bar:SetSize(52, 52); TB.Skin(bar, 12)
-  TB.MakeMovable(bar, "actions", 0, -220)
+  -- vertical strip on the panel's left side, hung off the shared dock (see TB.Dock)
+  bar:SetPoint("TOPRIGHT", TB.Dock(), "TOPLEFT", 2, 0); TB.DockDrag(bar)
   for _, key in ipairs(ORDER) do buttons[key] = MakeButton(key) end
 end)
 
 -- attributes, visibility and layout only out of combat; PLAYER_REGEN_ENABLED -> Refresh re-applies
 local function Apply()
   if not bar or InCombatLockdown() then return end
-  local x = 6
+  local y = 6
   for _, key in ipairs(ORDER) do
     local b, a = buttons[key], TB.actions[key]
     if a then
@@ -61,14 +62,14 @@ local function Apply()
       b.itemID = a.item
       b.icon:SetTexture(a.item and C_Item.GetItemIconByID(a.item) or a.icon)
       b.count:SetText(a.item and key ~= "pole" and C_Item.GetItemCount(a.item) or "")
-      b:ClearAllPoints(); b:SetPoint("LEFT", bar, "LEFT", x, 0); b:Show()
-      x = x + 44
+      b:ClearAllPoints(); b:SetPoint("TOP", bar, "TOP", 0, -y); b:Show()
+      y = y + 44
     else
       b:Hide()
     end
   end
-  bar:SetWidth(math.max(52, x + 2))
-  bar:SetShown(x > 6)
+  bar:SetHeight(math.max(52, y + 2))
+  bar:SetShown(y > 6)
 end
 
 local function BagItems()
