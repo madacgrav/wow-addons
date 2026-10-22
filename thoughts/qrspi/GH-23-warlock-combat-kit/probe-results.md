@@ -148,6 +148,18 @@ trace: +2.30 SENT 1106 tgt=Nak ...; +2.30 SUCCEEDED player 1106   (instant Shado
 - **Proc alert hook:** `ActionButtonSpellAlertManager` exists and its `ShowAlert`/`HideAlert` hooks attach. `GetActionInfo` on the buttons is non-secret (`spell:<id>`, `macro:<id>`).
 - **Trace flooded:** `HideAlert` runs for every action button on each bar update, which filled the 20-entry ring, so any `ALERT_SHOW` or `OVERLAY_SHOW` from before the instant Shadow Bolt was pushed out. Still inconclusive. The next build traces `ALERT_HIDE` only for a button that was shown.
 
+## Run 9 — open world, Nak (new build, alert-hide filter)
+```
+trace: +0.00 REGEN_DISABLED
+trace: +8.55 REGEN_ENABLED
+trace: +8.76 UNIT_REMOVED nameplate1 guid=Creature-...-5919-3785D5BAA7 dead=false
+trace: +8.76 UNIT_REMOVED nameplate2 guid=Creature-...-3434-E70846B549 dead=false
+trace: +10.12 SENT/SUCCEEDED 6217 tgt=Nak; REGEN_DISABLED; UNIT_ADDED nameplate1 ...-E70846B549 dead=false
+```
+**Observed:**
+- **Leash/evade:** combat dropped and both plates were removed with `dead=false` (the mob reset), then the same GUID came back on re-pull. Rows must therefore not be cleared on removal unless `dead=true`, which matches the Phase 2 plan.
+- **Proc events:** no proc signal at all in this trace (no ALERT/OVERLAY lines), so no Nightfall happened in the window. Still pending.
+
 ## Pending runs
 - [x] Kill one mob while still fighting another (Run 5): does `UNIT_REMOVED ... dead=true` show for the dead plate?
 - [ ] After a Nightfall proc: which overlay event fires, and its spellID.
