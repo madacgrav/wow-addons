@@ -98,6 +98,23 @@ table.insert(TB.sections, { key = "where", title = "Where to fish", build = func
   for _, r in ipairs(rows) do r.color, r.icon = FLAG_COLORS[r.flag], 136245 end -- 136245 = Fishing profession icon (probe run 1)
   return rows
 end })
+
+table.insert(TB.sections, { key = "catch", title = "Collection", build = function()
+  local rows = TB.CollectionView(TB.DATA.fish, TB.char.catches, function(id) return C_Item.GetItemQualityByID(id) end)
+  for _, r in ipairs(rows) do
+    r.text, r.icon = TB.ItemName(r.itemID)
+    if r.quality then local cr, cg, cb = C_Item.GetItemQualityColor(r.quality); r.color = { cr, cg, cb } end
+    if r.knife then r.sub = r.sub .. ", knife: " .. (TB.ItemName(r.knife)) end
+    local c = TB.char.catches[r.itemID]
+    if c then
+      r.onTooltip = function(tt)
+        tt:AddLine(" ")
+        for _, z in ipairs(TB.TopZones(c.zones, 3)) do tt:AddDoubleLine(z.zone, z.n, 1, 1, 1, 1, 1, 1) end
+      end
+    end
+  end
+  return rows
+end })
 table.insert(TB.refreshers, function()
   if not TB.db.shown then if panel then panel:Hide() end return end
   local secs = {}

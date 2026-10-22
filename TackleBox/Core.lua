@@ -89,6 +89,33 @@ TB.On("LOOT_READY", function()
   Trace("LOOT_READY", #slots)
 end)
 
+-- catch tracking: LOOT_READY arrives ~10ms after CHANNEL_STOP (probe run 4)
+TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit, _, spellID)
+  if unit == "player" and not TB.Secret(spellID) then TB.lastChannel = { spellID = spellID, t = GetTime() } end
+end)
+TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
+  if unit == "player" and TB.lastChannel then TB.lastChannel.stopT = GetTime() end
+end)
+local looted = false -- LOOT_READY can fire twice per window
+TB.On("LOOT_CLOSED", function() looted = false end)
+TB.On("LOOT_READY", function()
+  if looted then return end
+  local isFL -- nil = API missing; keep false distinct from nil
+  if IsFishingLoot then isFL = IsFishingLoot() and true or false end
+  if not TB.IsFishingCatch(isFL, TB.lastChannel, GetTime(), TB.DATA.fishingSpells) then return end
+  looted = true
+  TB.lastLootT = GetTime()
+  local sub = GetSubZoneText()
+  local zone = GetRealZoneText() .. ((sub and sub ~= "") and (" - " .. sub) or "")
+  for i = 1, GetNumLootItems() do
+    local link = GetLootSlotLink(i)
+    local id = link and tonumber(link:match("item:(%d+)"))
+    local _, _, qty, _, quality = GetLootSlotInfo(i)
+    if id then TB.RecordCatch(TB.char.catches, id, qty, time(), zone, quality) end
+  end
+  TB.Refresh()
+end)
+
 local PROBE_WORDS = { "Fish", "Surfer", "Water Walk", "Knife", "Lure", "Bauble", "Snapper", "Ahi", "Mahi", "Striker", "Sailfin" }
 
 -- dumps the fishing facts Data.lua needs; output saved to TackleBoxDB.lastProbe for probe-results.md

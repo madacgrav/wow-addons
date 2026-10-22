@@ -37,4 +37,17 @@ w = TB.WhereRows(Z, L, { level = 40, modifier = 0 }, "Redridge Mountains"); eq(w
 eq(#TB.WhereRows(Z, L, nil, "x"), 0, "no skill")
 eq(#TB.WhereRows(TB.DATA.zones, TB.DATA.lures, { level = 2, modifier = 25 }, "Orgrimmar"), 7, "real data: 6 starting zones + Orgrimmar")
 
+-- Phase 3
+local S = { [7620] = true }
+eq(TB.IsFishingCatch(true, nil, 0, S), true, "api true"); eq(TB.IsFishingCatch(false, { spellID = 7620, stopT = 0 }, 1, S), false, "api false wins")
+eq(TB.IsFishingCatch(nil, { spellID = 7620, stopT = 10 }, 12, S), true, "fallback recent")
+eq(TB.IsFishingCatch(nil, { spellID = 7620, stopT = 10 }, 50, S), false, "fallback stale")
+eq(TB.IsFishingCatch(nil, { spellID = 1, stopT = 10 }, 11, S), false, "other spell")
+local c = TB.RecordCatch({}, 5, 1, 100, "Z", 1); TB.RecordCatch(c, 5, 2, 200, "Z", 2); TB.RecordCatch(c, 5, 1, 300, "Y", 1)
+eq(c[5].n, 4, "accumulate"); eq(c[5].first, 100, "first kept"); eq(c[5].zones.Z, 3, "zone count"); eq(c[5].q, 2, "best quality kept")
+local cv = TB.CollectionView({ [9] = { tier = "rare" }, [8] = { tier = "unique", knife = 77 } }, { [5] = c[5], [6] = { n = 1, zones = {} } }, function() return 1 end)
+eq(cv[1].itemID, 5, "loot quality 2 -> uncommon first"); eq(cv[2].itemID, 9, "rare"); eq(cv[2].caught, false, "not caught")
+eq(cv[3].knife, 77, "knife"); eq(cv[4].tier, "other", "other bucket"); eq(cv[4].quality, 1, "base quality fallback")
+local tz = TB.TopZones({ A = 1, B = 5, C = 3, D = 2 }, 3); eq(#tz, 3, "top 3"); eq(tz[1].zone, "B", "most first")
+
 print("all tests passed")

@@ -73,3 +73,50 @@ function TB.WhereRows(zones, lures, skill, currentZone)
   for _, z in ipairs(zones) do for _, n in ipairs(z.names) do if n == currentZone and not seen[n] then row(z, n) end end end
   return rows
 end
+
+function TB.IsFishingCatch(isFishingLoot, lastChannel, now, spells)
+  if isFishingLoot ~= nil then return isFishingLoot end
+  return lastChannel ~= nil and spells[lastChannel.spellID] == true and now - (lastChannel.stopT or now) <= 30
+end
+
+-- quality comes from the loot slot: Forever has no separate Uncommon/Rare fish items (probe-results.md),
+-- so a better catch is the same item ID with higher loot quality; keep the best seen
+function TB.RecordCatch(catches, id, qty, now, zone, quality)
+  local c = catches[id] or { n = 0, first = now, zones = {} }
+  c.n, c.last = c.n + (qty or 1), now
+  if quality and quality > (c.q or -1) then c.q = quality end
+  if zone then c.zones[zone] = (c.zones[zone] or 0) + (qty or 1) end
+  catches[id] = c
+  return catches
+end
+
+local Q2TIER = { [2] = "uncommon", [3] = "rare" }
+-- rows grouped uncommon, rare, unique, other; known-but-uncaught show as "not caught"
+function TB.CollectionView(fish, catches, qualityOf)
+  local groups, order = { uncommon = {}, rare = {}, unique = {}, other = {} }, { "uncommon", "rare", "unique", "other" }
+  local ids = {}
+  for id in pairs(fish) do ids[id] = true end
+  for id in pairs(catches) do ids[id] = true end
+  for id in pairs(ids) do
+    local c = catches[id]
+    local q = (c and c.q) or qualityOf(id)
+    local tier = fish[id] and fish[id].tier or Q2TIER[q or -1] or "other"
+    local sub = c and ("caught " .. c.n) or "not caught"
+    table.insert(groups[tier], { itemID = id, tier = tier, caught = c ~= nil, quality = q, sub = sub, knife = fish[id] and fish[id].knife })
+  end
+  local rows = {}
+  for _, t in ipairs(order) do
+    table.sort(groups[t], function(a, b) return a.itemID < b.itemID end)
+    for _, r in ipairs(groups[t]) do rows[#rows + 1] = r end
+  end
+  return rows
+end
+
+-- top n zones by count, for the catch tooltip
+function TB.TopZones(zones, n)
+  local list = {}
+  for z, c in pairs(zones or {}) do list[#list + 1] = { zone = z, n = c } end
+  table.sort(list, function(a, b) if a.n ~= b.n then return a.n > b.n end return a.zone < b.zone end)
+  for i = #list, n + 1, -1 do list[i] = nil end
+  return list
+end

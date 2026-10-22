@@ -441,9 +441,9 @@ eq(#TB.WhereRows(Z, L, nil, "x"), 0, "no skill")
 - [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
-- [ ] Deploy, then `/reload`. "Where to fish" lists the zones for the current band, and the current zone row is flagged.
-- [ ] Equipping a +pole leaves the band unchanged. On a toon at 225+, it removes the lure note once the modifier is ≥ 75.
-- [ ] Changing zone updates the flagged row.
+- [x] Deploy, then `/reload`. "Where to fish" lists the zones for the current band, and the current zone row is flagged.
+- [x] Equipping a +pole leaves the band unchanged. On a toon at 225+, it removes the lure note once the modifier is ≥ 75.
+- [x] Changing zone updates the flagged row.
 
 ---
 
@@ -542,7 +542,7 @@ eq(cv[1].itemID, 9, "rare first"); eq(cv[1].caught, false, "not caught"); eq(cv[
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 TackleBox/tests/run.lua` passes
+- [x] `lua5.1 TackleBox/tests/run.lua` passes
 
 #### Manual
 - [ ] Deploy, then `/reload`. Catching a fish increments its row, and the tooltip shows the zone/subzone.
