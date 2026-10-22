@@ -759,11 +759,11 @@ local c = WCK.CopyRules(rl); c[1].spell = "Z"; eq(rl[1].spell, "B", "copy is dee
 - [x] `lua5.1 WarlockCombatKit/tests/run.lua` prints `all tests passed`.
 
 #### Manual
-- [ ] On a fresh character, the core shows Corruption on a new target, then Curse of Agony (or Bane of Agony) once Corruption is cast, then Shadow Bolt.
-- [ ] Moving Shadow Bolt "ready" to the top makes the core always show Shadow Bolt. "Defaults" restores the list.
-- [ ] A rule saves per character: `/reload` keeps it, and an alt has its own list.
-- [ ] The core updates in combat and nothing is cast without a key press.
-- [ ] With an empty rule list, the core stays grey and there are no errors.
+- [x] On a fresh character, the core shows Corruption on a new target, then Curse of Agony (or Bane of Agony) once Corruption is cast, then Shadow Bolt.
+- [x] Moving Shadow Bolt "ready" to the top makes the core always show Shadow Bolt. "Defaults" restores the list.
+- [x] A rule saves per character: `/reload` keeps it, and an alt has its own list.
+- [x] The core updates in combat and nothing is cast without a key press.
+- [x] With an empty rule list, the core stays grey and there are no errors.
 
 ---
 
