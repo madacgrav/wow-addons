@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: Warlock Combat Kit
+## Notes: In-combat cast map, rotation helper, proc alerts and mouseover casting for WoW Forever warlocks.
+## Version: 0.1.0
+## IconTexture: Interface\Icons\Spell_Shadow_DeathCoil
+## SavedVariables: WarlockCombatKitDB
+## SavedVariablesPerCharacter: WarlockCombatKitCharDB
+
+Logic.lua
+Core.lua

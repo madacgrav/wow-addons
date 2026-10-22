@@ -1,0 +1,12 @@
+# Research Questions
+
+## Context
+Focus on `WarlockUtilityKit/` (Core.lua, Logic.lua, UI.lua, Prep.lua, Settings.lua, tests/run.lua, .toc), with `TackleBox/` and `ProfessionPlanner/` as comparison points for shared patterns. Also read `thoughts/qrspi/2026-10-19-warlock-utility-kit-v2/probe-results.md` and `thoughts/qrspi/2026-10-21-warlock-combat-tooling/research.md` for recorded in-game API behavior on the Forever client, plus `.github/workflows/` for packaging and test runs.
+
+## Questions
+1. Trace an addon's lifecycle in WarlockUtilityKit from `.toc` load order through `ADDON_LOADED` (SavedVariables, `MergeDefaults`), `PLAYER_LOGIN` (inits), and `WUK.On` event dispatch to `WUK.Refresh`/refreshers. Which events trigger a refresh, and how do TackleBox and ProfessionPlanner differ from this skeleton, if at all?
+2. How do the existing `/wuk probe`, `/tb probe` and `/pp probe` commands work: what APIs does each test, how are errors contained (pcall, `issecretvalue`), and how and where are results printed or persisted (e.g. `lastProbe`)? Does any code read probe results back to change runtime behavior?
+3. How do existing addons handle the player's own spellcast events (`UNIT_SPELLCAST_SENT`, `UNIT_SPELLCAST_SUCCEEDED`, channel start/stop): what payload fields are read, how are casts correlated, and what does each handler do with the result? What do the recorded probe results say about which unit/aura/spell APIs return secret values in and out of combat on Forever?
+4. How is the ring/disc/strip UI in `WarlockUtilityKit/UI.lua` built: frame hierarchy, textures, the orbit/collapse/spin animation, `WUK.AddGlow` glow and pulse, desaturated/unavailable icon states, Shift+drag positioning with lock, and how positions are saved? Include how the settings window and minimap button in `Settings.lua` (and TackleBox's `Panel.lua`) are constructed and wired to the DB.
+5. How do secure action buttons work across WUK and TackleBox: how they are created (`SecureActionButtonTemplate`, attributes, macro text), how attribute changes are guarded by `InCombatLockdown()`, what is deferred and replayed on `PLAYER_REGEN_ENABLED`, and what `WUK.CombatFreeze` does? Are key bindings (Bindings.xml, `SetBinding*`, override bindings) used anywhere?
+6. What is the structure of the pure `Logic.lua` modules and `tests/run.lua` runners: how is the WoW API stubbed or avoided, how are tests declared and asserted, and how do the `.github/workflows/package-*.yml` files run tests and package each addon (including version/changelog handling)?
