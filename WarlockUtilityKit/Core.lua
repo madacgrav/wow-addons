@@ -92,14 +92,18 @@ function WUK.ScanSpells()
   WUK.known = known
 end
 
+WUK.buffCache = {}
 function WUK.ReadPlayerBuffs()
+  if InCombatLockdown() then return WUK.buffCache end -- player aura reads error in combat on Forever; PLAYER_REGEN_ENABLED re-reads
   local set = {}
   for i = 1, 40 do
-    local a = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL")
+    local ok, a = pcall(C_UnitAuras.GetAuraDataByIndex, "player", i, "HELPFUL")
+    if not ok then return WUK.buffCache end
     if not a then break end
     local n = a.name
     if n and not WUK.Secret(n) then set[n] = true end
   end
+  WUK.buffCache = set
   return set
 end
 

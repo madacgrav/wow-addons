@@ -2,6 +2,11 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockUtilityKit.toc`; each version is published as a `wuk-vX.Y.Z` GitHub release.
 
+## [0.3.1] — 2026-10-22
+
+### Fixed
+- **Combat aura error.** Fixed `GetAuraDataByIndex(): Auras cannot be accessed when secret` in combat. Player buffs are no longer read in combat; the armor button keeps its pre-combat state and refreshes when combat ends.
+
 ## [0.3.0] — 2026-10-20
 
 The icon strip becomes a ring.
