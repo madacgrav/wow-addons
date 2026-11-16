@@ -120,11 +120,45 @@ end
 
 -- card detail pane (shift-click a Seen row): their card, profession tabs, recipe list fetched on demand
 local detail
-local names = {} -- names[key] = sorted recipe names, resolved once per received list
+local names = {} -- names[key] = {{id, name}} sorted by name, resolved once per received list
 
 local function RecipeName(id)
   local r = C_TradeSkillUI.GetRecipeInfo(id)
   return (r and r.name) or (C_Spell.GetSpellName and C_Spell.GetSpellName(id)) or ("Recipe #" .. id)
+end
+
+-- hover: materials from the recipe schematic (works with no profession window open), with your bag+bank count
+local function RecipeEnter(f)
+  local e = f.entry
+  GameTooltip:SetOwner(f, "ANCHOR_RIGHT")
+  GameTooltip:AddLine(e.name, 1, 0.82, 0)
+  local ok, sch = pcall(C_TradeSkillUI.GetRecipeSchematic, e.id, false)
+  local mats = ok and BC.Reagents(sch) or {}
+  if #mats == 0 then GameTooltip:AddLine("Materials unknown", 0.6, 0.6, 0.6) end
+  local loading = false
+  for _, m in ipairs(mats) do
+    local name = C_Item.GetItemNameByID(m.itemID)
+    if not name then
+      loading = true
+      if Item and Item.CreateFromItemID then
+        Item:CreateFromItemID(m.itemID):ContinueOnItemLoad(function() if GameTooltip:IsOwned(f) then RecipeEnter(f) end end)
+      end
+    end
+    local icon = C_Item.GetItemIconByID(m.itemID) or 134400
+    local have = C_Item.GetItemCount(m.itemID, true) or 0
+    local c = have >= m.qty and BC.THEME.available or BC.THEME.muted
+    GameTooltip:AddDoubleLine("|T" .. icon .. ":14|t " .. (name or "...") .. " x" .. m.qty, "you have " .. have,
+      1, 1, 1, c[1], c[2], c[3])
+  end
+  if loading then GameTooltip:AddLine("Loading item names...", 0.6, 0.6, 0.6) end
+  GameTooltip:AddLine("Shift-click: link in chat", 0.5, 0.5, 0.5)
+  GameTooltip:Show()
+end
+
+local function RecipeClick(f)
+  if not IsShiftKeyDown() then return end
+  local link = C_TradeSkillUI.GetRecipeLink and C_TradeSkillUI.GetRecipeLink(f.entry.id)
+  if link then ChatEdit_InsertLink(link) end
 end
 
 local STATE = {
@@ -183,12 +217,14 @@ local function BuildDetail()
   detail.bar:SetPoint("TOPLEFT", detail.list, "TOPRIGHT", 6, 0); detail.bar:SetPoint("BOTTOMLEFT", detail.list, "BOTTOMRIGHT", 6, 0)
   local view = CreateScrollBoxListLinearView()
   view:SetElementExtent(18)
-  view:SetElementInitializer("Frame", function(f, name)
+  view:SetElementInitializer("Button", function(f, entry)
     if not f.fs then
       f.fs = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); f.fs:SetPoint("LEFT", 6, 0)
       f.fs:SetPoint("RIGHT", -4, 0); f.fs:SetJustifyH("LEFT"); f.fs:SetWordWrap(false)
+      local hl = f:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); BC.Fade(hl, "HORIZONTAL", T.goldBright, 0.18, 0)
+      f:SetScript("OnEnter", RecipeEnter); f:SetScript("OnLeave", GameTooltip_Hide); f:SetScript("OnClick", RecipeClick)
     end
-    f.fs:SetText(name)
+    f.entry = entry; f.fs:SetText(entry.name)
   end)
   ScrollUtil.InitScrollBoxListWithScrollBar(detail.list, detail.bar, view)
 
@@ -233,11 +269,11 @@ function BC.RefreshDetail()
   local key = who .. ":" .. detail.prof
   if not names[key] or #names[key] ~= #ids then
     local n = {}
-    for i, id in ipairs(ids) do n[i] = RecipeName(id) end
-    table.sort(n); names[key] = n
+    for i, id in ipairs(ids) do n[i] = { id = id, name = RecipeName(id) } end
+    table.sort(n, function(a, b) return a.name < b.name end); names[key] = n
   end
   local q, shown = (detail.search:GetText() or ""):lower(), {}
-  for _, n in ipairs(names[key]) do if q == "" or n:lower():find(q, 1, true) then shown[#shown + 1] = n end end
+  for _, e in ipairs(names[key]) do if q == "" or e.name:lower():find(q, 1, true) then shown[#shown + 1] = e end end
   detail.list:SetDataProvider(CreateDataProvider(shown))
   detail.footer:SetText(#shown .. " of " .. #ids .. " known")
 end

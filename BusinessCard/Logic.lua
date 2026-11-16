@@ -226,6 +226,16 @@ function BC.SkillFrac(skill, cap)
   return math.max(0, math.min(1, n / (cap or 300))) -- ponytail: cards carry no max skill; 300 = classic cap
 end
 
+-- basic reagents {itemID, qty} from a C_TradeSkillUI recipe schematic (reagentType 1 = Basic)
+function BC.Reagents(sch)
+  local out = {}
+  for _, slot in ipairs(sch and sch.reagentSlotSchematics or {}) do
+    local r = slot.reagents and slot.reagents[1]
+    if slot.reagentType == 1 and r and r.itemID then out[#out + 1] = { itemID = r.itemID, qty = slot.quantityRequired or 1 } end
+  end
+  return out
+end
+
 -- names whose ad is newer than lastAt; first render (lastAt nil) flashes nothing
 function BC.NewSince(rows, lastAt)
   local out, maxAt = {}, lastAt or 0

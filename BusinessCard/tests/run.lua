@@ -188,4 +188,11 @@ local ns, mx = BC.NewSince(nr, nil); eq(next(ns), nil, "first render flashes not
 ns, mx = BC.NewSince({ { name = "C", at = 25 }, nr[1], nr[2] }, 20)
 eq(ns.C, true, "newer ad flagged"); eq(ns.B, nil, "old ad not flagged"); eq(mx, 25, "max advances")
 
+-- recipe materials (schematic shape from in-game /dump of recipe 2963)
+local rg = BC.Reagents({ reagentSlotSchematics = {
+  { reagentType = 1, quantityRequired = 2, reagents = { { itemID = 2589 } } },
+  { reagentType = 0, quantityRequired = 1, reagents = { { itemID = 9999 } } } } })
+eq(#rg, 1, "only basic reagents"); eq(rg[1].itemID, 2589, "reagent item"); eq(rg[1].qty, 2, "reagent qty")
+eq(#BC.Reagents(nil), 0, "no schematic no reagents")
+
 print("all tests passed")

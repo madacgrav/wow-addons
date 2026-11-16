@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.5
+- Card detail: hover a recipe to see its materials (icon, quantity and how many you have in bags and bank). Shift-click a recipe to link it in chat.
+
 ## 0.8.4
 - Subtle motion: new ads flash gold once in the Seen list, available dots breathe, pills pop when clicked, cards and pills brighten their border on hover, and a gold sheen sweeps a card in the detail pane when it arrives or changes.
 
