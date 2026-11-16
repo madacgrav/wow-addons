@@ -67,15 +67,15 @@ If you haven't learned the chosen pet, the button summons the Imp. The pet choic
 
 ## Summon queue
 
-When someone in party, raid, guild, say or whisper writes a message containing the word `123`, `sum`, `summon` or `port`, they're added to the summon queue. The queue window appears automatically while anyone is waiting.
+When a member of your party or raid writes a message containing the word `123`, `sum`, `summon` or `port` (in party, raid, guild, say or whisper), they're added to the summon queue. Requests from people outside your group are ignored. The queue window appears automatically while anyone is waiting. To open it by hand, even when it's empty, use **Summon queue** in Settings or `/wuk summon` (not in combat).
 
-- Up to 10 people. Entries expire after 10 minutes.
-- Each row shows the player's name, zone (in raids) and, in red, why a summon would fail right now: `not in group`, `offline`, `dead`, `already here`, `no shard` or `need 2 helpers`.
+- Up to 10 people. Entries expire after 10 minutes, and people who leave the group drop off the queue.
+- Each row shows the player's name in their class colour, their zone (in raids) and, in red, why a summon would fail right now: `offline`, `dead`, `already here`, `no shard` or `need 2 helpers`.
 - **Click** a row to target the player and cast Ritual of Summoning.
 - **Ctrl+click** to target only.
 - **Right-click** to remove the player from the queue.
-- After a ritual on someone succeeds, they're removed from the queue automatically.
-- Shift+drag the window to move it.
+- When a ritual succeeds, the row you clicked is removed from the queue, even if you cast something else in between. A failed or interrupted ritual leaves the row in place.
+- Hover the title bar for a reminder of the clicks. Shift+drag the window to move it.
 
 Requires Ritual of Summoning. Queue changes made during combat show once combat ends.
 
@@ -125,15 +125,11 @@ To undock, toggle the option again, then `/reload` to return the viewers to thei
 
 `/wuk config` or click the minimap button.
 
-- Show strip
-- Lock frames (no Shift+drag)
-- Dock Blizzard cooldown timers under strip
-- Spin ring
-- Collapse ring until hover
-- Preferred pet
-- **Reset positions** and **Assignment board** buttons
+- **Strip & ring:** Show strip, Spin ring, Collapse ring until hover, Dock Blizzard cooldown timers under strip
+- **Pet:** Preferred pet
+- **Frames:** Lock frames (no Shift+drag), plus the **Summon queue**, **Assignment board** and **Reset positions** buttons
 
-Escape closes the window.
+Settings opens beside the assignment board. Drag either window to move it; both remember where you put them. Escape or the X closes the window.
 
 ## Slash commands
 
@@ -141,6 +137,7 @@ Escape closes the window.
 |---|---|
 | `/wuk config` | Open or close Settings |
 | `/wuk board` | Open or close the assignment board |
+| `/wuk summon` | Open or close the summon queue window |
 | `/wuk lead` | Take the board lead |
 | `/wuk dock` | Toggle the Cooldown Manager dock |
 | `/wuk spin` | Toggle ring spin |
@@ -151,7 +148,7 @@ Escape closes the window.
 | `/wuk pet <imp\|voidwalker\|succubus\|incubus\|felhunter>` | Set the preferred pet |
 | `/wuk probe` | Print diagnostics (for bug reports) |
 
-`show`, `hide`, `dock`, `spin` and `collapse` are refused in combat.
+`show`, `hide`, `dock`, `spin`, `collapse` and `summon` are refused in combat.
 
 ## Notes
 

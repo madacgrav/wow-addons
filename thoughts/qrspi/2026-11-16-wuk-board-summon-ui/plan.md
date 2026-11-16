@@ -381,11 +381,11 @@ c. **Sections**: re-lay out the controls. The getters and setters stay the same.
 - [x] Deploy with robocopy
 
 #### Manual
-- [ ] Left-click the minimap button: settings shows the themed frame with the green sections Strip & ring / Pet / Frames.
-- [ ] Each checkbox toggles its setting, with the matching chat message.
-- [ ] The pet dropdown changes the preferred pet.
-- [ ] Reset positions and Assignment board both work.
-- [ ] Open settings, then the board (fresh positions): they sit side by side without overlapping.
-- [ ] `/reload` keeps both positions.
-- [ ] "Reset positions" plus `/reload` brings back the side-by-side defaults.
-- [ ] The addon list shows version 0.4.0.
+- [x] Left-click the minimap button: settings shows the themed frame with the green sections Strip & ring / Pet / Frames.
+- [x] Each checkbox toggles its setting, with the matching chat message.
+- [x] The pet dropdown changes the preferred pet.
+- [x] Reset positions and Assignment board both work.
+- [x] Open settings, then the board (fresh positions): they sit side by side without overlapping.
+- [x] `/reload` keeps both positions.
+- [x] "Reset positions" plus `/reload` brings back the side-by-side defaults.
+- [x] The addon list shows version 0.4.0.
