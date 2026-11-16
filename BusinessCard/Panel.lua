@@ -4,6 +4,7 @@ local win
 local T = BC.THEME
 local ST_LABEL = { a = "|cff33ff33Available|r", b = "|cffff3333Busy|r", o = "|cff888888Off|r" }
 local SVC_LABEL = BC.SVC_LABEL
+local lastAt, flash = nil, {} -- session-only: newest ad time rendered, names still to flash once
 
 local function Whisper(name)
   -- Forever names contain spaces ("Thugtar Darkflame"); SendTell targets the name directly
@@ -46,6 +47,8 @@ local function BuildRow(row)
   row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
   row.stripe = row:CreateTexture(nil, "BACKGROUND"); row.stripe:SetAllPoints(); row.stripe:SetColorTexture(1, 1, 1, 0.03)
   local hl = row:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); BC.Fade(hl, "HORIZONTAL", T.goldBright, 0.18, 0)
+  row.glow = row:CreateTexture(nil, "OVERLAY"); row.glow:SetAllPoints(); BC.Fade(row.glow, "HORIZONTAL", T.goldBright, 0.5, 0)
+  row.glow:SetAlpha(0); row.flash = BC.Flash(row.glow)
   row.dot = BC.Dot(row, 10); row.dot:SetPoint("LEFT", 6, 0)
   row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   row.name:SetPoint("LEFT", 22, 0); row.name:SetWidth(150); row.name:SetJustifyH("LEFT"); row.name:SetWordWrap(false)
@@ -79,6 +82,7 @@ local function InitRow(row, v)
   local c = BC.StatusColor(BC.CardStatus(v.card, BC.db.filter))
   row.dot:SetShown(c ~= nil); if c then row.dot:SetVertexColor(c[1], c[2], c[3]) end
   row.badge:SetShown(v.card ~= nil)
+  if flash[v.name] then flash[v.name] = nil; row.flash:Play() end -- once per new ad, even if scrolled
 end
 
 local function Build()
@@ -154,6 +158,8 @@ function BC.RenderSeen(rows, total)
   if not win.list then return end
   win.list:Show(); win.bar:Show()
   for i, v in ipairs(rows) do v.i = i end
+  local new; new, lastAt = BC.NewSince(rows, lastAt)
+  for n in pairs(new) do flash[n] = true end
   win.list:SetDataProvider(CreateDataProvider(rows), ScrollBoxConstants.RetainScrollPosition)
   win.footer:SetText(#rows .. " shown / " .. total .. " seen")
 end

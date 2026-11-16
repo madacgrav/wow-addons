@@ -226,6 +226,16 @@ function BC.SkillFrac(skill, cap)
   return math.max(0, math.min(1, n / (cap or 300))) -- ponytail: cards carry no max skill; 300 = classic cap
 end
 
+-- names whose ad is newer than lastAt; first render (lastAt nil) flashes nothing
+function BC.NewSince(rows, lastAt)
+  local out, maxAt = {}, lastAt or 0
+  for _, v in ipairs(rows) do
+    if lastAt and (v.at or 0) > lastAt then out[v.name] = true end
+    if (v.at or 0) > maxAt then maxAt = v.at end
+  end
+  return out, maxAt
+end
+
 -- card view model; opts.self: portrait "player", else first prof/service icon in the portrait ring
 function BC.CardModel(card, opts)
   local m = { g = card.g or "a", profs = {}, svcs = {}, zone = card.zone }

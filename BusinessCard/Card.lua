@@ -10,12 +10,17 @@ function BC.Pill(parent, w, owner)
   b.dot = BC.Dot(b, 8); b.dot:SetPoint("LEFT", 6, 0)
   b.text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); b.text:SetPoint("LEFT", b.dot, "RIGHT", 4, 0)
   b.owner = owner or parent
+  b.breathe = BC.Breathe(b.dot)
   function b:SetStatus(st)
     local c = BC.StatusColor(st) or T.off
     self.dot:SetVertexColor(c[1], c[2], c[3]); self.text:SetText(ST_TEXT[st] or "")
     self:SetBackdropBorderColor(c[1], c[2], c[3], 0.8); self.st = st
+    if st == "a" then self.breathe:Play() else self.breathe:Stop(); self.dot:SetAlpha(1) end
   end
-  b:SetScript("OnClick", function(self) if self.owner.onPill then self.owner.onPill(self.key) end end)
+  b:SetScript("OnClick", function(self)
+    if self.owner.onPill then BC.Pop(self); self.owner.onPill(self.key) end
+  end)
+  BC.HoverGlow(b, function(self) self:SetStatus(self.st) end)
   return b
 end
 
@@ -63,7 +68,8 @@ local function NewSvc(card)
   b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints(); b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
   b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
   b.dot = BC.Dot(b, 8, "OVERLAY"); b.dot:SetPoint("BOTTOMRIGHT", 2, -2)
-  b:SetScript("OnClick", function(self) if card.onPill then card.onPill(self.key) end end)
+  b.breathe = BC.Breathe(b.dot)
+  b:SetScript("OnClick", function(self) if card.onPill then BC.Pop(self); card.onPill(self.key) end end)
   b:SetScript("OnEnter", SvcEnter); b:SetScript("OnLeave", GameTooltip_Hide)
   return b
 end
@@ -79,6 +85,9 @@ function BC.NewCard(parent)
   card.g = BC.Pill(card, 96); card.g:SetPoint("TOPRIGHT", -12, -16); card.g.key = "g"
   BC.Rule(card, -82)
   card.lines, card.svcs = {}, {}
+  card:EnableMouse(true)
+  BC.HoverGlow(card, function(self) self:SetBackdropBorderColor(T.gold[1], T.gold[2], T.gold[3]) end)
+  card.sheen = BC.Sheen(card)
 
   function card:SetModel(m, title, sub)
     self.portrait:SetPortrait(m.portrait); self.title:SetText(title or ""); self.sub:SetText(sub or "")
@@ -96,6 +105,7 @@ function BC.NewCard(parent)
       b:SetPoint("TOPLEFT", 14 + ((i - 1) % SVC_PER_ROW) * SVC_STEP, y0 - math.floor((i - 1) / SVC_PER_ROW) * 26); b:Show()
       b.icon:SetTexture(s.icon); b.key, b.label, b.st = s.key, s.label, s.st
       local c = BC.StatusColor(s.st) or T.off; b.dot:SetVertexColor(c[1], c[2], c[3])
+      if s.st == "a" then b.breathe:Play() else b.breathe:Stop(); b.dot:SetAlpha(1) end
     end
     for i = #m.svcs + 1, #self.svcs do self.svcs[i]:Hide() end
     self:SetHeight(96 + #m.profs * LINE_H + (#m.svcs > 0 and (math.ceil(#m.svcs / SVC_PER_ROW) * 26 + 8) or 0) + 10)
@@ -197,6 +207,10 @@ function BC.RefreshDetail()
   local who, card = detail.who, BC.Cards()[detail.who]
   detail.card:SetModel(BC.CardModel(card or {}, {}), who, card and card.zone)
   detail.card.g:SetShown(card ~= nil) -- no card: status unknown
+  -- sheen when a card arrives or changes while this player's detail is open (not on first open)
+  local rev = card and card.rev
+  if detail.shownWho == who and rev and detail.shownRev ~= rev then detail.card.sheen.Play() end
+  detail.shownWho, detail.shownRev = who, rev
   for i, b in ipairs(detail.tabs) do
     local p = card and card.profs[i]
     b:SetShown(p ~= nil); b.prof = p and p.id

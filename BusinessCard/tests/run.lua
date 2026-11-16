@@ -182,4 +182,10 @@ eq(cm.svcs[1].label, "Portal: Orgrimmar", "model svc label")
 eq(BC.CardModel({ profs = {}, svcs = { { key = "S", st = "a" } } }).portrait, BC.SVC_ICON.S, "stranger portrait = first svc icon")
 eq(BC.CardModel({}).portrait, BC.ICON_FALLBACK, "empty card fallback portrait")
 
+-- UI redesign P5
+local nr = { { name = "A", at = 10 }, { name = "B", at = 20 } }
+local ns, mx = BC.NewSince(nr, nil); eq(next(ns), nil, "first render flashes nothing"); eq(mx, 20, "max at tracked")
+ns, mx = BC.NewSince({ { name = "C", at = 25 }, nr[1], nr[2] }, 20)
+eq(ns.C, true, "newer ad flagged"); eq(ns.B, nil, "old ad not flagged"); eq(mx, 25, "max advances")
+
 print("all tests passed")

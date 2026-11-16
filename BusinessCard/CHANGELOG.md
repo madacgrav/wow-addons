@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.4
+- Subtle motion: new ads flash gold once in the Seen list, available dots breathe, pills pop when clicked, cards and pills brighten their border on hover, and a gold sheen sweeps a card in the detail pane when it arrives or changes.
+
 ## 0.8.3
 - Card detail (shift-click) shows their business card, a row of profession icon tabs, a search box and a scrolling recipe list. Empty and loading states show an icon (the "Requesting..." one spins).
 
