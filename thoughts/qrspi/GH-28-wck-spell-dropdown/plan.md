@@ -376,6 +376,16 @@ eq(#WCK.BarSpells({}, em, {}), 0, "nothing known")
 
 ## Phase 3: Nightfall glow and grey-out
 
+**Revised by user request before implementation:**
+- Grey = every bar button except the suggested spell (`WCK.next`). Not cooldown/usable-based.
+  - `WCK.ButtonLook(spell, nextSpell, procs, procList)` returns `{dim, fel}`, where `dim = spell ~= next and not fel`.
+  - Icons are desaturated with alpha 0.6 and stay clickable.
+  - The Shadow Bolt fel glow is as planned. A proc also keeps that button in colour.
+- Change 2 (`BuildRuleState` covering bar spells) is dropped: the look no longer reads rule state.
+- Bar buttons are 40px (was 32).
+- Right-clicking the Life Tap core opens options. The core registers left clicks only with the secure handler, and `OnMouseUp` on RightButton calls `WCK.ToggleSettings()`.
+- The snippets below are the original plan and are superseded where they conflict.
+
 ### Changes
 
 #### 1. Look helper
@@ -453,8 +463,8 @@ eq(WCK.ButtonLook("Wrack", bst, {}, pl).dim, true, "unknown dims")
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] Deploy robocopy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] Deploy robocopy exits 0-7
 
 #### Manual
 - [ ] On a Nightfall proc, the Shadow Bolt button glows green. The proc orb, pulse and sound still fire.

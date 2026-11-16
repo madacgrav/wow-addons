@@ -16,7 +16,7 @@ The addon only loads for warlocks.
 
 One movable panel shaped like a summoning circle, with the rotation buttons docked to its right and your enemies hanging below it as soul bands. **Shift+drag** the circle or the bar to move them together; `/wck lock` or the settings checkbox locks them in place.
 
-- **Core** (centre of the circle): **Life Tap**. Click it to cast. It pulses purple when a rule suggests Life Tap. Hover it to see the current suggestion.
+- **Core** (centre of the circle): **Life Tap**. Click it to cast; **right-click** opens the options. It pulses purple when a rule suggests Life Tap. Hover it to see the current suggestion.
 - **Proc orb** (lower-right edge of the circle): glows fel green and pulses while Nightfall is up.
 - **Cast map** (rows below): one row per enemy you have cast on, up to 8 rows.
   - Each row shows the mob's name and icons for your DoTs, curses, banes and crowd control on that mob. The newest icon is on the left.
@@ -72,7 +72,8 @@ A rule passes when you know the spell, it is off cooldown, and its condition hol
 A bar of round buttons docked to the right of the circle, one per spell in your rules (in rule order, except Life Tap, which is the circle's core), then a fixed group after a gap: Shadow Bolt, Fear and Banish (when you know them). Shadow Bolt always sits in that group, even if a rule uses it.
 
 - Click a button to cast its spell on your target.
-- The button for the suggested spell (first passing rule) pulses purple.
+- The button for the suggested spell (first passing rule) pulses purple and stays in colour; every other button is greyed out. Grey buttons still cast when clicked.
+- The Shadow Bolt button glows fel green (and stays in colour) while Nightfall is up.
 - Shift+drag the bar's edge or the circle to move the whole kit (out of combat).
 - A rule edit you make in combat updates the bar when combat ends.
 - Turn the bar off with "Show rotation buttons" in `/wck config` (the Life Tap core stays).

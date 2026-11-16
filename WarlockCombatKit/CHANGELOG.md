@@ -9,6 +9,7 @@ All notable changes to this addon. Versions match `## Version` in `WarlockCombat
 
 ### Added
 - **Rotation buttons.** A movable bar of round, clickable buttons: one per spell in your rules, then Shadow Bolt, Fear and Banish in a fixed group at the end. The suggested spell pulses purple. Rule edits made in combat apply after combat. Toggle with "Show rotation buttons". (#28)
+- Bar buttons other than the suggested spell are greyed out (still clickable); the Shadow Bolt button glows fel green during Nightfall. Right-click the circle to open options. (#28)
 
 ### Changed
 - The summoning circle's core is now a clickable **Life Tap** button (it pulses when a rule suggests Life Tap), and the rotation bar is docked to its right; the circle and bar move together. The suggestion now shows as a pulsing bar button instead of the core icon. (#28)

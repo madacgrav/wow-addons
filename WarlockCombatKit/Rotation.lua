@@ -4,7 +4,7 @@ local ADDON, WCK = ...
 -- attributes); highlights are plain textures, so they redraw in combat.
 -- Anchoring: the panel hangs off the secure Life Tap button, never the reverse. A protected frame anchored TO the
 -- panel would block the panel's per-render resize in combat; an insecure panel anchored to a secure frame is fine.
-local SIZE, GAP, EGAP, PAD = 32, 4, 8, 6
+local SIZE, GAP, EGAP, PAD = 40, 4, 8, 6
 local bar, bg, core, buttons = nil, nil, nil, {}
 
 table.insert(WCK.inits, function()
@@ -17,17 +17,19 @@ table.insert(WCK.inits, function()
   -- the circle's core: Life Tap, clickable; sits left of the strip
   core = CreateFrame("Button", "WCKCoreCast", bar, "SecureActionButtonTemplate")
   core:SetSize(g.core, g.core); core:SetPoint("CENTER", bar, "LEFT", -(g.circle / 2 + 6), 0)
-  core:RegisterForClicks("AnyUp", "AnyDown"); core:SetAttribute("type", "macro")
+  core:RegisterForClicks("LeftButtonUp", "LeftButtonDown"); core:SetAttribute("type", "macro")
   core:SetAttribute("macrotext", "/cast " .. WCK.DATA.core) -- self spell: no mouseover targeting
   WCK.AddGlow(core)
   core:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     GameTooltip:AddLine(WCK.DATA.core .. " (click to cast)")
     GameTooltip:AddLine(WCK.next and ("Suggested: " .. WCK.next) or "No rule matches", 0.88, 0.71, 1)
-    GameTooltip:AddLine("Rules: /wck config", 1, 1, 1)
+    GameTooltip:AddLine("Right-click: options", 1, 1, 1)
     GameTooltip:Show()
   end)
   core:SetScript("OnLeave", GameTooltip_Hide)
+  -- right-click opens options: right clicks aren't registered with the secure handler, so they never cast
+  core:SetScript("OnMouseUp", function(_, button) if button == "RightButton" then WCK.ToggleSettings() end end)
 
   -- the panel hangs off the core: circle centre on the Life Tap button; Shift+drag on the panel moves the whole kit
   panel:ClearAllPoints(); panel:SetPoint("TOPLEFT", core, "CENTER", -g.cx, -g.cy)
@@ -40,6 +42,8 @@ table.insert(WCK.inits, function()
     b.rim:SetColorTexture(0.58, 0.51, 0.79, 0.8); WCK.Round(b, b.rim)
     b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints(); WCK.Round(b, b.icon)
     WCK.AddGlow(b)
+    b.fel = CreateFrame("Frame", nil, b); b.fel:SetSize(SIZE, SIZE); b.fel:SetPoint("CENTER")
+    WCK.AddGlow(b.fel); b.fel.glow:SetVertexColor(0.45, 1, 0.3) -- fel green, as the Nightfall orb
     b:SetScript("OnEnter", function(self)
       if not self.spell then return end
       GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(self.spell); GameTooltip:Show()
@@ -76,5 +80,10 @@ end)
 table.insert(WCK.refreshers, function()
   if not core then return end
   WCK.SetAlert(core, WCK.next == WCK.DATA.core)
-  for _, b in ipairs(buttons) do WCK.SetAlert(b, b.spell ~= nil and b.spell == WCK.next) end
+  for _, b in ipairs(buttons) do
+    local look = b.spell and WCK.ButtonLook(b.spell, WCK.next, WCK.procs, WCK.DATA.procs) or { dim = false, fel = false }
+    b.icon:SetDesaturated(look.dim); b.icon:SetAlpha(look.dim and 0.6 or 1) -- never Disable(): grey buttons still cast
+    WCK.SetAlert(b, b.spell ~= nil and b.spell == WCK.next)
+    WCK.SetAlert(b.fel, look.fel and WCK.db.procAlerts)
+  end
 end)

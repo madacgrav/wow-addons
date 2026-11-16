@@ -105,4 +105,12 @@ eq(#WCK.BarSpells({}, tl, {}), 0, "nothing known")
 bs = WCK.BarSpells({ { spell = "Life Tap" }, { spell = "Corruption" } }, tl, {}, "Life Tap")
 eq(#bs, 1, "core spell kept off the bar"); eq(bs[1].spell, "Corruption", "rest stays")
 
+-- GH-28 Phase 3 (grey = not the suggestion)
+local pl = { { key = "nightfall", spell = "Shadow Bolt" } }
+local lk = WCK.ButtonLook("Corruption", "Corruption", {}, pl); eq(lk.dim, false, "suggested in colour"); eq(lk.fel, false, "no proc")
+eq(WCK.ButtonLook("Fear", "Corruption", {}, pl).dim, true, "others grey")
+lk = WCK.ButtonLook("Shadow Bolt", "Corruption", { nightfall = true }, pl); eq(lk.fel, true, "nightfall glows bolt"); eq(lk.dim, false, "proc keeps colour")
+eq(WCK.ButtonLook("Fear", nil, { nightfall = true }, pl).fel, false, "nightfall not on fear")
+eq(WCK.ButtonLook("Fear", nil, {}, pl).dim, true, "no suggestion: all grey")
+
 print("all tests passed")

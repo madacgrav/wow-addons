@@ -171,6 +171,13 @@ function WCK.BarSpells(rules, tail, known, core)
   return out
 end
 
+-- bar button look: fel = a proc on this spell is up; dim = not the suggestion (and no proc) -- visual only, it stays clickable
+function WCK.ButtonLook(spell, nextSpell, procs, procList)
+  local fel = false
+  for _, p in ipairs(procList) do if p.spell == spell and procs[p.key] then fel = true end end
+  return { dim = spell ~= nextSpell and not fel, fel = fel }
+end
+
 -- mouseover cast slots: hostile mouseover, else the normal target
 WCK.SLOTS = 6
 function WCK.CastMacro(spell)
