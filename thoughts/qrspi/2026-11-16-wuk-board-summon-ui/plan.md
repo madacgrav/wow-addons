@@ -133,12 +133,12 @@ e. Replace the `UNIT_SPELLCAST_SUCCEEDED` block (lines 89-93) with:
 - [x] Deploy with robocopy (exit code 0-7)
 
 #### Manual (Forever, `/reload`)
-- [ ] Out of the group, a guild member types "123": the summon panel does not appear.
-- [ ] After you invite them, "123" in guild or whisper adds their row.
-- [ ] The queued member leaves the group: their row disappears.
-- [ ] Click a row, cast any other spell, then cast the ritual and let it succeed: the clicked row is removed and no other row is.
-- [ ] Click a row and move to interrupt the ritual: the row stays.
-- [ ] Record whether the row disappears when the portal is placed or when the summon completes. If it never disappears, the ritual's `UNIT_SPELLCAST_SUCCEEDED` does not fire on Forever. Report that before continuing.
+- [x] Out of the group, a guild member types "123": the summon panel does not appear.
+- [x] After you invite them, "123" in guild or whisper adds their row.
+- [x] The queued member leaves the group: their row disappears.
+- [x] Click a row, cast any other spell, then cast the ritual and let it succeed: the clicked row is removed and no other row is.
+- [x] Click a row and move to interrupt the ritual: the row stays.
+- [x] Record whether the row disappears when the portal is placed or when the summon completes. If it never disappears, the ritual's `UNIT_SPELLCAST_SUCCEEDED` does not fire on Forever. Report that before continuing.
 
 ---
 
@@ -241,8 +241,8 @@ e. At the end of `UpdateSummonRows`, before the show/hide line, add:
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] Deploy with robocopy
+- [x] `lua5.1 WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] Deploy with robocopy
 
 #### Manual
 - [ ] With a groupmate queued, the panel has a dark purple body, a green 1 px edge, and a purple title bar with the shard icon reading "Summons (1)".

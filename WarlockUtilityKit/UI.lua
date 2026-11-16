@@ -10,6 +10,43 @@ local FALLBACK = {
 local R, CORE, BTN, LABELS = 58, 44, 36, 30   -- ring radius, core size, orbit size, label band height
 local ORBIT = { "healthstone", "soulstone", "spellstone", "firestone", "armor", "pet" } -- clockwise from 12
 
+-- warlock window theme: void purple body, fel-green edge + accents, purple title bar (strip palette, UI rim/disc)
+WUK.THEME = {
+  bg = { 0.04, 0, 0.07, 0.92 }, edge = { 0.45, 0.85, 0.3, 0.9 },
+  bar = { 0.25, 0.12, 0.38, 1 }, barEnd = { 0.08, 0.02, 0.12, 1 },
+  accent = { 0.45, 0.85, 0.3 }, text = { 0.85, 0.8, 0.95 },
+}
+
+-- f must inherit BackdropTemplate; returns the title FontString
+function WUK.Skin(f, title, opts)
+  local T = WUK.THEME
+  f:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8", edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
+  f:SetBackdropColor(unpack(T.bg)); f:SetBackdropBorderColor(unpack(T.edge))
+  local bar = f:CreateTexture(nil, "ARTWORK")
+  bar:SetPoint("TOPLEFT", 1, -1); bar:SetPoint("TOPRIGHT", -1, -1); bar:SetHeight(22)
+  bar:SetColorTexture(1, 1, 1, 1)
+  if bar.SetGradient and CreateColor then
+    bar:SetGradient("HORIZONTAL", CreateColor(unpack(T.bar)), CreateColor(unpack(T.barEnd)))
+  else bar:SetVertexColor(unpack(T.bar)) end
+  local icon = f:CreateTexture(nil, "OVERLAY")
+  icon:SetSize(16, 16); icon:SetPoint("LEFT", bar, "LEFT", 4, 0)
+  icon:SetTexture("Interface\\Icons\\INV_Misc_Gem_Amethyst_02")
+  local text = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  text:SetPoint("LEFT", icon, "RIGHT", 5, 0); text:SetTextColor(unpack(T.accent)); text:SetText(title)
+  if opts and opts.close then
+    local c = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    c:SetSize(24, 24); c:SetPoint("TOPRIGHT", 0, 0)
+  end
+  f.titleBar, f.titleText = bar, text
+  return text
+end
+
+function WUK.Header(parent, text, x, y)
+  local h = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  h:SetPoint("TOPLEFT", x, y); h:SetTextColor(unpack(WUK.THEME.accent)); h:SetText(text)
+  return h
+end
+
 function WUK.MakeMovable(f, key, x, y)
   f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart", function(self)

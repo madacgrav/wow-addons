@@ -31,6 +31,7 @@ local function Context(name)
   end
   if not target then return ctx, nil end
   ctx.inGroup = true
+  ctx.class = select(2, UnitClass(target)) -- classFilename is never secret (Core.lua GroupWarlocks)
   ctx.connected = UnitIsConnected(target)
   ctx.dead = UnitIsDeadOrGhost(target)
   local zone = RosterZone(name)
@@ -58,12 +59,16 @@ function WUK.UpdateSummonRows()
       row:SetAttribute("macrotext1", "/target " .. r.name .. "\n/cast " .. WUK.known.ritual)
       row:SetAttribute("ctrl-macrotext1", "/target " .. r.name)
       row.name = r.name
-      row.text:SetText(r.name .. "  |cffaaaaaa" .. (zone or "?") .. "|r  |cffff6060" .. (WUK.SummonFailure(ctx) or "") .. "|r")
+      local c = ctx.class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[ctx.class]
+      local shown = (c and c.colorStr) and ("|c" .. c.colorStr .. r.name .. "|r") or r.name
+      row.text:SetText(shown .. "  |cffaaaaaa" .. (zone or "?") .. "|r  |cffff6060" .. (WUK.SummonFailure(ctx) or "") .. "|r")
       row:Show()
     else
       row:Hide()
     end
   end
+  panel.title:SetText("Summons (" .. #queue .. ")")
+  panel:SetHeight(28 + math.max(1, math.min(#queue, MAX)) * 20)
   if queue[1] and WUK.known.ritual then panel:Show() else panel:Hide() end
 end
 
@@ -79,14 +84,25 @@ end
 
 table.insert(WUK.inits, function()
   panel = CreateFrame("Frame", "WUKSummon", UIParent, "BackdropTemplate")
-  panel:SetSize(300, 20 + MAX * 20)
-  panel:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8x8" }); panel:SetBackdropColor(0, 0, 0, 0.6)
-  local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-  title:SetPoint("TOPLEFT", 6, -4); title:SetText("Summon queue (click: summon, ctrl: target, right: remove)")
+  panel:SetSize(300, 28 + MAX * 20)
+  panel.title = WUK.Skin(panel, "Summons")
   WUK.MakeMovable(panel, "summon", 0, -300)
+  -- title-bar hit area: tooltip with the click help, forwards drags to the panel (MakeMovable rules)
+  local hit = CreateFrame("Frame", nil, panel)
+  hit:SetAllPoints(panel.titleBar); hit:EnableMouse(true); hit:RegisterForDrag("LeftButton")
+  hit:SetScript("OnDragStart", function() panel:GetScript("OnDragStart")(panel) end)
+  hit:SetScript("OnDragStop", function() panel:GetScript("OnDragStop")(panel) end)
+  hit:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:AddLine("Summon queue")
+    GameTooltip:AddLine("Click: summon   Ctrl-click: target   Right-click: remove", 1, 1, 1)
+    GameTooltip:AddLine("Shift-drag: move", 0.7, 0.7, 0.7)
+    GameTooltip:Show()
+  end)
+  hit:SetScript("OnLeave", GameTooltip_Hide)
   for i = 1, MAX do
     local row = CreateFrame("Button", "WUKSummonRow" .. i, panel, "SecureActionButtonTemplate")
-    row:SetSize(288, 18); row:SetPoint("TOPLEFT", 6, -2 - i * 20)
+    row:SetSize(288, 18); row:SetPoint("TOPLEFT", 6, -26 - (i - 1) * 20)
     row:RegisterForClicks("AnyUp", "AnyDown")
     row:SetAttribute("type1", "macro"); row:SetAttribute("ctrl-type1", "macro")
     row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); row.text:SetPoint("LEFT")
