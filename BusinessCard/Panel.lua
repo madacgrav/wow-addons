@@ -12,16 +12,14 @@ end
 
 local function RowClick(self, btn)
   if not self.key then return end
-  if BC.db.view == "card" then
-    if BC.OnCardRowClick then BC.OnCardRowClick(self) end -- Phase 4
-  elseif btn == "RightButton" then BC.Seen()[self.key] = nil; BC.RefreshPanel()
+  if btn == "RightButton" then BC.Seen()[self.key] = nil; BC.RefreshPanel()
   elseif IsShiftKeyDown() then BC.Ask(self.key, true); BC.ShowDetail(self.key)
   elseif IsControlKeyDown() then BC.Who(self.key)
   else Whisper(self.key) end
 end
 
 local function RowEnter(self)
-  if not self.data or self.data.mine or BC.db.view ~= "seen" then return end
+  if not self.data then return end
   local d = self.data
   GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
   GameTooltip:AddLine(d.name, 1, 0.82, 0)
@@ -72,12 +70,6 @@ local function InitRow(row, v)
   if not row.built then BuildRow(row) end
   row.key, row.data = v.key or v.name, v
   row.stripe:SetShown((v.i or 0) % 2 == 1)
-  if v.mine then -- My card fallback until Phase 3
-    row.name:SetText(v.label); row.name:SetTextColor(T.cream[1], T.cream[2], T.cream[3])
-    row.zone:SetText(v.skill or ""); row.age:SetText(ST_LABEL[v.st or "a"])
-    row.dot:Hide(); row.badge:Hide(); for _, ic in ipairs(row.icons) do ic:Hide() end
-    return
-  end
   row.name:SetText(v.name)
   local nc = v.card and T.goldBright or T.cream
   row.name:SetTextColor(nc[1], nc[2], nc[3])
@@ -146,6 +138,11 @@ local function Build()
   else
     BC.Print("scroll list unavailable on this client")
   end
+  win.card = BC.NewCard(win); win.card:SetPoint("TOP", 0, -TOP - 8); win.card:Hide()
+  win.card.onPill = function(key)
+    local cur = BC.char.status[key] or "a"
+    if key == "g" then BC.ChangeStatus("g", cur == "a" and "b" or "a") else BC.ChangeStatus(key, BC.NextStatus(cur)) end
+  end
   win.footer = win:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
   win.footer:SetPoint("BOTTOMLEFT", 18, 10); win.footer:SetTextColor(T.muted[1], T.muted[2], T.muted[3])
   win:SetScript("OnShow", function() PanelTemplates_SetTab(win, BC.db.view == "card" and 2 or 1); BC.RefreshPanel() end)
@@ -153,8 +150,9 @@ local function Build()
 end
 
 function BC.RenderSeen(rows, total)
-  win.filter:Show()
+  win.filter:Show(); win.card:Hide()
   if not win.list then return end
+  win.list:Show(); win.bar:Show()
   for i, v in ipairs(rows) do v.i = i end
   win.list:SetDataProvider(CreateDataProvider(rows), ScrollBoxConstants.RetainScrollPosition)
   win.footer:SetText(#rows .. " shown / " .. total .. " seen")
@@ -178,26 +176,15 @@ function BC.RefreshPanel()
 end
 
 
--- My card view: row 1 = overall, then professions, then services; click cycles status
+-- My card view: business-card widget; pill clicks cycle status via win.card.onPill
 function BC.RenderMyCard(w)
-  local card, st = BC.MyCard(), BC.char.status
-  local rows = { { mine = true, key = "g", label = "Overall", st = card.g, skill = "" } }
-  for _, p in ipairs(card.profs) do
-    rows[#rows + 1] = { mine = true, key = "p" .. p.id, label = BC.PROF_NAMES[p.id] or ("Profession " .. p.id), st = p.st, skill = tostring(p.skill) }
-  end
-  for _, s in ipairs(card.svcs) do rows[#rows + 1] = { mine = true, key = s.key, label = SVC_LABEL[s.key], st = s.st, skill = "" } end
-  for i, v in ipairs(rows) do v.i = i end
-  if w.list then w.list:SetDataProvider(CreateDataProvider(rows)) end
+  if w.list then w.list:Hide(); w.bar:Hide() end
+  w.card:Show()
+  w.card:SetModel(BC.CardModel(BC.MyCard(), { self = true }), UnitName("player"), GetRealZoneText())
   local cached = {}
   for id, ids in pairs(BC.char.recipes) do cached[#cached + 1] = (BC.PROF_NAMES[id] or id) .. " " .. #ids end
   table.sort(cached)
   w.footer:SetText(#cached > 0 and ("Recipes cached: " .. table.concat(cached, ", ")) or "Open a profession window to cache recipes")
-end
-
-function BC.OnCardRowClick(row)
-  local cur = BC.char.status[row.key] or "a"
-  if row.key == "g" then BC.ChangeStatus("g", cur == "a" and "b" or "a")
-  else BC.ChangeStatus(row.key, BC.NextStatus(cur)) end
 end
 
 -- card detail pane (shift-click): professions as buttons, recipe list fetched on demand

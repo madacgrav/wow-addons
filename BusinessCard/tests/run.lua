@@ -171,4 +171,15 @@ eq(BC.StatusColor("o"), BC.THEME.off, "off colour"); eq(BC.StatusColor(nil), nil
 for _, c in ipairs(BC.CATS) do assert(BC.CAT_ICON[c], "icon for " .. c) end
 for _, s in ipairs(BC.SERVICES) do assert(BC.SVC_ICON[s.key], "icon for " .. s.key) end
 
+-- UI redesign P3
+eq(BC.SkillFrac(150), 0.5, "skill half"); eq(BC.SkillFrac(400), 1, "skill clamps high")
+eq(BC.SkillFrac(nil), 0, "skill nil"); eq(BC.SkillFrac(75, 150), 0.5, "skill custom cap")
+local cm = BC.CardModel({ g = "b", profs = { { id = 333, skill = 225, st = "o" } }, svcs = { { key = "P-ORG", st = "a" } } }, { self = true })
+eq(cm.g, "b", "model global"); eq(cm.portrait, "player", "self portrait")
+eq(cm.profs[1].name, "Enchanting", "model prof name"); eq(cm.profs[1].key, "p333", "model prof key")
+eq(cm.profs[1].icon, BC.PROF_ICON[333], "model prof icon"); eq(cm.profs[1].st, "o", "model prof status")
+eq(cm.svcs[1].label, "Portal: Orgrimmar", "model svc label")
+eq(BC.CardModel({ profs = {}, svcs = { { key = "S", st = "a" } } }).portrait, BC.SVC_ICON.S, "stranger portrait = first svc icon")
+eq(BC.CardModel({}).portrait, BC.ICON_FALLBACK, "empty card fallback portrait")
+
 print("all tests passed")

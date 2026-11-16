@@ -220,3 +220,25 @@ end
 
 local ST_THEME = { a = "available", b = "busy", o = "off" }
 function BC.StatusColor(st) return st and BC.THEME[ST_THEME[st]] or nil end
+
+function BC.SkillFrac(skill, cap)
+  local n = tonumber(skill) or 0
+  return math.max(0, math.min(1, n / (cap or 300))) -- ponytail: cards carry no max skill; 300 = classic cap
+end
+
+-- card view model; opts.self: portrait "player", else first prof/service icon in the portrait ring
+function BC.CardModel(card, opts)
+  local m = { g = card.g or "a", profs = {}, svcs = {}, zone = card.zone }
+  for _, p in ipairs(card.profs or {}) do
+    m.profs[#m.profs + 1] = { key = "p" .. p.id, icon = BC.PROF_ICON[p.id] or BC.ICON_FALLBACK,
+      name = BC.PROF_NAMES[p.id] or ("Profession " .. p.id), skill = tonumber(p.skill) or 0,
+      frac = BC.SkillFrac(p.skill), st = p.st or "a" }
+  end
+  for _, s in ipairs(card.svcs or {}) do
+    m.svcs[#m.svcs + 1] = { key = s.key, icon = BC.SVC_ICON[s.key] or BC.ICON_FALLBACK,
+      label = BC.SVC_LABEL[s.key] or s.key, st = s.st or "a" }
+  end
+  if opts and opts.self then m.portrait = "player"
+  else m.portrait = (m.profs[1] and m.profs[1].icon) or (m.svcs[1] and m.svcs[1].icon) or BC.ICON_FALLBACK end
+  return m
+end

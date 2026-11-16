@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.2
+- My card is now a real business card: your round portrait, name and zone, each profession with an icon, skill bar and status pill, your services as icons with status dots, and a big Available/Busy pill. Click any pill or service icon to change its status.
+- Window background is fully opaque (nothing behind shows through).
+
 ## 0.8.1
 - Seen list scrolls, so every entry is reachable (no more 20-row cap). Taller rows show a status dot, the name in gold if they run BusinessCard, category icons, zone, age and a card badge, with stripes and a gold hover.
 
