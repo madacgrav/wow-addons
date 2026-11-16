@@ -5,7 +5,8 @@ All notable changes to this addon. Versions match `## Version` in `WarlockUtilit
 ## [0.4.0] — 2026-11-16
 
 ### Changed
-- **Warlock look for the summon queue, assignment board and settings.** All three use one dark void-purple window with a fel-green edge and a purple title bar.
+- **Warlock look for the summon queue, assignment board and settings.** All three use one dark void-purple window with a fel-green edge, a breathing fel halo, a purple title bar with a pulsing soul shard, and a quick fade-in. The board and settings have a slowly turning shadow swirl behind them, and every button is a themed purple/fel button instead of the red Blizzard one.
+- **Rows.** Alternating stripes and a fel hover glow. Summon rows show a class icon; on the board you're in fel green, other warlocks in purple, and the lead has a crown. Settings shows a portrait of your preferred demon.
 - **Summon queue panel.** Short "Summons (n)" title, click help on hover, class-coloured names, height fits the queue.
 - **Assignment board.** Column headers, wider dropdowns so labels fit, remembers its position.
 - **Settings.** Grouped into Strip & ring / Pet / Frames, opens beside the board instead of on top of it, remembers its position.

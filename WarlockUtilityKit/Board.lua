@@ -96,20 +96,24 @@ end
 local function Build()
   win = CreateFrame("Frame", "WUKBoard", UIParent, "BackdropTemplate")
   win:SetSize(560, 110 + MAX_ROWS * 28); win:SetFrameStrata("DIALOG")
-  WUK.Skin(win, "Warlock Assignments", { close = true })
+  WUK.Skin(win, "Warlock Assignments", { close = true, swirl = true })
   WUK.MakeMovable(win, "board", -180, 0, true)
   tinsert(UISpecialFrames, "WUKBoard")
   win.leadText = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   win.leadText:SetPoint("TOPLEFT", 14, -30); win.leadText:SetTextColor(unpack(WUK.THEME.text))
   WUK.Header(win, "Warlock", 14, -50); WUK.Header(win, "Curse", 124, -50)
   WUK.Header(win, "Banish", 270, -50); WUK.Header(win, "Soulstone", 396, -50)
+  WUK.Divider(win, 14, -63, 532)
 
   win.rows = {}
   for i = 1, MAX_ROWS do
     local row = CreateFrame("Frame", nil, win)
     row:SetSize(532, 26); row:SetPoint("TOPLEFT", 14, -66 - (i - 1) * 28)
+    if i % 2 == 0 then -- faint lavender stripe on every other row
+      local s = row:CreateTexture(nil, "BACKGROUND"); s:SetAllPoints(); s:SetColorTexture(0.58, 0.51, 0.79, 0.07)
+    end
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.name:SetPoint("LEFT"); row.name:SetWidth(106); row.name:SetJustifyH("LEFT")
+    row.name:SetPoint("LEFT", 4, 0); row.name:SetWidth(102); row.name:SetJustifyH("LEFT")
     row.dds = {
       Dropdown(row, 110, 140, function(root)
         Radio(root, "No curse", row, "curse", nil)
@@ -134,9 +138,8 @@ local function Build()
   end
 
   local function Button(label, x, onClick)
-    local b = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
-    b:SetSize(120, 22); b:SetPoint("BOTTOMLEFT", x, 14); b:SetText(label)
-    b:SetScript("OnClick", onClick)
+    local b = WUK.Button(win, label, 120, onClick)
+    b:SetPoint("BOTTOMLEFT", x, 14)
     return b
   end
   win.leadBtn = Button("Take lead", 14, WUK.ClaimLead)
@@ -149,15 +152,17 @@ local function Build()
       row.warlock = list[i]
       row:SetShown(row.warlock ~= nil)
       if row.warlock then
+        -- you in fel green, other warlocks in warlock purple
         row.name:SetText(row.warlock)
+        if row.warlock == me then row.name:SetTextColor(unpack(WUK.THEME.accent)) else row.name:SetTextColor(0.58, 0.51, 0.79) end
         for _, dd in ipairs(row.dds) do dd:GenerateMenu(); dd:SetEnabled(WUK.IsLead()) end
       end
     end
-    self.leadText:SetText("Lead: " .. (WUK.board.lead or (me .. " (local)")))
+    self.leadText:SetText("|TInterface\\GroupFrame\\UI-Group-LeaderIcon:0|t Lead: " .. (WUK.board.lead or (me .. " (local)")))
     self.leadBtn:SetShown(WUK.board.lead ~= me)
     self.announceBtn:SetShown(WUK.IsLead())
   end
-  win:SetScript("OnShow", win.Sync)
+  win:HookScript("OnShow", win.Sync) -- HookScript: keeps the skin's fade-in
   win:Hide()
 end
 

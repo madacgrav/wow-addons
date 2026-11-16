@@ -62,6 +62,8 @@ function WUK.UpdateSummonRows()
       row.name = r.name
       local c = ctx.class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[ctx.class]
       local shown = (c and c.colorStr) and ("|c" .. c.colorStr .. r.name .. "|r") or r.name
+      local tc = ctx.class and CLASS_ICON_TCOORDS and CLASS_ICON_TCOORDS[ctx.class]
+      if tc then row.icon:SetTexCoord(unpack(tc)); row.icon:Show() else row.icon:Hide() end
       row.text:SetText(shown .. "  |cffaaaaaa" .. (zone or "?") .. "|r  |cffff6060" .. (WUK.SummonFailure(ctx) or "") .. "|r")
       row:Show()
     else
@@ -113,8 +115,18 @@ table.insert(WUK.inits, function()
     row:SetSize(288, 18); row:SetPoint("TOPLEFT", 6, -26 - (i - 1) * 20)
     row:RegisterForClicks("AnyUp", "AnyDown")
     row:SetAttribute("type1", "macro"); row:SetAttribute("ctrl-type1", "macro")
-    row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); row.text:SetPoint("LEFT")
-    row:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
+    row.icon = row:CreateTexture(nil, "ARTWORK"); row.icon:SetSize(14, 14); row.icon:SetPoint("LEFT", 2, 0)
+    row.icon:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
+    row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    row.text:SetPoint("LEFT", row.icon, "RIGHT", 5, 0)
+    -- fel glow sweeping in from the left on hover
+    local hl = row:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetColorTexture(1, 1, 1, 1); hl:SetBlendMode("ADD")
+    if hl.SetGradient and CreateColor then
+      hl:SetGradient("HORIZONTAL", CreateColor(0.45, 0.85, 0.3, 0.3), CreateColor(0.45, 0.85, 0.3, 0))
+    else hl:SetVertexColor(0.45, 0.85, 0.3, 0.15) end
+    if i % 2 == 0 then
+      local s = row:CreateTexture(nil, "BACKGROUND"); s:SetAllPoints(); s:SetColorTexture(0.58, 0.51, 0.79, 0.07)
+    end
     row:HookScript("OnClick", function(self, button, down)
       if button == "RightButton" and not down and self.name then WUK.QueueRemove(queue, self.name); WUK.UpdateSummonRows() end
     end)
