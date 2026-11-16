@@ -8,6 +8,7 @@ table.insert(WUK.inits, function()
   armorBtn:SetAttribute("type", "macro")
   armorBtn.icon = armorBtn:CreateTexture(nil, "ARTWORK"); armorBtn.icon:SetAllPoints()
   armorBtn:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+  WUK.AttachTooltip(armorBtn, function() WUK.SpellTooltip(WUK.known.armor) end)
 end)
 table.insert(WUK.refreshers, function()
   local spell = WUK.known.armor
@@ -20,6 +21,10 @@ end)
 
 -- pet button: always the /wuk pet choice (Imp if not learned); grey while that pet isn't out
 local petBtn
+local function PetSpell()
+  local pet = WUK.known[WUK.char.pet] and WUK.char.pet or "imp"
+  return WUK.known[pet], pet
+end
 table.insert(WUK.inits, function()
   petBtn = CreateFrame("Button", "WUKPetButton", WUK.strip, "SecureActionButtonTemplate")
   petBtn:SetSize(36, 36); WUK.strip.icons.pet = petBtn; WUK.AddGlow(petBtn)
@@ -27,10 +32,10 @@ table.insert(WUK.inits, function()
   petBtn:SetAttribute("type", "macro")
   petBtn.icon = petBtn:CreateTexture(nil, "ARTWORK"); petBtn.icon:SetAllPoints()
   petBtn:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+  WUK.AttachTooltip(petBtn, function() WUK.SpellTooltip((PetSpell())) end)
 end)
 table.insert(WUK.refreshers, function()
-  local pet = WUK.known[WUK.char.pet] and WUK.char.pet or "imp"
-  local spell = WUK.known[pet]
+  local spell, pet = PetSpell()
   petBtn.icon:SetTexture(spell and C_Spell.GetSpellTexture(spell) or 134400)
   local out = WUK.PetIsOut(pet, WUK.PetFamily())
   petBtn.icon:SetDesaturated(not out)
@@ -49,4 +54,26 @@ table.insert(WUK.inits, function()
     local rem = WUK.SoulstoneRemaining(WUK.char.soulstone, time())
     WUK.strip.stone:SetText(rem and ("Soulstone: " .. WUK.char.soulstone.target .. "  " .. WUK.FormatTime(rem)) or "Soulstone: none")
   end)
+end)
+
+-- one secure button per view spell; LayoutRing shows/hides them by view
+local SPELL_KEYS = { "banish", "howl", "detect", "shadowward", "soullink", "unending", "eye", "sense",
+  "imp", "voidwalker", "succubus", "incubus", "felhunter", "felguard", "inferno", "doom", "feldom" }
+function WUK.SpellButton(key)
+  local b = CreateFrame("Button", "WUKSpell_" .. key, WUK.strip, "SecureActionButtonTemplate")
+  b:SetSize(36, 36); b:RegisterForClicks("AnyUp", "AnyDown"); b:SetAttribute("type", "macro")
+  b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints()
+  b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+  WUK.AttachTooltip(b, function() WUK.SpellTooltip(WUK.known[key]) end)
+  b:Hide() -- party view first
+  WUK.strip.icons[key] = b
+  return b
+end
+table.insert(WUK.inits, function() for _, k in ipairs(SPELL_KEYS) do WUK.SpellButton(k) end end)
+table.insert(WUK.refreshers, function()
+  for _, k in ipairs(SPELL_KEYS) do
+    local b, spell = WUK.strip.icons[k], WUK.known[k]
+    b.icon:SetTexture(spell and C_Spell.GetSpellTexture(spell) or 134400)
+    if not InCombatLockdown() then b:SetAttribute("macrotext", spell and ("/cast " .. spell) or "") end
+  end
 end)

@@ -8,7 +8,6 @@ local FALLBACK = {
   firestone = "Interface\\Icons\\INV_Ammo_FireTar",
 }
 local R, CORE, BTN, LABELS = 58, 44, 36, 30   -- ring radius, core size, orbit size, label band height
-local ORBIT = { "healthstone", "soulstone", "spellstone", "firestone", "armor", "pet" } -- clockwise from 12
 
 -- warlock window theme: void purple body, fel-green edge + accents, purple title bar (strip palette, UI rim/disc)
 local WHITE = "Interface\\Buttons\\WHITE8x8"
@@ -151,20 +150,28 @@ function WUK.ApplyShown()
   if WUK.db.shown then WUK.strip:Show() else WUK.strip:Hide() end
 end
 
--- places core + orbit from strip.radius/angle; out of combat only (secure buttons)
+function WUK.CurrentKeys() return WUK.ViewKeys(WUK.strip.view, WUK.known, WUK.strip.icons) end
+
+-- places core + current view's orbit from strip.radius/angle; out of combat only (secure buttons)
 function WUK.LayoutRing()
   local s = WUK.strip
   if InCombatLockdown() then return end
   local cy = LABELS / 2
   s.icons.shard:ClearAllPoints(); s.icons.shard:SetPoint("CENTER", s, "CENTER", 0, cy)
-  for i, kind in ipairs(ORBIT) do
-    local b, x, y = s.icons[kind], WUK.RingPoint(i, #ORBIT, s.radius, s.angle)
+  local keys, on = WUK.CurrentKeys(), {}
+  for i, kind in ipairs(keys) do
+    on[kind] = true
+    local b, x, y = s.icons[kind], WUK.RingPoint(i, #keys, s.radius, s.angle)
     b:ClearAllPoints(); b:SetPoint("CENTER", s, "CENTER", x, y + cy)
     b:SetAlpha(s.radius / R); b:EnableMouse(s.radius > 0)
+    if not b:IsShown() then b:Show() end
+  end
+  for kind, b in pairs(s.icons) do -- only touch buttons whose membership changed
+    if kind ~= "shard" and not on[kind] and b:IsShown() then b:Hide() end
   end
   -- collapsed: the core pulses on behalf of hidden alerts
   local any = false
-  for _, kind in ipairs(ORBIT) do any = any or s.icons[kind].alerting end
+  for _, kind in ipairs(keys) do any = any or s.icons[kind].alerting end
   WUK.SetAlert(s.icons.shard, any and s.radius < R / 2)
   -- summoning circle closes with the ring
   local d = 2 * (s.radius + BTN / 2) + 8
@@ -190,6 +197,8 @@ end
 local function Step(s, elapsed)
   if InCombatLockdown() then s:SetScript("OnUpdate", nil); return end
   s.targetRadius = Target(s)
+  -- collapsed with the mouse away: back to the party ring (targetRadius guard keeps a fresh flip from reverting)
+  if s.radius == 0 and s.targetRadius == 0 and s.view ~= "party" then WUK.SetView("party") end
   local moving = WUK.db.spin or WUK.db.collapse -- collapse keeps polling the mouse
   if moving then s.angle = (s.angle + SPIN * elapsed) % 360 end
   if s.radius ~= s.targetRadius then
@@ -206,8 +215,34 @@ function WUK.Animate()
   if not InCombatLockdown() then WUK.strip:SetScript("OnUpdate", Step) end
 end
 
+local TINT = { party = { 1, 1, 1 }, buff = { 0.5, 0.75, 1 }, demon = { 1, 0.45, 0.45 } }
+-- summoning circle per view: rim and disc colours (party = the original purple)
+local CIRCLE = {
+  party = { rim = { 0.58, 0.51, 0.79, 0.55 }, disc = { 0.04, 0, 0.07, 0.7 } },
+  buff = { rim = { 0.35, 0.55, 0.95, 0.55 }, disc = { 0, 0.03, 0.08, 0.7 } },
+  demon = { rim = { 0.85, 0.3, 0.3, 0.55 }, disc = { 0.08, 0, 0.01, 0.7 } },
+}
+local function PaintCircle(s, view)
+  local c = CIRCLE[view] or CIRCLE.party
+  s.rim:SetColorTexture(unpack(c.rim)); s.disc:SetColorTexture(unpack(c.disc))
+end
+-- swap the orbit set around the shard core; ring re-blooms from 0 as the "flip"
+function WUK.SetView(view)
+  local s = WUK.strip
+  if InCombatLockdown() or s.view == view then return end
+  s.view = view
+  s.radius = 0
+  local t = TINT[view] or TINT.party
+  local b = s.icons.shard
+  b.icon:SetVertexColor(t[1], t[2], t[3])
+  PaintCircle(s, view)
+  WUK.LayoutRing(); WUK.Animate()
+  if GameTooltip:IsOwned(b) then b:GetScript("OnEnter")(b) end -- refresh the next-view hint
+end
+
 -- PLAYER_REGEN_DISABLED fires before lockdown: last chance to move secure buttons
 function WUK.CombatFreeze()
+  WUK.SetView("party")
   local s = WUK.strip
   s:SetScript("OnUpdate", nil)
   s.radius, s.targetRadius = R, R
@@ -231,15 +266,45 @@ function WUK.SetAlert(b, on)
   if on then b.glow:Show(); b.pulse:Play() else b.pulse:Stop(); b.glow:Hide() end
 end
 
+-- spell tooltip by name; plain name line when the client gives no ID
+function WUK.SpellTooltip(name)
+  if not name then return end
+  local info = C_Spell.GetSpellInfo(name)
+  if info and info.spellID then GameTooltip:SetSpellByID(info.spellID) else GameTooltip:AddLine(name) end
+end
+
+-- fill(b) adds the lines; same OnEnter/OnLeave shape as the minimap button (Settings.lua)
+function WUK.AttachTooltip(b, fill)
+  b:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); fill(self); GameTooltip:Show()
+  end)
+  b:SetScript("OnLeave", GameTooltip_Hide)
+end
+
+-- held stone: the bag item; none held: the create spell (or the kind's name if not learned)
+local function StoneTooltip(kind)
+  local slot = WUK.counts.slots[kind]
+  if slot then GameTooltip:SetBagItem(slot[1], slot[2])
+  elseif kind == "shard" then GameTooltip:AddLine("Soul Shards: 0")
+  elseif WUK.known[kind] then WUK.SpellTooltip(WUK.known[kind])
+  else GameTooltip:AddLine((kind:gsub("^%l", string.upper))) end
+  if kind == "healthstone" then GameTooltip:AddLine("Right-click: trade to target", 1, 1, 1) end
+  if kind == "shard" then
+    local nv = WUK.NextView(WUK.strip.view)
+    GameTooltip:AddLine("Click: " .. nv:gsub("^%l", string.upper) .. " view", 1, 1, 1)
+  end
+end
+
 table.insert(WUK.inits, function()
   local f = CreateFrame("Frame", "WUKStrip", UIParent)
   -- ring of 6 orbit buttons around the shard core; soulstone + assignment lines underneath
   local SIZE = 2 * (R + BTN / 2) + 8
   f:SetSize(SIZE, SIZE + LABELS)
   f.angle, f.radius, f.targetRadius = 0, R, R
+  f.view = "party"
   -- summoning circle instead of a box: purple rim, dark disc, shadow swirl turning against the spin
-  f.rim = Disc(f, "BACKGROUND", 0); f.rim:SetColorTexture(0.58, 0.51, 0.79, 0.55)
-  f.disc = Disc(f, "BACKGROUND", 1); f.disc:SetColorTexture(0.04, 0, 0.07, 0.7)
+  f.rim = Disc(f, "BACKGROUND", 0); f.disc = Disc(f, "BACKGROUND", 1)
+  PaintCircle(f, "party")
   f.swirl = Disc(f, "BORDER", 0); f.swirl:SetTexture("Interface\\Icons\\Spell_Shadow_Twilight")
   f.swirl:SetBlendMode("ADD"); f.swirl:SetAlpha(0.35)
   local turn = f.swirl:CreateAnimationGroup(); turn:SetLooping("REPEAT")
@@ -252,7 +317,8 @@ table.insert(WUK.inits, function()
     b:SetSize(size, size); WUK.AddGlow(b)
     b:SetFrameLevel(f:GetFrameLevel() + (kind == "shard" and 3 or 1)) -- core above orbit so collapsed buttons hide under it
     b:RegisterForClicks("AnyUp", "AnyDown")
-    b:SetAttribute("type", "macro")
+    -- healthstone: right-click is the trade hook, so the macro binds button 1 only
+    b:SetAttribute(kind == "healthstone" and "type1" or "type", "macro")
     b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints()
     local sh = b.icon:CreateAnimationGroup() -- one-shot pop when a stone becomes available
     local up = sh:CreateAnimation("Scale"); up:SetScale(1.3, 1.3); up:SetDuration(0.15); up:SetOrder(1)
@@ -262,6 +328,17 @@ table.insert(WUK.inits, function()
     b.count:SetPoint("BOTTOMRIGHT", -2, 2)
     b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
     f.icons[kind] = b
+    WUK.AttachTooltip(b, function() StoneTooltip(kind) end)
+    if kind == "healthstone" then
+      b:HookScript("OnClick", function(_, button, down)
+        if button == "RightButton" and not down then WUK.TradeHealthstone() end
+      end)
+    end
+    if kind == "shard" then -- the core has no macro (StoneMacro: nil), so any click flips the view
+      b:HookScript("OnClick", function(_, _, down)
+        if not down then WUK.SetView(WUK.NextView(WUK.strip.view)) end
+      end)
+    end
   end
   f.stone = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   f.stone:SetPoint("BOTTOM", 0, 20)

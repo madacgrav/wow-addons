@@ -109,6 +109,19 @@ eq(WUK.PetIsOut("imp", nil), false, "no pet")
 eq(WUK.PetIsOut("succubus", "incubus"), false, "alias is one-way")
 eq(WUK.PetIsOut("felhunter", "imp"), false, "wrong pet")
 
+-- Ring views
+eq(WUK.NextView("party"), "buff", "next party"); eq(WUK.NextView("buff"), "demon", "next buff")
+eq(WUK.NextView("demon"), "party", "next wraps")
+eq(WUK.NextView("bogus"), "party", "next unknown")
+local all = setmetatable({}, { __index = function() return true end })
+eq(#WUK.ViewKeys("party", {}, all), 4, "party always-on keys")
+eq(#WUK.ViewKeys("party", { banish = "Banish" }, all), 5, "party known spell")
+local bk = WUK.ViewKeys("buff", { armor = "Demon Armor" }, all)
+eq(#bk, 1, "buff known only"); eq(bk[1], "armor", "known buff")
+eq(#WUK.ViewKeys("buff", { firestone = "Create Firestone" }, all), 2, "buff stone needs create spell")
+eq(#WUK.ViewKeys("party", {}, { healthstone = true }), 1, "missing button dropped")
+eq(#WUK.ViewKeys("demon", { imp = "Summon Imp" }, all), 1, "demon known only")
+
 -- Board/summon UI: queue membership + removal target
 local grp = { Ann = true }
 eq(WUK.QueueKeep({ name = "Ann", at = 100 }, 150, 600, grp), true, "keep member")
