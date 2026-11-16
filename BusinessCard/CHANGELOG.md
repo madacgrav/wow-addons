@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.3
+- Card detail (shift-click) shows their business card, a row of profession icon tabs, a search box and a scrolling recipe list. Empty and loading states show an icon (the "Requesting..." one spins).
+
 ## 0.8.2
 - My card is now a real business card: your round portrait, name and zone, each profession with an icon, skill bar and status pill, your services as icons with status dots, and a big Available/Busy pill. Click any pill or service icon to change its status.
 - Window background is fully opaque (nothing behind shows through).

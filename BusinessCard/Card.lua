@@ -107,3 +107,130 @@ function BC.NewCard(parent)
   card:SetScript("OnEvent", Repaint); card:HookScript("OnShow", Repaint)
   return card
 end
+
+-- card detail pane (shift-click a Seen row): their card, profession tabs, recipe list fetched on demand
+local detail
+local names = {} -- names[key] = sorted recipe names, resolved once per received list
+
+local function RecipeName(id)
+  local r = C_TradeSkillUI.GetRecipeInfo(id)
+  return (r and r.name) or (C_Spell.GetSpellName and C_Spell.GetSpellName(id)) or ("Recipe #" .. id)
+end
+
+local STATE = {
+  nocard = { BC.ICON_FALLBACK, "No card yet - they may not run BusinessCard." },
+  pick = { "Interface\\Icons\\INV_Misc_Book_09", "Pick a profession to see recipes" },
+  requesting = { "Interface\\Icons\\INV_Misc_PocketWatch_01", "Requesting..." },
+  empty = { "Interface\\Icons\\INV_Misc_Note_01", "They haven't opened that profession yet." },
+}
+local function DetailState(card, ids, prof)
+  if not card then return "nocard" end
+  if not prof then return "pick" end
+  if not ids then return "requesting" end
+  if #ids == 0 then return "empty" end
+  return "list"
+end
+
+local function TabClick(self)
+  detail.prof = self.prof
+  if not BC.RecipeList(detail.who, self.prof) then BC.RequestRecipes(detail.who, self.prof) end
+  BC.RefreshDetail()
+end
+local function TabEnter(self)
+  GameTooltip:SetOwner(self, "ANCHOR_TOP")
+  GameTooltip:AddLine(self.label, 1, 0.82, 0); GameTooltip:Show()
+end
+
+local function BuildDetail()
+  local win = BusinessCardWin
+  detail = CreateFrame("Frame", "BusinessCardDetail", win, "BackdropTemplate")
+  BC.Skin(detail); BC.Parchment(detail, 0.15)
+  detail:SetSize(384, 620); detail:SetPoint("TOPLEFT", win, "TOPRIGHT", 2, 0)
+  tinsert(UISpecialFrames, "BusinessCardDetail")
+  local close = CreateFrame("Button", nil, detail, "UIPanelCloseButton"); close:SetPoint("TOPRIGHT", -4, -4)
+  local title = detail:CreateFontString(nil, "OVERLAY"); BC.TitleFont(title, 16)
+  title:SetPoint("TOPLEFT", 16, -12); title:SetText("Card")
+  detail.card = BC.NewCard(detail); detail.card:SetPoint("TOP", 0, -36) -- no onPill: their pills are display-only
+
+  detail.tabs = {}
+  for i = 1, 6 do -- Baganator side-tab look (Components.xml:20-46)
+    local b = CreateFrame("Button", nil, detail); b:SetSize(28, 28)
+    if i == 1 then b:SetPoint("TOPLEFT", detail.card, "BOTTOMLEFT", 2, -8) else b:SetPoint("LEFT", detail.tabs[i - 1], "RIGHT", 6, 0) end
+    b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints(); b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    b.sel = b:CreateTexture(nil, "OVERLAY"); b.sel:SetAllPoints()
+    b.sel:SetTexture("Interface\\Buttons\\CheckButtonHilight"); b.sel:SetBlendMode("ADD")
+    b:SetScript("OnClick", TabClick); b:SetScript("OnEnter", TabEnter); b:SetScript("OnLeave", GameTooltip_Hide)
+    detail.tabs[i] = b
+  end
+  detail.search = CreateFrame("EditBox", nil, detail, "SearchBoxTemplate")
+  detail.search:SetSize(350, 20); detail.search:SetPoint("TOPLEFT", detail.card, "BOTTOMLEFT", 6, -44)
+  detail.search:HookScript("OnTextChanged", function() BC.RefreshDetail() end)
+
+  detail.list = CreateFrame("Frame", nil, detail, "WowScrollBoxList")
+  detail.list:SetPoint("TOPLEFT", detail.card, "BOTTOMLEFT", 0, -70); detail.list:SetPoint("BOTTOMRIGHT", -26, 30)
+  detail.bar = CreateFrame("EventFrame", nil, detail, "MinimalScrollBar")
+  detail.bar:SetPoint("TOPLEFT", detail.list, "TOPRIGHT", 6, 0); detail.bar:SetPoint("BOTTOMLEFT", detail.list, "BOTTOMRIGHT", 6, 0)
+  local view = CreateScrollBoxListLinearView()
+  view:SetElementExtent(18)
+  view:SetElementInitializer("Frame", function(f, name)
+    if not f.fs then
+      f.fs = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); f.fs:SetPoint("LEFT", 6, 0)
+      f.fs:SetPoint("RIGHT", -4, 0); f.fs:SetJustifyH("LEFT"); f.fs:SetWordWrap(false)
+    end
+    f.fs:SetText(name)
+  end)
+  ScrollUtil.InitScrollBoxListWithScrollBar(detail.list, detail.bar, view)
+
+  detail.state = CreateFrame("Frame", nil, detail); detail.state:SetSize(300, 70); detail.state:SetPoint("TOP", detail.list, "TOP", 0, -30)
+  detail.state.icon = detail.state:CreateTexture(nil, "ARTWORK"); detail.state.icon:SetSize(32, 32); detail.state.icon:SetPoint("TOP")
+  detail.state.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+  detail.state.text = detail.state:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  detail.state.text:SetPoint("TOP", detail.state.icon, "BOTTOM", 0, -8); detail.state.text:SetWidth(300)
+  detail.spin = BC.Spin(detail.state.icon, 1.2)
+  detail.footer = detail:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall"); detail.footer:SetPoint("BOTTOMLEFT", 16, 10)
+  detail.footer:SetTextColor(T.muted[1], T.muted[2], T.muted[3])
+end
+
+function BC.RefreshDetail()
+  if not detail or not detail:IsShown() then return end
+  local who, card = detail.who, BC.Cards()[detail.who]
+  detail.card:SetModel(BC.CardModel(card or {}, {}), who, card and card.zone)
+  detail.card.g:SetShown(card ~= nil) -- no card: status unknown
+  for i, b in ipairs(detail.tabs) do
+    local p = card and card.profs[i]
+    b:SetShown(p ~= nil); b.prof = p and p.id
+    if p then
+      b.icon:SetTexture(BC.PROF_ICON[p.id] or BC.ICON_FALLBACK)
+      b.label = (BC.PROF_NAMES[p.id] or p.id) .. " " .. p.skill
+      b.sel:SetShown(p.id == detail.prof)
+    end
+  end
+  local ids = card and detail.prof and BC.RecipeList(who, detail.prof)
+  local st = DetailState(card, ids, detail.prof)
+  detail.search:SetShown(card ~= nil)
+  if st ~= "list" then
+    detail.state:Show(); detail.state.icon:SetTexture(STATE[st][1]); detail.state.text:SetText(STATE[st][2])
+    if st == "requesting" then detail.spin:Play() else detail.spin:Stop() end
+    detail.list:SetDataProvider(CreateDataProvider({})); detail.footer:SetText("")
+    return
+  end
+  detail.state:Hide(); detail.spin:Stop()
+  local key = who .. ":" .. detail.prof
+  if not names[key] or #names[key] ~= #ids then
+    local n = {}
+    for i, id in ipairs(ids) do n[i] = RecipeName(id) end
+    table.sort(n); names[key] = n
+  end
+  local q, shown = (detail.search:GetText() or ""):lower(), {}
+  for _, n in ipairs(names[key]) do if q == "" or n:lower():find(q, 1, true) then shown[#shown + 1] = n end end
+  detail.list:SetDataProvider(CreateDataProvider(shown))
+  detail.footer:SetText(#shown .. " of " .. #ids .. " known")
+end
+
+function BC.ShowDetail(name)
+  if not detail then BuildDetail() end
+  if detail.who ~= name then detail.prof = nil; detail.search:SetText("") end
+  detail.who = name
+  detail:Show(); BC.RefreshDetail()
+end

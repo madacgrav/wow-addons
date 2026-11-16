@@ -44,6 +44,12 @@ function BC.Dot(parent, size, layer) -- round masked texture (WCK Panel.lua:75-8
   return t
 end
 
+function BC.Spin(t, seconds) -- WCK Panel.lua:88-92
+  local g = t:CreateAnimationGroup(); g:SetLooping("REPEAT")
+  local r = g:CreateAnimation("Rotation"); r:SetDegrees(-360); r:SetDuration(seconds or 1.2)
+  return g
+end
+
 function BC.TitleFont(fs, size)
   if not fs:SetFont("Fonts\\MORPHEUS.ttf", size or 20, "") then fs:SetFontObject("GameFontNormalLarge") end
   fs:SetTextColor(T.goldBright[1], T.goldBright[2], T.goldBright[3]); fs:SetShadowOffset(1, -1)
