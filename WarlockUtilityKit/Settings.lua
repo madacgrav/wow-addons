@@ -56,6 +56,10 @@ local function Build()
   board:SetSize(130, 22); board:SetPoint("BOTTOMRIGHT", -16, 16); board:SetText("Assignment board")
   board:SetScript("OnClick", function() Run("board") end)
 
+  local summon = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
+  summon:SetSize(130, 22); summon:SetPoint("BOTTOMRIGHT", -16, 42); summon:SetText("Summon queue")
+  summon:SetScript("OnClick", function() Run("summon") end)
+
   function win:Sync()
     for _, cb in ipairs(checks) do cb:Sync() end
     dd:GenerateMenu() -- refresh the shown selection

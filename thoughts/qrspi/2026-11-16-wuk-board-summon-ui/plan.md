@@ -351,6 +351,7 @@ c. **Sections**: re-lay out the controls. The getters and setters stay the same.
 ```
 
    - The Reset positions and Assignment board buttons stay at `BOTTOMLEFT 16,16` and `BOTTOMRIGHT -16,16`.
+   - The "Summon queue" button (added by user request after phase 2: runs `/wuk summon`, which calls `WUK.ToggleSummon` to pin the panel open even when empty; not in combat) stays at `BOTTOMRIGHT -16,42`, part of the Frames section.
    - `win:Sync` is unchanged, because it iterates `checks`.
 
 #### 2. Version and changelog

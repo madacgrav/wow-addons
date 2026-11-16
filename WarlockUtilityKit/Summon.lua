@@ -4,6 +4,7 @@ local queue, rows, panel = {}, {}, nil
 
 local GroupUnits, UnitFull = WUK.GroupUnits, WUK.UnitFull
 local pendingSummon -- name of the row last left-clicked; cleared when the ritual ends
+local pinned = false -- opened by hand: shown even with an empty queue
 
 -- set of group member names; nil if any name is secret (membership unknown - don't drop anyone)
 local function GroupNames()
@@ -69,7 +70,14 @@ function WUK.UpdateSummonRows()
   end
   panel.title:SetText("Summons (" .. #queue .. ")")
   panel:SetHeight(28 + math.max(1, math.min(#queue, MAX)) * 20)
-  if queue[1] and WUK.known.ritual then panel:Show() else panel:Hide() end
+  if pinned or (queue[1] and WUK.known.ritual) then panel:Show() else panel:Hide() end
+end
+
+-- opened from settings or /wuk summon: stays up even when empty; the panel parents secure rows, so not in combat
+function WUK.ToggleSummon()
+  if InCombatLockdown() then return WUK.Print("not in combat") end
+  pinned = not pinned
+  WUK.UpdateSummonRows()
 end
 
 local function OnChat(text, sender)
