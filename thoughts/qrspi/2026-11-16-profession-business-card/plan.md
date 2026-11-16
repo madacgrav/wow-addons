@@ -800,5 +800,5 @@ end
 - [ ] Shift-click a guildmate with the addon. Their professions are listed; click Enchanting, and the recipe names appear within about 10 s. The search narrows the list.
 - [ ] A profession they never opened shows the "haven't opened" message.
 - [ ] A stranger seen in Trade (if the stranger-whisper gate passed) works the same way.
-- [ ] Shift-click someone without the addon: "No card yet".
+- [x] Shift-click someone without the addon: "No card yet".
 - [ ] Bump to `0.6.0` and add the CHANGELOG entry. Push to `main` and check that the `package-bcard.yml` run publishes `bcard-v0.6.0`.
