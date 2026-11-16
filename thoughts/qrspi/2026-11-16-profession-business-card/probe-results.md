@@ -34,9 +34,19 @@ Client: 1.60.1 build 70938 (Forever live). The lines come from the `/bcard probe
   - Forever renamed this recipe (Classic: Minor Health).
   - **Phase 6 can rely on `GetRecipeInfo`. The `GetSpellName` fallback also works.**
 
-## Pending
 
-- In-combat probe in the open world. If chat is secret in combat, ads are skipped by the existing guard, so this does not block Phase 2.
-- Dungeon probe.
-- `/bcard ping` to a stranger (different guild, not grouped) and to a guildmate. This gates the Phase 5 whisper path.
-- A mage character confirming `player true` for the teleports and portals.
+## Run 2: Ragefire Chasm (party dungeon), out of combat
+
+- **ctx:** `combat false inst party trial false vet false`.
+- On entry the client left Trade, Services and TradeLocal: `channel: 2 Trade disabled true`, `4 Services disabled true`, `5 TradeLocal disabled true`. General and LocalDefense switched to the dungeon zone (`General - Ragefire Chasm`).
+  - **In dungeons only General and LocalDefense deliver messages**, so the ad log goes quiet there by design.
+  - No `chan msg` lines were captured, so instance chat secrecy is still unknown. The secret guard covers it either way.
+- **The channel display names show that the first word is ambiguous.** The leave messages read `Trade - English 53`, `Trade (Services) - English 53` and `Trade (Local) - Orgrimmar`.
+  - All three start with `Trade`.
+  - **Fix:** the channel key is the text before ` - ` (`Trade`, `Trade (Services)`, `Trade (Local)`, `General`, `LookingForGroup`). This assumes `channelBaseName` for Services and TradeLocal follows the same pattern as Trade did in Run 1. To verify, watch `/bcard seen` sources in Phase 2.
+- Spells, professions and the recipe result match Run 1.
+
+## Still pending
+- An in-combat probe in the open world.
+- `/bcard ping` to a stranger and to a guildmate. This gates Phase 5.
+- A mage character.

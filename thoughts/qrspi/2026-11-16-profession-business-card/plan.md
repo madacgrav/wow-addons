@@ -174,7 +174,7 @@ end
 - [x] Deploy with robocopy. The addon loads with no Lua errors, and `/bcard` prints usage.
 - [x] Probe in Orgrimmar with busy Trade, out of combat: `/bcard probe`, wait for 5 `chan msg` lines.
 - [ ] Probe again in combat (attack a training dummy or a nearby mob) in the open world.
-- [ ] Probe once in a dungeon, so instance chat behaviour is recorded.
+- [x] Probe once in a dungeon, so instance chat behaviour is recorded.
 - [ ] `/bcard ping <alt>` between two accounts in **different guilds and not grouped**; look for `pong from` and the result code. Repeat between guildmates.
 - [ ] On a mage and a warlock (if available), `spell` lines show which IDs are known.
 - [x] Write `probe-results.md` with the answers:
@@ -224,15 +224,15 @@ BC.OFFER_WORDS = set{ "wts", "lfw", "selling", "offering", "avail", "available",
 -- "if" deliberately omitted (common English word)
 BC.PORTAL_DEST = { org="ORG", orgrimmar="ORG", ogri="ORG", uc="UC", undercity="UC", tb="TB", thunder="TB",
   thunderbluff="TB", sw="SW", stormwind="SW", ironforge="IF", darn="DARN", darnassus="DARN" }
-BC.DEFAULT_CHANNELS = { Trade = true, General = true, LookingForGroup = true, Services = true, TradeLocal = true,
-  SAY = true, YELL = true, WHISPER = true } -- short names confirmed by probe-results.md (first word of channelBaseName)
+BC.DEFAULT_CHANNELS = { Trade = true, General = true, LookingForGroup = true, ["Trade (Services)"] = true, ["Trade (Local)"] = true,
+  SAY = true, YELL = true, WHISPER = true } -- keys = channelBaseName before " - " (probe-results.md)
 ```
 
 #### 2. Classifier + seen store
 **File**: `BusinessCard/Logic.lua` — modify
 ```lua
--- probe: channelBaseName arrives as "Trade - English 53" / "General - Orgrimmar"; the first word is the short name
-function BC.ChannelKey(base) return type(base) == "string" and base:match("^(%S+)") or nil end
+-- probe: channelBaseName is "Trade - English 53", "Trade (Services) - English 53", "General - Orgrimmar"; key = text before " - "
+function BC.ChannelKey(base) if type(base) ~= "string" then return nil end return base:match("^(.-) %- ") or base end
 -- strip colour codes and hyperlink payloads, keeping the visible [link text]
 function BC.StripLinks(text) return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h", ""):gsub("|h", "")) end
 
@@ -314,7 +314,7 @@ end)
 - `"|cffffd000|Htrade:Player-1:333:333|h[Enchanting]|h|r"` → enchanting
 - `"WTS [Major Healing Potion]"` with an item link → alchemy
 - Non-string `nil` → nil
-- `ChannelKey("Trade - English 53")` → `Trade`; `ChannelKey("TradeLocal")` → `TradeLocal`; `ChannelKey(nil)` → nil
+- `ChannelKey("Trade - English 53")` → `Trade`; `("Trade (Services) - English 53")` → `Trade (Services)`; `("LookingForGroup")` → `LookingForGroup`; `(nil)` → nil
 - `SeenAdd` twice with different categories → both in `cats`; text truncated to 120
 - `SeenPrune`: an 8-day-old entry dropped; cap 2 keeps the newest 2
 
