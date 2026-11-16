@@ -83,6 +83,13 @@ function WUK.SoulstoneRemaining(rec, now)
   return r
 end
 
+-- preferred-pet keys, in dropdown order; each is also a SPELLS key (Core.lua) and the lower-cased UnitCreatureFamily
+WUK.PETS = { "imp", "voidwalker", "succubus", "felhunter" }
+function WUK.IsPet(key)
+  for _, p in ipairs(WUK.PETS) do if p == key then return true end end
+  return false
+end
+
 WUK.CURSES = {
   { key = "elements", name = "Curse of the Elements", short = "Elements" },
   { key = "recklessness", name = "Curse of Recklessness", short = "Recklessness" },

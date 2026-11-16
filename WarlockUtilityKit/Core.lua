@@ -230,7 +230,7 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   if cmd == "show" or cmd == "hide" then WUK.db.shown = (cmd == "show"); WUK.ApplyShown()
   elseif cmd == "lock" then WUK.db.locked = not WUK.db.locked; WUK.Print(WUK.db.locked and "locked" or "unlocked")
   elseif cmd == "reset" then wipe(WUK.db.frames); WUK.Print("positions reset - /reload to apply")
-  elseif cmd == "pet" and (arg == "imp" or arg == "voidwalker" or arg == "succubus" or arg == "felhunter") then
+  elseif cmd == "pet" and WUK.IsPet(arg) then
     WUK.char.pet = arg; WUK.Print("preferred pet: " .. arg); WUK.Refresh()
   elseif cmd == "config" then WUK.ToggleSettings()
   elseif cmd == "probe" then WUK.Probe()
@@ -244,5 +244,5 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   elseif cmd == "spin" or cmd == "collapse" then
     if InCombatLockdown() then return WUK.Print("not in combat") end
     WUK.db[cmd] = not WUK.db[cmd]; WUK.Print("ring " .. cmd .. " " .. (WUK.db[cmd] and "on" or "off")); WUK.Refresh()
-  else WUK.Print("/wuk config | board | lead | dock | spin | collapse | show | hide | lock | reset | probe | pet <imp|voidwalker|succubus|felhunter>") end
+  else WUK.Print("/wuk config | board | lead | dock | spin | collapse | show | hide | lock | reset | probe | pet <" .. table.concat(WUK.PETS, "|") .. ">") end
 end

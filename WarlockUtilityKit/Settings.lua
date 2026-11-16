@@ -1,6 +1,5 @@
 local ADDON, WUK = ...
 -- settings window + minimap button; every option routes through the /wuk handler so there is one code path
-local PETS = { "imp", "voidwalker", "succubus", "felhunter" }
 local win
 
 local function Run(cmd) SlashCmdList.WARLOCKUTILITYKIT(cmd) end
@@ -42,7 +41,7 @@ local function Build()
   local dd = CreateFrame("DropdownButton", nil, win, "WowStyle1DropdownTemplate")
   dd:SetWidth(160); dd:SetPoint("TOPLEFT", 18, -206)
   dd:SetupMenu(function(_, root)
-    for _, pet in ipairs(PETS) do
+    for _, pet in ipairs(WUK.PETS) do
       root:CreateRadio(pet:sub(1, 1):upper() .. pet:sub(2),
         function() return WUK.char.pet == pet end,
         function() Run("pet " .. pet) end)

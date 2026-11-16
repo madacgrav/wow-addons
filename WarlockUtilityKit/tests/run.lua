@@ -95,4 +95,11 @@ x = WUK.RingPoint(2, 6, 58, 0); assert(x > 0, "ring goes clockwise")
 x, y = WUK.RingPoint(1, 6, 58, 90); near(x, 58, "offset rotates x"); near(y, 0, "offset rotates y")
 x, y = WUK.RingPoint(3, 6, 0, 45); near(x, 0, "collapsed x"); near(y, 0, "collapsed y")
 
+-- Preferred pet
+eq(WUK.IsPet("imp"), true, "imp is a pet")
+eq(WUK.IsPet("felhunter"), true, "felhunter is a pet")
+eq(WUK.IsPet("felguard"), false, "felguard not offered")
+eq(WUK.IsPet(nil), false, "nil not a pet")
+eq(WUK.IsPet(""), false, "empty not a pet")
+
 print("all tests passed")
