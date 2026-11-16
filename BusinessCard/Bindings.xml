@@ -1,0 +1,3 @@
+<Bindings>
+  <Binding name="BUSINESSCARD_TOGGLE" header="BUSINESSCARD" category="ADDONS">BusinessCard_Toggle()</Binding>
+</Bindings>
