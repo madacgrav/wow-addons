@@ -395,4 +395,4 @@ c. **Sections**: re-lay out the controls. The getters and setters stay the same.
 Richer skin in `UI.lua` (`WUK.Skin` opts `swirl`; vertical haze, breathing fel halo, fel underline, pulsing shard, fade-in), new `WUK.Divider` / `WUK.Button`, `WUK.Header(..., width)` underline. Board/Settings buttons use `WUK.Button`; `OnShow` switched to `HookScript` so the fade-in survives. Row stripes, fel hover glow, class icons (summon), name colours + crown (board), pet portrait (settings).
 
 - [x] Tests + `luac -p` pass
-- [ ] In-game look approved
+- [x] In-game look approved
