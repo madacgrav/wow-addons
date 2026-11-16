@@ -53,6 +53,12 @@ Client: 1.60.1 build 70938 (Forever live). The lines come from the `/bcard probe
   - **Learned:** the client doesn't block addon WHISPER sends from this account (not trial, not veteran).
 - More `chan msg` lines (General and Trade, Orgrimmar, out of combat) were all `text ok sender ok guid ok`.
 
+## Run 4: /who (0.7.x, in game)
+
+- `C_FriendList.SendWho('n-"First Last"')` called from a row click works. Quoted names with spaces match, and `WHO_LIST_UPDATE` and `GetWhoInfo` give `area`.
+- Forever shows /who results in the **group finder**, `LFGParentFrame > LFGWhoListFrame` (found with `/fstack`), not in `FriendsFrame`/`WhoFrame`. It opens after the addon's handler runs.
+- Closing `LFGParentFrame` with `HideUIPanel` on a 0.1 s ticker for 3 s after the lookup works.
+
 ## Still pending
 - **Deferred:** a two-character ping. Both characters must run BusinessCard, be in different guilds and not be grouped. This gates the Phase 5 whisper-to-stranger path. Run it before Phase 5 manual testing. The Phase 5 code can be written either way, since the gate only removes one `onSeen` hook.
 - An in-combat probe in the open world. This doesn't block anything, because the secret guard skips secret ads.
