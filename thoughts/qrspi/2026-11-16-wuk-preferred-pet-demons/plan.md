@@ -166,9 +166,9 @@ eq(WUK.PetIsOut("felhunter", "imp"), false, "wrong pet")
 - [x] Deploy with robocopy.
 
 #### Manual (in game, after `/reload`, on a warlock who has learned Summon Incubus)
-- [ ] The dropdown lists Imp, Voidwalker, Succubus, Incubus and Felhunter.
-- [ ] `/wuk pet incubus` prints `preferred pet: incubus`. The pet button shows the Incubus icon and glows while no Incubus is out.
-- [ ] Clicking the pet button summons the Incubus, and the button then greys out and stops glowing.
-- [ ] `/wuk probe` prints `pet family: <string>`. Record the exact string and report it back (it decides whether the succubus alias is needed).
-- [ ] `/wuk pet succubus` and `/wuk pet imp` behave as before.
-- [ ] On a character without Incubus learned, `/wuk pet incubus` makes the button show and summon the Imp.
+- [x] The dropdown lists Imp, Voidwalker, Succubus, Incubus and Felhunter.
+- [x] `/wuk pet incubus` prints `preferred pet: incubus`. The pet button shows the Incubus icon and glows while no Incubus is out.
+- [x] Clicking the pet button summons the Incubus, and the button then greys out and stops glowing.
+- [x] `/wuk probe` prints `pet family: <string>`. Record the exact string and report it back (it decides whether the succubus alias is needed).
+- [x] `/wuk pet succubus` and `/wuk pet imp` behave as before.
+- [x] On a character without Incubus learned, `/wuk pet incubus` makes the button show and summon the Imp.
