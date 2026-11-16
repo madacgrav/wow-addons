@@ -60,6 +60,7 @@ table.insert(BC.inits, function()
   end)
   table.insert(BC.onSeen, function(name) BC.Ask(name) end) -- onSeen only fires for advertisers
   table.insert(BC.onStatus, BroadcastGuild)
+  BC.On("ZONE_CHANGED_NEW_AREA", BroadcastGuild) -- keep guildmates' zone column current (10 s debounce)
   BroadcastGuild() -- login broadcast, 10 s after login
 end)
 

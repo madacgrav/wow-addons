@@ -94,20 +94,21 @@ end)
 function BC.Seen() local r = GetRealmName(); BC.db.seen[r] = BC.db.seen[r] or {}; return BC.db.seen[r] end
 
 BC.onSeen = {} -- hooks(name, result): P3 refresh, P5 card request
-local function OnAd(source, text, sender)
+local function OnAd(source, text, sender, zone)
   if not source or not BC.db.channels[source] or BC.Secret(text) or BC.Secret(sender) then return end
   local name = Ambiguate(sender, "none")
   if name == UnitName("player") then return end
   local r = BC.Classify(text)
   if not r or r.request then return end -- advertisers only; LF/WTB posts are dropped
-  BC.SeenAdd(BC.Seen(), name, r, text, time())
+  BC.SeenAdd(BC.Seen(), name, r, text, time(), zone)
   for _, fn in ipairs(BC.onSeen) do fn(name, r) end
 end
 
 table.insert(BC.inits, function()
-  BC.On("CHAT_MSG_CHANNEL", function(text, sender, _, _, _, _, _, _, base) OnAd(BC.ChannelKey(base), text, sender) end)
-  BC.On("CHAT_MSG_SAY", function(text, sender) OnAd("SAY", text, sender) end)
-  BC.On("CHAT_MSG_YELL", function(text, sender) OnAd("YELL", text, sender) end)
+  BC.On("CHAT_MSG_CHANNEL", function(text, sender, _, _, _, _, _, _, base) OnAd(BC.ChannelKey(base), text, sender, BC.ChannelZone(base)) end)
+  -- say/yell come from nearby, so they are in our zone
+  BC.On("CHAT_MSG_SAY", function(text, sender) OnAd("SAY", text, sender, GetRealZoneText()) end)
+  BC.On("CHAT_MSG_YELL", function(text, sender) OnAd("YELL", text, sender, GetRealZoneText()) end)
   BC.On("CHAT_MSG_WHISPER", function(text, sender) OnAd("WHISPER", text, sender) end)
   local seen = BC.Seen()
   for name, e in pairs(seen) do -- re-check saved entries against the current classifier
@@ -149,7 +150,8 @@ function BC.ReadServices()
   return out
 end
 
-function BC.MyCard() return BC.BuildCard(BC.ReadProfessions(), BC.ReadServices(), BC.char.status, BC.char.rev) end
+function BC.MyCard() return BC.BuildCard(BC.ReadProfessions(), BC.ReadServices(), BC.char.status, BC.char.rev,
+  GetRealZoneText()) end
 
 -- learned recipe IDs per profession; window must be open (ProfessionPlanner/Core.lua:28-40)
 local tries = 0

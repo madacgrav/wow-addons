@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.0
+- Seen shows where each person is: the zone their BusinessCard reports, else the zone of the channel they posted in (General, LocalDefense, Trade (Local)), or your zone for say and yell. Cross-city Trade posts have no zone. Cards now carry your zone and re-send to the guild when you change zones.
+
 ## 0.6.0
 - Card detail (shift-click a row): their status and services, a button per profession, and the full recipe list fetched on request with a search box. Shows when they have no card or have not opened that profession yet.
 

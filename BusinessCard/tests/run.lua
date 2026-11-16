@@ -92,11 +92,11 @@ eq(d.kind, "C", "decode kind"); eq(d.rev, 4, "decode rev"); eq(d.g, "b", "decode
 eq(#d.profs, 2, "decode profs"); eq(d.profs[2].id, 197, "prof id"); eq(d.profs[2].skill, 124, "prof skill"); eq(d.profs[2].st, "o", "prof st")
 eq(d.svcs[1].key, "S", "svc key"); eq(d.svcs[1].st, "a", "svc st")
 local empty = BC.EncodeCard(BC.BuildCard({}, {}, { g = "a" }, 0))
-eq(empty, "1|C|0|a|-|-", "empty card"); eq(#BC.Decode(empty).profs, 0, "empty profs")
+eq(empty, "1|C|0|a|-|-|-", "empty card"); eq(#BC.Decode(empty).profs, 0, "empty profs")
 local maxProfs, maxSvcs = {}, {}
 for i, id in ipairs({ 171, 164, 333, 202, 165, 197 }) do maxProfs[i] = { id = id, skill = 300 } end
 for i, sv in ipairs(BC.SERVICES) do maxSvcs[i] = sv.key end
-local big = BC.EncodeCard(BC.BuildCard(maxProfs, maxSvcs, { g = "a" }, 99999))
+local big = BC.EncodeCard(BC.BuildCard(maxProfs, maxSvcs, { g = "a" }, 99999, string.rep("Z", 60)))
 assert(#big <= 255, "max card is " .. #big .. " bytes"); eq(#BC.Decode(big).svcs, #BC.SERVICES, "max card svcs")
 eq(BC.Decode("2|C|0|a|-|-"), nil, "wrong proto"); eq(BC.Decode("1|C|0|a|-"), nil, "short C")
 eq(BC.Decode("1|C|x|a|-|-"), nil, "bad rev"); eq(BC.Decode("1|C|0|x|-|-"), nil, "bad status"); eq(BC.Decode(nil), nil, "nil msg")
@@ -137,5 +137,23 @@ eq(BC.Decode("1|RL|333|0|0|-").part, "", "RL empty")
 eq(BC.Decode("1|RL|333|6|5|a"), nil, "seq > total rejected"); eq(BC.Decode("1|RQ|x"), nil, "bad RQ")
 local line = table.concat({ "1", "RL", 999999, 999, 999, string.rep("z", 200) }, "|")
 assert(#line <= 255, "RL line " .. #line .. " bytes")
+
+-- Location
+eq(BC.ChannelZone("General - Orgrimmar"), "Orgrimmar", "zone from general")
+eq(BC.ChannelZone("Trade (Local) - Orgrimmar"), "Orgrimmar", "zone from trade local")
+eq(BC.ChannelZone("Trade - English 53"), nil, "language channel has no zone")
+eq(BC.ChannelZone("LookingForGroup"), nil, "no suffix"); eq(BC.ChannelZone(nil), nil, "nil base")
+eq(BC.ChannelZone("General - Ragefire Chasm"), "Ragefire Chasm", "multi-word zone")
+seen = {}
+BC.SeenAdd(seen, "Z", BC.Classify("WTS enchants"), "WTS enchants", 1, "Orgrimmar")
+BC.SeenAdd(seen, "Z", BC.Classify("WTS enchants"), "WTS enchants", 2, nil)
+eq(seen.Z.zone, "Orgrimmar", "zone kept when new ad has none")
+local zc = BC.Decode(BC.EncodeCard(BC.BuildCard({}, {}, { g = "a" }, 1, "Thunder Bluff")))
+eq(zc.zone, "Thunder Bluff", "card zone round trip")
+eq(BC.Decode("1|C|0|a|-|-").zone, nil, "old 6-field card decodes")
+eq(BC.Decode(BC.EncodeCard(BC.BuildCard({}, {}, { g = "a" }, 1, "a|b"))).zone, "ab", "pipe stripped from zone")
+rows = BC.SeenRows(seen, { Z = zc }, "all", 10)
+eq(rows[1].zone, "Thunder Bluff", "card zone wins over heard zone")
+eq(BC.SeenRows(seen, nil, "all", 10)[1].zone, "Orgrimmar", "heard zone without card")
 
 print("all tests passed")

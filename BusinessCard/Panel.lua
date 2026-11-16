@@ -26,6 +26,7 @@ local function RowEnter(self)
   GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
   GameTooltip:AddLine(d.name, 1, 0.82, 0)
   GameTooltip:AddLine(BC.CatList(d.cats), 0.8, 0.8, 0.8)
+  if d.zone then GameTooltip:AddLine("Last seen in " .. d.zone, 0.6, 0.8, 1) end
   if d.text then GameTooltip:AddLine(d.text .. " (" .. d.age .. ")", 1, 1, 1, true) end
   if d.card then
     GameTooltip:AddLine(d.card.g == "b" and "Card: busy" or "Card:", 0.9, 0.7, 0.3)
@@ -42,7 +43,7 @@ local function SetView(v) BC.db.view = v; BC.RefreshPanel() end
 
 local function Build()
   win = CreateFrame("Frame", "BusinessCardWin", UIParent, "BasicFrameTemplateWithInset")
-  win:SetSize(420, TOP + 30 + MAX_ROWS * ROW_H); win:SetFrameStrata("DIALOG")
+  win:SetSize(500, TOP + 30 + MAX_ROWS * ROW_H); win:SetFrameStrata("DIALOG")
   local pos = BC.db.frames.win
   if pos then win:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else win:SetPoint("CENTER") end
   win:SetMovable(true); win:EnableMouse(true); win:RegisterForDrag("LeftButton")
@@ -76,7 +77,7 @@ local function Build()
   win.rows = {}
   for i = 1, MAX_ROWS do
     local row = CreateFrame("Button", nil, win)
-    row:SetSize(392, ROW_H - 2); row:SetPoint("TOPLEFT", 14, -TOP - (i - 1) * ROW_H)
+    row:SetSize(472, ROW_H - 2); row:SetPoint("TOPLEFT", 14, -TOP - (i - 1) * ROW_H)
     row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     row.status = row:CreateTexture(nil, "ARTWORK"); row.status:SetSize(8, 8); row.status:SetPoint("LEFT", 2, 0)
     row.status:SetColorTexture(1, 1, 1, 1); row.status:Hide() -- card status badge
@@ -85,7 +86,10 @@ local function Build()
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     row.name:SetPoint("LEFT", 14, 0); row.name:SetWidth(130); row.name:SetJustifyH("LEFT"); row.name:SetWordWrap(false)
     row.cats = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.cats:SetPoint("LEFT", row.name, "RIGHT", 6, 0); row.cats:SetWidth(200); row.cats:SetJustifyH("LEFT"); row.cats:SetWordWrap(false)
+    row.cats:SetPoint("LEFT", row.name, "RIGHT", 6, 0); row.cats:SetWidth(170); row.cats:SetJustifyH("LEFT"); row.cats:SetWordWrap(false)
+    row.zone = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    row.zone:SetPoint("LEFT", row.cats, "RIGHT", 6, 0); row.zone:SetWidth(96); row.zone:SetJustifyH("LEFT"); row.zone:SetWordWrap(false)
+    row.zone:SetTextColor(0.6, 0.8, 1)
     row.age = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     row.age:SetPoint("RIGHT", -4, 0); row.age:SetJustifyH("RIGHT")
     local hl = row:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetColorTexture(1, 1, 1, 0.08)
@@ -108,6 +112,7 @@ function BC.RenderSeen(rows, total)
     row.key, row.data = v and v.name, v
     if v then
       row.name:SetText(v.name); row.cats:SetText(BC.CatList(v.cats)); row.age:SetText(v.age)
+      row.zone:SetText(v.zone or "")
       local st = BC.CardStatus(v.card, BC.db.filter)
       row.status:SetShown(st ~= nil)
       if st == "a" then row.status:SetColorTexture(0.2, 0.9, 0.2, 1) elseif st == "b" then row.status:SetColorTexture(0.9, 0.2, 0.2, 1) end
@@ -148,7 +153,7 @@ function BC.RenderMyCard(w)
     row:SetShown(v ~= nil)
     row.key, row.data = v and v.key, nil
     row.status:Hide(); row.icon:Hide()
-    if v then row.name:SetText(v.name); row.cats:SetText(ST_LABEL[v.st or "a"]); row.age:SetText(v.skill) end
+    if v then row.name:SetText(v.name); row.cats:SetText(ST_LABEL[v.st or "a"]); row.age:SetText(v.skill); row.zone:SetText("") end
   end
   local cached = {}
   for id, ids in pairs(BC.char.recipes) do cached[#cached + 1] = (BC.PROF_NAMES[id] or id) .. " " .. #ids end

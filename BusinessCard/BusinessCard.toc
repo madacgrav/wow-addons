@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: BusinessCard
 ## Notes: Remembers who advertised professions, summons and portals; swaps cards and status with other BusinessCard users.
-## Version: 0.6.0
+## Version: 0.7.0
 ## IconTexture: Interface\Icons\INV_Letter_15
 ## SavedVariables: BusinessCardDB
 ## SavedVariablesPerCharacter: BusinessCardCharDB

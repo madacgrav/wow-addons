@@ -23,6 +23,11 @@ Phase 1 is a probe gate; phases 2–6 each add one feature end to end.
 - **Ads need an offer signal (P2 in-game test, 0.2.2):** `request = req or not offer`. Any request word (now including `lfm`, `lfg`, `recruiting`, `guild`) drops the post. Otherwise it is kept only with an offer word (the list is extended with provider nouns, `providing`, `services`, `pst`, `mats`), a price token like `5g`, or a `|Htrade:` link. See the current `Data.lua`.
 - **Whisper uses `ChatFrame_SendTell(name)` (P3):** Forever names contain spaces ("Thugtar Darkflame"), so `/w name` parsing is avoided. `/w` is the fallback only if `SendTell` is missing.
 - **`CardStatus` returns nil when the card lists nothing for the filtered category (P5),** instead of `b`, so no red dot shows for a category the person never offered. Card `at` is refreshed on every same-rev `C`, so active peers aren't pruned.
+- **Post-plan addition, location column (0.7.0, user request):**
+  - Seen rows show the zone.
+  - Sources, in order: the card's `zone` (7th `C` field, sent on login, status change and `ZONE_CHANGED_NEW_AREA`), then the channel suffix (`BC.ChannelZone`, skips language channels like `English 53`), then `GetRealZoneText()` for say and yell.
+  - `Decode` accepts 6- or 7-field cards.
+  - The window is widened to 500.
 - **Requests dropped (user decision after P2 in-game test):** LF/WTB posts are never stored. `OnAd` returns when `r.request`, and the Requests checkbox, `showRequests` and the `SeenRows` request filter are removed. `Classify` still computes `request`.
 - **Cards from guildmates who never advertised (P5):** stored in `db.cards` and merged into Seen rows, with categories derived from their card. Without this, guild exchange would be invisible.
 

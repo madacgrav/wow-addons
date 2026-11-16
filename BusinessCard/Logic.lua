@@ -12,6 +12,13 @@ end
 -- probe: channelBaseName is "Trade - English 53", "Trade (Services) - English 53", "General - Orgrimmar"; key = text before " - "
 function BC.ChannelKey(base) if type(base) ~= "string" then return nil end return base:match("^(.-) %- ") or base end
 
+-- zone from a channel name: "General - Orgrimmar" -> "Orgrimmar"; "Trade - English 53" is a language channel, not a zone
+function BC.ChannelZone(base)
+  local z = type(base) == "string" and base:match(" %- (.+)$")
+  if not z or z:match("^%a+ %d+$") then return nil end
+  return z
+end
+
 -- strip colour codes and hyperlink payloads, keeping the visible [link text]
 function BC.StripLinks(text) return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h", ""):gsub("|h", "")) end
 
@@ -31,10 +38,11 @@ function BC.Classify(text)
   return { cats = cats, request = req or not offer, dest = cats.portal and dest or nil }
 end
 
-function BC.SeenAdd(seen, name, r, text, now)
+function BC.SeenAdd(seen, name, r, text, now, zone)
   local e = seen[name] or { cats = {} }
   for cat in pairs(r.cats) do e.cats[cat] = now end
   e.text, e.at, e.req, e.dest = text:sub(1, 120), now, r.request, r.dest or e.dest
+  e.zone = zone or e.zone
   seen[name] = e
   return e
 end
@@ -63,13 +71,14 @@ function BC.SeenRows(seen, cards, filter, now)
   for name, e in pairs(seen) do
     if filter == "all" or e.cats[filter] then
       rows[#rows + 1] = { name = name, cats = e.cats, at = e.at, age = BC.FormatAge(now - e.at), text = e.text,
-        dest = e.dest, card = cards and cards[name] }
+        dest = e.dest, card = cards and cards[name], zone = (cards and cards[name] and cards[name].zone) or e.zone }
     end
   end
   for name, c in pairs(cards or {}) do -- guildmates who never advertised
     local cats = BC.CardCats(c)
     if not seen[name] and (filter == "all" or cats[filter]) then
-      rows[#rows + 1] = { name = name, cats = cats, at = c.at or 0, age = BC.FormatAge(now - (c.at or 0)), card = c }
+      rows[#rows + 1] = { name = name, cats = cats, at = c.at or 0, age = BC.FormatAge(now - (c.at or 0)), card = c,
+        zone = c.zone }
     end
   end
   table.sort(rows, function(a, b) return a.at > b.at end)
@@ -84,8 +93,8 @@ end
 
 -- profs = {{id, name, skill}}, svcs = {key...}, status = {g="a"|"b", [statusKey]="a"|"b"|"o"}
 -- Card = {rev, g, profs={{id, skill, st}}, svcs={{key, st}}}
-function BC.BuildCard(profs, svcs, status, rev)
-  local c = { rev = rev, g = status.g or "a", profs = {}, svcs = {} }
+function BC.BuildCard(profs, svcs, status, rev, zone)
+  local c = { rev = rev, g = status.g or "a", profs = {}, svcs = {}, zone = zone }
   for _, p in ipairs(profs) do c.profs[#c.profs + 1] = { id = p.id, skill = p.skill, st = status["p" .. p.id] or "a" } end
   for _, k in ipairs(svcs) do c.svcs[#c.svcs + 1] = { key = k, st = status[k] or "a" } end
   return c
@@ -109,7 +118,8 @@ function BC.EncodeCard(c)
   local p, s = {}, {}
   for _, x in ipairs(c.profs) do p[#p + 1] = x.id .. ":" .. x.skill .. ":" .. x.st end
   for _, x in ipairs(c.svcs) do s[#s + 1] = x.key .. ":" .. x.st end
-  return table.concat({ BC.PROTO, "C", c.rev, c.g, enc(table.concat(p, ",")), enc(table.concat(s, ",")) }, "|")
+  local zone = c.zone and c.zone:gsub("|", ""):sub(1, 40) -- 7th field; older 6-field cards still decode
+  return table.concat({ BC.PROTO, "C", c.rev, c.g, enc(table.concat(p, ",")), enc(table.concat(s, ",")), enc(zone) }, "|")
 end
 
 local ST = { a = true, b = true, o = true }
@@ -118,8 +128,8 @@ function BC.Decode(msg)
   local f = BC.Split(msg)
   if f[1] ~= BC.PROTO then return nil end
   if f[2] == "Q" and #f == 2 then return { kind = "Q" } end
-  if f[2] == "C" and #f == 6 and tonumber(f[3]) and ST[f[4]] then
-    local c = { kind = "C", rev = tonumber(f[3]), g = f[4], profs = {}, svcs = {} }
+  if f[2] == "C" and (#f == 6 or #f == 7) and tonumber(f[3]) and ST[f[4]] then
+    local c = { kind = "C", rev = tonumber(f[3]), g = f[4], profs = {}, svcs = {}, zone = f[7] ~= "-" and f[7] or nil }
     if f[5] ~= "-" then for id, sk, st in f[5]:gmatch("(%d+):(%d+):(%a)") do
       c.profs[#c.profs + 1] = { id = tonumber(id), skill = tonumber(sk), st = st } end end
     if f[6] ~= "-" then for k, st in f[6]:gmatch("([%w%-]+):(%a)") do c.svcs[#c.svcs + 1] = { key = k, st = st } end end
