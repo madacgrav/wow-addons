@@ -2,7 +2,7 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockCombatKit.toc`; each version is published as a `wck-vX.Y.Z` GitHub release.
 
-## [0.2.0] — unreleased
+## [0.2.0] — 2026-11-16
 
 ### Fixed
 - Rule and slot spell menus list every active spell in your spellbook, grouped by spellbook tab, instead of a fixed list. Wrack and other talent spells now appear. (#28)

@@ -340,13 +340,13 @@ eq(#WCK.BarSpells({}, em, {}), 0, "nothing known")
 - [x] Deploy robocopy exits 0-7
 
 #### Manual
-- [ ] `/reload`. The bar appears at CENTER 260,-60, showing rule spells, a gap, then Fear and Banish.
-- [ ] Clicking a button casts on the current target, both out of combat and in combat.
-- [ ] In combat, the pulsing button follows the panel core.
-- [ ] Shift+drag on the bar's padding moves it. The position survives `/reload`. "Reset positions" plus `/reload` restores the default.
-- [ ] Unchecking "Show rotation buttons", `/wck hide` and right-clicking the minimap button each hide the bar out of combat.
-- [ ] Editing a rule mid-combat leaves the bar unchanged until combat ends, then it updates.
-- [ ] No "Interface action failed because of an AddOn" or blocked-action messages during a full fight.
+- [x] `/reload`. The bar appears at CENTER 260,-60, showing rule spells, a gap, then Fear and Banish.
+- [x] Clicking a button casts on the current target, both out of combat and in combat.
+- [x] In combat, the pulsing button follows the panel core.
+- [x] Shift+drag on the bar's padding moves it. The position survives `/reload`. "Reset positions" plus `/reload` restores the default.
+- [x] Unchecking "Show rotation buttons", `/wck hide` and right-clicking the minimap button each hide the bar out of combat.
+- [x] Editing a rule mid-combat leaves the bar unchanged until combat ends, then it updates.
+- [x] No "Interface action failed because of an AddOn" or blocked-action messages during a full fight.
 
 ---
 
@@ -467,8 +467,8 @@ eq(WCK.ButtonLook("Wrack", bst, {}, pl).dim, true, "unknown dims")
 - [x] Deploy robocopy exits 0-7
 
 #### Manual
-- [ ] On a Nightfall proc, the Shadow Bolt button glows green. The proc orb, pulse and sound still fire.
-- [ ] Unchecking "Proc alerts" stops the green glow.
-- [ ] After casting a spell with a cooldown (Death Coil or Howl of Terror in rules, or Fear/Banish while unusable), its button greys out. Clicking it still attempts the cast, and the game shows its own error.
-- [ ] Out-of-mana or out-of-range spells grey out and return to colour when castable.
-- [ ] A full fight produces no Lua errors or taint messages.
+- [x] On a Nightfall proc, the Shadow Bolt button glows green. The proc orb, pulse and sound still fire.
+- [x] Unchecking "Proc alerts" stops the green glow.
+- [x] After casting a spell with a cooldown (Death Coil or Howl of Terror in rules, or Fear/Banish while unusable), its button greys out. Clicking it still attempts the cast, and the game shows its own error.
+- [x] Out-of-mana or out-of-range spells grey out and return to colour when castable.
+- [x] A full fight produces no Lua errors or taint messages.
