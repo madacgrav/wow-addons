@@ -2,7 +2,7 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockUtilityKit.toc`; each version is published as a `wuk-vX.Y.Z` GitHub release.
 
-## [0.4.0] — 2026-11-16
+## [0.5.0] — 2026-11-16
 
 ### Added
 - **Ring tooltips.** Every ring button shows its spell or item tooltip on hover.
@@ -11,6 +11,22 @@ All notable changes to this addon. Versions match `## Version` in `WarlockUtilit
   - **Party:** healthstone, soulstone, Banish, Howl of Terror, armor, pet.
   - **Buff:** spellstone, firestone, armor, Detect Invisibility, Shadow Ward, Soul Link, Unending Breath, Eye of Kilrogg, Sense Demons.
   - **Demon:** every summon, Inferno, Ritual of Doom, Fel Domination.
+
+## [0.4.0] — 2026-11-16
+
+### Changed
+- **Warlock look for the summon queue, assignment board and settings.** All three use one dark void-purple window with a fel-green edge, a breathing fel halo, a purple title bar with a pulsing soul shard, and a quick fade-in. The board and settings have a slowly turning shadow swirl behind them, and every button is a themed purple/fel button instead of the red Blizzard one.
+- **Rows.** Alternating stripes and a fel hover glow. Summon rows show a class icon; on the board you're in fel green, other warlocks in purple, and the lead has a crown. Settings shows a portrait of your preferred demon.
+- **Summon queue panel.** Short "Summons (n)" title, click help on hover, class-coloured names, height fits the queue.
+- **Assignment board.** Column headers, wider dropdowns so labels fit, remembers its position.
+- **Settings.** Grouped into Strip & ring / Pet / Frames, opens beside the board instead of on top of it, remembers its position.
+
+### Added
+- **Open the summon queue by hand.** A "Summon queue" button in Settings, or `/wuk summon`, opens the panel even when nobody has asked for a summon (not in combat).
+
+### Fixed
+- **Summon queue only holds group members.** Requests from people outside your party or raid are ignored, and people who leave the group drop off the queue.
+- **Successful summons leave the queue.** The row you clicked is removed when Ritual of Summoning succeeds, even if you cast something else in between; a failed or interrupted ritual keeps it.
 
 ## [0.3.3] — 2026-11-16
 

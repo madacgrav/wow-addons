@@ -122,4 +122,14 @@ eq(#WUK.ViewKeys("buff", { firestone = "Create Firestone" }, all), 2, "buff ston
 eq(#WUK.ViewKeys("party", {}, { healthstone = true }), 1, "missing button dropped")
 eq(#WUK.ViewKeys("demon", { imp = "Summon Imp" }, all), 1, "demon known only")
 
+-- Board/summon UI: queue membership + removal target
+local grp = { Ann = true }
+eq(WUK.QueueKeep({ name = "Ann", at = 100 }, 150, 600, grp), true, "keep member")
+eq(WUK.QueueKeep({ name = "Bob", at = 100 }, 150, 600, grp), false, "drop non-member")
+eq(WUK.QueueKeep({ name = "Ann", at = 100 }, 700, 600, grp), false, "drop expired")
+eq(WUK.QueueKeep({ name = "Bob", at = 100 }, 150, 600, nil), true, "unknown roster keeps")
+eq(WUK.SummonTarget("Ann", "Bob"), "Ann", "clicked row wins")
+eq(WUK.SummonTarget(nil, "Bob"), "Bob", "manual cast fallback")
+eq(WUK.SummonTarget(nil, nil), nil, "no target")
+
 print("all tests passed")
