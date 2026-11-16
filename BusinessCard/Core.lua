@@ -198,7 +198,10 @@ BC.On("WHO_LIST_UPDATE", function()
   local target = whoTarget
   whoTarget = nil
 
-  if FriendsFrame and FriendsFrame:IsShown() and not friendsWasShown then HideUIPanel(FriendsFrame) end
+  -- the Friends window opens in its own WHO_LIST_UPDATE handler, which can run after ours: close it next frame
+  if not friendsWasShown then
+    C_Timer.After(0, function() if FriendsFrame and FriendsFrame:IsShown() then HideUIPanel(FriendsFrame) end end)
+  end
   for i = 1, C_FriendList.GetNumWhoResults() do
     local w = C_FriendList.GetWhoInfo(i)
     if w and not BC.Secret(w.fullName) and Ambiguate(w.fullName, "none") == target and not BC.Secret(w.area) then
