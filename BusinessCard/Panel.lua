@@ -1,11 +1,9 @@
 local ADDON, BC = ...
--- ponytail: fixed 20 rows, newest first; add a ScrollBox if 20 isn't enough
-local MAX_ROWS, ROW_H, TOP = 20, 24, 54
+local ROW_H, TOP = 34, 54
 local win
 local T = BC.THEME
 local ST_LABEL = { a = "|cff33ff33Available|r", b = "|cffff3333Busy|r", o = "|cff888888Off|r" }
-local SVC_LABEL = {}
-for _, s in ipairs(BC.SERVICES) do SVC_LABEL[s.key] = s.label or s.name end
+local SVC_LABEL = BC.SVC_LABEL
 
 local function Whisper(name)
   -- Forever names contain spaces ("Thugtar Darkflame"); SendTell targets the name directly
@@ -23,7 +21,7 @@ local function RowClick(self, btn)
 end
 
 local function RowEnter(self)
-  if not self.data or BC.db.view ~= "seen" then return end
+  if not self.data or self.data.mine or BC.db.view ~= "seen" then return end
   local d = self.data
   GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
   GameTooltip:AddLine(d.name, 1, 0.82, 0)
@@ -44,10 +42,57 @@ end
 
 local function SetView(v) BC.db.view = v; PanelTemplates_SetTab(win, v == "card" and 2 or 1); BC.RefreshPanel() end
 
+-- list rows are created by the ScrollBox; built lazily on first init
+local function BuildRow(row)
+  row.built = true
+  row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  row.stripe = row:CreateTexture(nil, "BACKGROUND"); row.stripe:SetAllPoints(); row.stripe:SetColorTexture(1, 1, 1, 0.03)
+  local hl = row:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); BC.Fade(hl, "HORIZONTAL", T.goldBright, 0.18, 0)
+  row.dot = BC.Dot(row, 10); row.dot:SetPoint("LEFT", 6, 0)
+  row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  row.name:SetPoint("LEFT", 22, 0); row.name:SetWidth(150); row.name:SetJustifyH("LEFT"); row.name:SetWordWrap(false)
+  row.icons = {}
+  for i = 1, 3 do
+    local ic = row:CreateTexture(nil, "ARTWORK"); ic:SetSize(20, 20); ic:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    ic:SetPoint("LEFT", 180 + (i - 1) * 22, 0); row.icons[i] = ic
+  end
+  row.zone = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  row.zone:SetPoint("LEFT", 252, 0); row.zone:SetWidth(150); row.zone:SetJustifyH("LEFT"); row.zone:SetWordWrap(false)
+  row.zone:SetTextColor(T.zone[1], T.zone[2], T.zone[3])
+  row.badge = row:CreateTexture(nil, "ARTWORK"); row.badge:SetSize(16, 16); row.badge:SetPoint("RIGHT", -48, 0)
+  row.badge:SetTexture(BC.ICON_FALLBACK) -- has a card = runs BusinessCard
+  row.age = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  row.age:SetPoint("RIGHT", -8, 0); row.age:SetJustifyH("RIGHT")
+  row:SetScript("OnClick", RowClick)
+  row:SetScript("OnEnter", RowEnter)
+  row:SetScript("OnLeave", GameTooltip_Hide)
+end
+
+local function InitRow(row, v)
+  if not row.built then BuildRow(row) end
+  row.key, row.data = v.key or v.name, v
+  row.stripe:SetShown((v.i or 0) % 2 == 1)
+  if v.mine then -- My card fallback until Phase 3
+    row.name:SetText(v.label); row.name:SetTextColor(T.cream[1], T.cream[2], T.cream[3])
+    row.zone:SetText(v.skill or ""); row.age:SetText(ST_LABEL[v.st or "a"])
+    row.dot:Hide(); row.badge:Hide(); for _, ic in ipairs(row.icons) do ic:Hide() end
+    return
+  end
+  row.name:SetText(v.name)
+  local nc = v.card and T.goldBright or T.cream
+  row.name:SetTextColor(nc[1], nc[2], nc[3])
+  local icons = BC.RowIcons(v.cats, 3)
+  for i, ic in ipairs(row.icons) do ic:SetShown(icons[i] ~= nil); if icons[i] then ic:SetTexture(icons[i]) end end
+  row.zone:SetText(v.zone or ""); row.age:SetText(v.age)
+  local c = BC.StatusColor(BC.CardStatus(v.card, BC.db.filter))
+  row.dot:SetShown(c ~= nil); if c then row.dot:SetVertexColor(c[1], c[2], c[3]) end
+  row.badge:SetShown(v.card ~= nil)
+end
+
 local function Build()
   win = CreateFrame("Frame", "BusinessCardWin", UIParent, "BackdropTemplate")
   BC.Skin(win); BC.Parchment(win, 0.15)
-  win:SetSize(540, TOP + 40 + MAX_ROWS * ROW_H); win:SetFrameStrata("DIALOG")
+  win:SetSize(540, 560); win:SetFrameStrata("DIALOG")
   local pos = BC.db.frames.win
   if pos then win:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else win:SetPoint("CENTER") end
   win:SetMovable(true); win:EnableMouse(true); win:RegisterForDrag("LeftButton")
@@ -88,29 +133,18 @@ local function Build()
     for _, c in ipairs(BC.CATS) do Radio(BC.CAT_LABEL[c], c) end
   end)
 
-  win.rows = {}
-  for i = 1, MAX_ROWS do
-    local row = CreateFrame("Button", nil, win)
-    row:SetSize(508, ROW_H - 2); row:SetPoint("TOPLEFT", 16, -TOP - (i - 1) * ROW_H)
-    row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    row.status = row:CreateTexture(nil, "ARTWORK"); row.status:SetSize(8, 8); row.status:SetPoint("LEFT", 2, 0)
-    row.status:SetColorTexture(1, 1, 1, 1); row.status:Hide() -- card status badge
-    row.icon = row:CreateTexture(nil, "ARTWORK"); row.icon:SetSize(12, 12); row.icon:SetPoint("RIGHT", -34, 0)
-    row.icon:SetTexture("Interface\\Icons\\INV_Letter_15"); row.icon:Hide() -- runs BusinessCard
-    row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.name:SetPoint("LEFT", 14, 0); row.name:SetWidth(130); row.name:SetJustifyH("LEFT"); row.name:SetWordWrap(false)
-    row.cats = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.cats:SetPoint("LEFT", row.name, "RIGHT", 6, 0); row.cats:SetWidth(170); row.cats:SetJustifyH("LEFT"); row.cats:SetWordWrap(false)
-    row.zone = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.zone:SetPoint("LEFT", row.cats, "RIGHT", 6, 0); row.zone:SetWidth(96); row.zone:SetJustifyH("LEFT"); row.zone:SetWordWrap(false)
-    row.zone:SetTextColor(0.6, 0.8, 1)
-    row.age = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.age:SetPoint("RIGHT", -4, 0); row.age:SetJustifyH("RIGHT")
-    local hl = row:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetColorTexture(1, 1, 1, 0.08)
-    row:SetScript("OnClick", RowClick)
-    row:SetScript("OnEnter", RowEnter)
-    row:SetScript("OnLeave", GameTooltip_Hide)
-    win.rows[i] = row
+  -- scrolling list (Baganator CharacterSelect.lua:53-97)
+  if CreateScrollBoxListLinearView and ScrollUtil and CreateDataProvider then
+    win.list = CreateFrame("Frame", nil, win, "WowScrollBoxList")
+    win.list:SetPoint("TOPLEFT", 12, -TOP); win.list:SetPoint("BOTTOMRIGHT", -26, 32)
+    win.bar = CreateFrame("EventFrame", nil, win, "MinimalScrollBar")
+    win.bar:SetPoint("TOPLEFT", win.list, "TOPRIGHT", 6, 0); win.bar:SetPoint("BOTTOMLEFT", win.list, "BOTTOMRIGHT", 6, 0)
+    local view = CreateScrollBoxListLinearView()
+    view:SetElementExtent(ROW_H)
+    view:SetElementInitializer("Button", InitRow)
+    ScrollUtil.InitScrollBoxListWithScrollBar(win.list, win.bar, view)
+  else
+    BC.Print("scroll list unavailable on this client")
   end
   win.footer = win:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
   win.footer:SetPoint("BOTTOMLEFT", 18, 10); win.footer:SetTextColor(T.muted[1], T.muted[2], T.muted[3])
@@ -120,20 +154,10 @@ end
 
 function BC.RenderSeen(rows, total)
   win.filter:Show()
-  for i, row in ipairs(win.rows) do
-    local v = rows[i]
-    row:SetShown(v ~= nil)
-    row.key, row.data = v and v.name, v
-    if v then
-      row.name:SetText(v.name); row.cats:SetText(BC.CatList(v.cats)); row.age:SetText(v.age)
-      row.zone:SetText(v.zone or "")
-      local st = BC.CardStatus(v.card, BC.db.filter)
-      row.status:SetShown(st ~= nil)
-      if st == "a" then row.status:SetColorTexture(0.2, 0.9, 0.2, 1) elseif st == "b" then row.status:SetColorTexture(0.9, 0.2, 0.2, 1) end
-      row.icon:SetShown(v.card ~= nil)
-    end
-  end
-  win.footer:SetText(math.min(#rows, MAX_ROWS) .. " shown / " .. total .. " seen")
+  if not win.list then return end
+  for i, v in ipairs(rows) do v.i = i end
+  win.list:SetDataProvider(CreateDataProvider(rows), ScrollBoxConstants.RetainScrollPosition)
+  win.footer:SetText(#rows .. " shown / " .. total .. " seen")
 end
 
 local pending = false
@@ -157,18 +181,13 @@ end
 -- My card view: row 1 = overall, then professions, then services; click cycles status
 function BC.RenderMyCard(w)
   local card, st = BC.MyCard(), BC.char.status
-  local rows = { { key = "g", name = "Overall", st = card.g, skill = "" } }
+  local rows = { { mine = true, key = "g", label = "Overall", st = card.g, skill = "" } }
   for _, p in ipairs(card.profs) do
-    rows[#rows + 1] = { key = "p" .. p.id, name = BC.PROF_NAMES[p.id] or ("Profession " .. p.id), st = p.st, skill = tostring(p.skill) }
+    rows[#rows + 1] = { mine = true, key = "p" .. p.id, label = BC.PROF_NAMES[p.id] or ("Profession " .. p.id), st = p.st, skill = tostring(p.skill) }
   end
-  for _, s in ipairs(card.svcs) do rows[#rows + 1] = { key = s.key, name = SVC_LABEL[s.key], st = s.st, skill = "" } end
-  for i, row in ipairs(w.rows) do
-    local v = rows[i]
-    row:SetShown(v ~= nil)
-    row.key, row.data = v and v.key, nil
-    row.status:Hide(); row.icon:Hide()
-    if v then row.name:SetText(v.name); row.cats:SetText(ST_LABEL[v.st or "a"]); row.age:SetText(v.skill); row.zone:SetText("") end
-  end
+  for _, s in ipairs(card.svcs) do rows[#rows + 1] = { mine = true, key = s.key, label = SVC_LABEL[s.key], st = s.st, skill = "" } end
+  for i, v in ipairs(rows) do v.i = i end
+  if w.list then w.list:SetDataProvider(CreateDataProvider(rows)) end
   local cached = {}
   for id, ids in pairs(BC.char.recipes) do cached[#cached + 1] = (BC.PROF_NAMES[id] or id) .. " " .. #ids end
   table.sort(cached)

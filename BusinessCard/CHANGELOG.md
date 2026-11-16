@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.1
+- Seen list scrolls, so every entry is reachable (no more 20-row cap). Taller rows show a status dot, the name in gold if they run BusinessCard, category icons, zone, age and a card badge, with stripes and a gold hover.
+
 ## 0.8.0
 - New ledger look: rock background, faint parchment, gold border and title, close button. Seen and My card are now tabs under the window. The card detail uses the same skin.
 

@@ -161,4 +161,14 @@ eq(BC.PickZone({ zone = "Org", whoAt = 5 }, { zone = "TB", at = 10 }), "TB", "ne
 eq(BC.PickZone({ zone = "Org" }, nil), "Org", "heard zone alone")
 eq(BC.PickZone({}, { at = 1 }), nil, "no zone anywhere")
 
+-- UI redesign P2
+local ic = BC.RowIcons({ portal = true, enchanting = true, summon = true, alchemy = true }, 3)
+eq(#ic, 3, "row icons capped"); eq(ic[1], BC.CAT_ICON.enchanting, "row icons in CATS order")
+eq(ic[3], BC.CAT_ICON.summon, "portal dropped past cap")
+eq(#BC.RowIcons(nil, 3), 0, "no cats no icons")
+eq(BC.StatusColor("a"), BC.THEME.available, "available colour"); eq(BC.StatusColor("b"), BC.THEME.busy, "busy colour")
+eq(BC.StatusColor("o"), BC.THEME.off, "off colour"); eq(BC.StatusColor(nil), nil, "unknown no colour")
+for _, c in ipairs(BC.CATS) do assert(BC.CAT_ICON[c], "icon for " .. c) end
+for _, s in ipairs(BC.SERVICES) do assert(BC.SVC_ICON[s.key], "icon for " .. s.key) end
+
 print("all tests passed")

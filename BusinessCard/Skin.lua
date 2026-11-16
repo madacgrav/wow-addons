@@ -36,6 +36,14 @@ function BC.Fade(t, dir, c, a1, a2) -- TackleBox Panel.lua:51-54
   t:SetGradient(dir, CreateColor(c[1], c[2], c[3], a1), CreateColor(c[1], c[2], c[3], a2))
 end
 
+function BC.Dot(parent, size, layer) -- round masked texture (WCK Panel.lua:75-80)
+  local t = parent:CreateTexture(nil, layer or "ARTWORK"); t:SetSize(size, size); t:SetTexture("Interface\\Buttons\\WHITE8x8")
+  local m = parent:CreateMaskTexture(); m:SetAllPoints(t)
+  m:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+  t:AddMaskTexture(m)
+  return t
+end
+
 function BC.TitleFont(fs, size)
   if not fs:SetFont("Fonts\\MORPHEUS.ttf", size or 20, "") then fs:SetFontObject("GameFontNormalLarge") end
   fs:SetTextColor(T.goldBright[1], T.goldBright[2], T.goldBright[3]); fs:SetShadowOffset(1, -1)

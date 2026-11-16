@@ -208,3 +208,15 @@ function BC.Reassemble(buf, key, seq, total, part, now)
   for i = 1, total do for t in (b.parts[i] or ""):gmatch("[^,]+") do ids[#ids + 1] = tonumber(t, 36) end end
   return ids
 end
+
+-- display helpers (UI redesign)
+function BC.RowIcons(cats, max) -- icon paths in BC.CATS order, capped
+  local out = {}
+  for _, c in ipairs(BC.CATS) do
+    if cats and cats[c] and #out < (max or 3) then out[#out + 1] = BC.CAT_ICON[c] or BC.ICON_FALLBACK end
+  end
+  return out
+end
+
+local ST_THEME = { a = "available", b = "busy", o = "off" }
+function BC.StatusColor(st) return st and BC.THEME[ST_THEME[st]] or nil end
