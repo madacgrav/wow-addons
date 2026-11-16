@@ -185,7 +185,8 @@ end)
 
 -- /who lookup for one name: SendWho needs a hardware event, so only call this from a click
 local whoTarget, wasOpen
-local WHO_FRAMES = { "FriendsFrame", "WhoFrame" }
+-- Forever shows /who results in the group finder (LFGParentFrame > LFGWhoListFrame), found with /fstack
+local WHO_FRAMES = { "LFGParentFrame", "LFGWhoListFrame", "FriendsFrame", "WhoFrame" }
 local function WhoOpen() for _, n in ipairs(WHO_FRAMES) do local f = _G[n]; if f and f:IsShown() then return true end end end
 
 -- close the Who/Friends window for 3 s after our lookup (it opens late, from Blizzard's own handlers)

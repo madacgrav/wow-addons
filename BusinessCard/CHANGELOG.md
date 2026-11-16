@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.4
+- Ctrl-click /who closes Forever's group-finder who list (LFGParentFrame), which is where the results open.
+
 ## 0.7.3
 - Ctrl-click /who: keeps closing the Friends/Who window for 3 seconds after the lookup, since it opens late.
 
