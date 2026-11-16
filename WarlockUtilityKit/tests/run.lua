@@ -109,4 +109,19 @@ eq(WUK.PetIsOut("imp", nil), false, "no pet")
 eq(WUK.PetIsOut("succubus", "incubus"), false, "alias is one-way")
 eq(WUK.PetIsOut("felhunter", "imp"), false, "wrong pet")
 
+-- Ring views
+local function near(a, b, label) if math.abs(a - b) > 1e-6 then error(label .. ": " .. a .. " vs " .. b, 2) end end
+eq(WUK.NextView("party"), "buff", "next party"); eq(WUK.NextView("buff"), "party", "next wraps")
+eq(WUK.NextView("bogus"), "party", "next unknown")
+local all = setmetatable({}, { __index = function() return true end })
+eq(#WUK.ViewKeys("party", {}, all), 6, "party unfiltered by known")
+local bk = WUK.ViewKeys("buff", { armor = "Demon Armor" }, all)
+eq(#bk, 2, "buff known only"); eq(bk[1], "soulstone", "toggle kept"); eq(bk[2], "armor", "known buff")
+eq(#WUK.ViewKeys("party", {}, { healthstone = true }), 1, "missing button dropped")
+local a = WUK.FlipAngle(10, 2, 6, 1, 8)
+local x1, y1 = WUK.RingPoint(2, 6, 58, 10); local x2, y2 = WUK.RingPoint(1, 8, 58, a)
+near(x1, x2, "flip x"); near(y1, y2, "flip y")
+local b2 = WUK.FlipAngle(a, 1, 8, 2, 6)
+x2, y2 = WUK.RingPoint(2, 6, 58, b2); near(x1, x2, "flip back x"); near(y1, y2, "flip back y")
+
 print("all tests passed")

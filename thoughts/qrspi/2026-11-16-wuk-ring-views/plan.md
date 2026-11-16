@@ -158,12 +158,12 @@ The existing `TRADE_SHOW` handler (`Trade.lua:17-26`) places the stone. The `UI_
 - [x] Deploy with robocopy.
 
 #### Manual
-- [ ] No healthstone, left-click: casts Create Healthstone.
-- [ ] Holding a healthstone, left-click: eats it.
-- [ ] Target a party member within about 10 yards and right-click: a trade window opens with the healthstone in slot 1. Accept completes the trade.
-- [ ] Right-click with no target, a hostile target, yourself, a far player, or no stone: the matching message prints and no trade opens.
-- [ ] Right-click never eats or creates a stone.
-- [ ] Whisper-request trades (someone whispers "hs") still work.
+- [x] No healthstone, left-click: casts Create Healthstone.
+- [x] Holding a healthstone, left-click: eats it.
+- [x] Target a party member within about 10 yards and right-click: a trade window opens with the healthstone in slot 1. Accept completes the trade.
+- [x] Right-click with no target, a hostile target, yourself, a far player, or no stone: the matching message prints and no trade opens.
+- [x] Right-click never eats or creates a stone.
+- [x] Whisper-request trades (someone whispers "hs") still work.
 
 ---
 
@@ -350,9 +350,9 @@ end)
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockUtilityKit/tests/run.lua` passes, including the new "Ring views" block.
-- [ ] `grep -n "ORBIT" WarlockUtilityKit/*.lua` returns nothing.
-- [ ] Deploy with robocopy.
+- [x] `lua5.1 WarlockUtilityKit/tests/run.lua` passes, including the new "Ring views" block.
+- [x] `grep -n "ORBIT" WarlockUtilityKit/*.lua` returns nothing.
+- [x] Deploy with robocopy.
 
 #### Manual
 - [ ] On login, Party view looks and behaves exactly as in v0.3.3: same 6 orbit buttons and order, spin, collapse, alerts.

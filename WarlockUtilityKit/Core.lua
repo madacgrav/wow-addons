@@ -59,6 +59,8 @@ local SPELLS = {
   firestone = { "Create Firestone (Major)", "Create Firestone (Greater)", "Create Firestone",
                 "Create Firestone (Lesser)" },
   curseshadow = { "Curse of Shadow" },
+  shadowward = { "Shadow Ward" }, unending = { "Unending Breath" },
+  eye = { "Eye of Kilrogg" }, sense = { "Sense Demons" },
 }
 
 local function SpellbookNames()

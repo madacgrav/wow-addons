@@ -55,3 +55,24 @@ table.insert(WUK.inits, function()
     WUK.strip.stone:SetText(rem and ("Soulstone: " .. WUK.char.soulstone.target .. "  " .. WUK.FormatTime(rem)) or "Soulstone: none")
   end)
 end)
+
+-- one secure button per view spell; LayoutRing shows/hides them by view
+local SPELL_KEYS = { "detect", "shadowward", "soullink", "unending", "eye", "sense" }
+function WUK.SpellButton(key)
+  local b = CreateFrame("Button", "WUKSpell_" .. key, WUK.strip, "SecureActionButtonTemplate")
+  b:SetSize(36, 36); b:RegisterForClicks("AnyUp", "AnyDown"); b:SetAttribute("type", "macro")
+  b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints()
+  b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+  WUK.AttachTooltip(b, function() WUK.SpellTooltip(WUK.known[key]) end)
+  b:Hide() -- party view first
+  WUK.strip.icons[key] = b
+  return b
+end
+table.insert(WUK.inits, function() for _, k in ipairs(SPELL_KEYS) do WUK.SpellButton(k) end end)
+table.insert(WUK.refreshers, function()
+  for _, k in ipairs(SPELL_KEYS) do
+    local b, spell = WUK.strip.icons[k], WUK.known[k]
+    b.icon:SetTexture(spell and C_Spell.GetSpellTexture(spell) or 134400)
+    if not InCombatLockdown() then b:SetAttribute("macrotext", spell and ("/cast " .. spell) or "") end
+  end
+end)

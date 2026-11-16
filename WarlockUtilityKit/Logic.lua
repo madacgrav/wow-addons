@@ -175,3 +175,30 @@ function WUK.RingPoint(i, n, radius, offsetDeg)
   local a = math.rad(offsetDeg + (i - 1) * 360 / n)
   return radius * math.sin(a), radius * math.cos(a)
 end
+
+-- ring views: orbit keys clockwise from 12; party = the default ring
+WUK.VIEWS = {
+  party = { "healthstone", "soulstone", "spellstone", "firestone", "armor", "pet" },
+  buff = { "soulstone", "armor", "detect", "shadowward", "soullink", "unending", "eye", "sense" },
+}
+WUK.VIEW_ORDER = { "party", "buff" }
+
+function WUK.NextView(view)
+  local o = WUK.VIEW_ORDER
+  for i, v in ipairs(o) do if v == view then return o[i % #o + 1] end end
+  return o[1]
+end
+
+-- keys to draw: the button must exist (has[k]); spell views also need the spell known (soulstone is the toggle, always kept)
+function WUK.ViewKeys(view, known, has)
+  local out = {}
+  for _, k in ipairs(WUK.VIEWS[view] or WUK.VIEWS.party) do
+    if has[k] and (view == "party" or k == "soulstone" or known[k]) then out[#out + 1] = k end
+  end
+  return out
+end
+
+-- new ring offset that keeps one button at the same angle after its slot index/count change
+function WUK.FlipAngle(angle, iOld, nOld, iNew, nNew)
+  return (angle + (iOld - 1) * 360 / nOld - (iNew - 1) * 360 / nNew) % 360
+end
