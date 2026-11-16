@@ -65,6 +65,15 @@ function WUK.QueuePrune(list, keep)
   for i = #list, 1, -1 do if not keep(list[i]) then table.remove(list, i) end end
 end
 
+-- inGroup: set of group member names, or nil when membership is unknown (secret names) - then only TTL applies
+function WUK.QueueKeep(r, now, ttl, inGroup)
+  if now - (r.at or 0) >= ttl then return false end
+  return inGroup == nil or inGroup[r.name] == true
+end
+
+-- the row the player clicked wins; a manual /cast falls back to the last spell target
+function WUK.SummonTarget(pending, lastCast) return pending or lastCast end
+
 -- ctx = { inGroup, connected, dead, here: bool?, shards: number, helpers: number? }; nil = unknown, not a failure
 function WUK.SummonFailure(ctx)
   if not ctx.inGroup then return "not in group" end

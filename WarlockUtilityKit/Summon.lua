@@ -3,6 +3,18 @@ local MAX, TTL = 10, 600
 local queue, rows, panel = {}, {}, nil
 
 local GroupUnits, UnitFull = WUK.GroupUnits, WUK.UnitFull
+local pendingSummon -- name of the row last left-clicked; cleared when the ritual ends
+
+-- set of group member names; nil if any name is secret (membership unknown - don't drop anyone)
+local function GroupNames()
+  local s = {}
+  for _, u in ipairs(GroupUnits()) do
+    local n = UnitFull(u)
+    if not n then return nil end
+    s[n] = true
+  end
+  return s
+end
 
 local function RosterZone(name)
   if not IsInRaid() then return nil end -- ponytail: party zone unknown; add C_Map.GetBestMapForUnit name lookup if needed
@@ -36,9 +48,9 @@ local function Context(name)
 end
 
 function WUK.UpdateSummonRows()
-  if InCombatLockdown() then return end
-  local now = time()
-  WUK.QueuePrune(queue, function(r) return now - r.at < TTL end)
+  local now, group = time(), GroupNames()
+  WUK.QueuePrune(queue, function(r) return WUK.QueueKeep(r, now, TTL, group) end)
+  if InCombatLockdown() then return end -- secure attributes: PLAYER_REGEN_ENABLED -> Refresh re-applies
   for i, row in ipairs(rows) do
     local r = queue[i]
     if r and WUK.known.ritual then
@@ -52,13 +64,15 @@ function WUK.UpdateSummonRows()
       row:Hide()
     end
   end
-  if queue[1] then panel:Show() else panel:Hide() end
+  if queue[1] and WUK.known.ritual then panel:Show() else panel:Hide() end
 end
 
 local function OnChat(text, sender)
   if WUK.Secret(text) or WUK.Secret(sender) or not WUK.IsSummonRequest(text) then return end
   local name = Ambiguate(sender, "none")
   if name == UnitName("player") then return end
+  local group = GroupNames()
+  if group and not group[name] then return end -- only queue party/raid members
   if WUK.QueueAdd(queue, name, MAX) then queue[#queue].at = time() end
   WUK.UpdateSummonRows() -- no-op in combat; PLAYER_REGEN_ENABLED -> Refresh applies it
 end
@@ -80,16 +94,26 @@ table.insert(WUK.inits, function()
     row:HookScript("OnClick", function(self, button, down)
       if button == "RightButton" and not down and self.name then WUK.QueueRemove(queue, self.name); WUK.UpdateSummonRows() end
     end)
+    row:SetScript("PreClick", function(self, button)
+      if button == "LeftButton" and not IsControlKeyDown() and self.name then pendingSummon = self.name end
+    end)
     rows[i] = row
   end
   panel:Hide()
   for _, e in ipairs({ "CHAT_MSG_PARTY", "CHAT_MSG_PARTY_LEADER", "CHAT_MSG_RAID", "CHAT_MSG_RAID_LEADER",
                        "CHAT_MSG_GUILD", "CHAT_MSG_SAY", "CHAT_MSG_WHISPER" }) do WUK.On(e, OnChat) end
   WUK.On("GROUP_ROSTER_UPDATE", WUK.UpdateSummonRows)
+  local function IsRitual(unit, spellID)
+    return unit == "player" and WUK.known.ritual and WUK.SpellName(spellID) == WUK.known.ritual
+  end
   WUK.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
-    if unit == "player" and WUK.known.ritual and WUK.SpellName(spellID) == WUK.known.ritual and WUK.lastCastTarget then
-      WUK.QueueRemove(queue, Ambiguate(WUK.lastCastTarget, "none")); WUK.UpdateSummonRows()
-    end
+    if not IsRitual(unit, spellID) then return end
+    local t = WUK.SummonTarget(pendingSummon, WUK.lastCastTarget)
+    pendingSummon = nil
+    if t then WUK.QueueRemove(queue, Ambiguate(t, "none")); WUK.UpdateSummonRows() end
   end)
+  for _, e in ipairs({ "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTED" }) do
+    WUK.On(e, function(unit, _, spellID) if IsRitual(unit, spellID) then pendingSummon = nil end end)
+  end
 end)
 table.insert(WUK.refreshers, function() WUK.UpdateSummonRows() end)

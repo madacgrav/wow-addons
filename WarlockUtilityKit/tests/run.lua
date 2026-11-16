@@ -109,4 +109,14 @@ eq(WUK.PetIsOut("imp", nil), false, "no pet")
 eq(WUK.PetIsOut("succubus", "incubus"), false, "alias is one-way")
 eq(WUK.PetIsOut("felhunter", "imp"), false, "wrong pet")
 
+-- Board/summon UI: queue membership + removal target
+local grp = { Ann = true }
+eq(WUK.QueueKeep({ name = "Ann", at = 100 }, 150, 600, grp), true, "keep member")
+eq(WUK.QueueKeep({ name = "Bob", at = 100 }, 150, 600, grp), false, "drop non-member")
+eq(WUK.QueueKeep({ name = "Ann", at = 100 }, 700, 600, grp), false, "drop expired")
+eq(WUK.QueueKeep({ name = "Bob", at = 100 }, 150, 600, nil), true, "unknown roster keeps")
+eq(WUK.SummonTarget("Ann", "Bob"), "Ann", "clicked row wins")
+eq(WUK.SummonTarget(nil, "Bob"), "Bob", "manual cast fallback")
+eq(WUK.SummonTarget(nil, nil), nil, "no target")
+
 print("all tests passed")
