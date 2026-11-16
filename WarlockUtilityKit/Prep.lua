@@ -8,6 +8,7 @@ table.insert(WUK.inits, function()
   armorBtn:SetAttribute("type", "macro")
   armorBtn.icon = armorBtn:CreateTexture(nil, "ARTWORK"); armorBtn.icon:SetAllPoints()
   armorBtn:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+  WUK.AttachTooltip(armorBtn, function() WUK.SpellTooltip(WUK.known.armor) end)
 end)
 table.insert(WUK.refreshers, function()
   local spell = WUK.known.armor
@@ -20,6 +21,10 @@ end)
 
 -- pet button: always the /wuk pet choice (Imp if not learned); grey while that pet isn't out
 local petBtn
+local function PetSpell()
+  local pet = WUK.known[WUK.char.pet] and WUK.char.pet or "imp"
+  return WUK.known[pet], pet
+end
 table.insert(WUK.inits, function()
   petBtn = CreateFrame("Button", "WUKPetButton", WUK.strip, "SecureActionButtonTemplate")
   petBtn:SetSize(36, 36); WUK.strip.icons.pet = petBtn; WUK.AddGlow(petBtn)
@@ -27,10 +32,10 @@ table.insert(WUK.inits, function()
   petBtn:SetAttribute("type", "macro")
   petBtn.icon = petBtn:CreateTexture(nil, "ARTWORK"); petBtn.icon:SetAllPoints()
   petBtn:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+  WUK.AttachTooltip(petBtn, function() WUK.SpellTooltip((PetSpell())) end)
 end)
 table.insert(WUK.refreshers, function()
-  local pet = WUK.known[WUK.char.pet] and WUK.char.pet or "imp"
-  local spell = WUK.known[pet]
+  local spell, pet = PetSpell()
   petBtn.icon:SetTexture(spell and C_Spell.GetSpellTexture(spell) or 134400)
   local out = WUK.PetIsOut(pet, WUK.PetFamily())
   petBtn.icon:SetDesaturated(not out)

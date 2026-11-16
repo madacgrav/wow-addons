@@ -109,6 +109,30 @@ function WUK.SetAlert(b, on)
   if on then b.glow:Show(); b.pulse:Play() else b.pulse:Stop(); b.glow:Hide() end
 end
 
+-- spell tooltip by name; plain name line when the client gives no ID
+function WUK.SpellTooltip(name)
+  if not name then return end
+  local info = C_Spell.GetSpellInfo(name)
+  if info and info.spellID then GameTooltip:SetSpellByID(info.spellID) else GameTooltip:AddLine(name) end
+end
+
+-- fill(b) adds the lines; same OnEnter/OnLeave shape as the minimap button (Settings.lua)
+function WUK.AttachTooltip(b, fill)
+  b:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); fill(self); GameTooltip:Show()
+  end)
+  b:SetScript("OnLeave", GameTooltip_Hide)
+end
+
+-- held stone: the bag item; none held: the create spell (or the kind's name if not learned)
+local function StoneTooltip(kind)
+  local slot = WUK.counts.slots[kind]
+  if slot then GameTooltip:SetBagItem(slot[1], slot[2])
+  elseif kind == "shard" then GameTooltip:AddLine("Soul Shards: 0")
+  elseif WUK.known[kind] then WUK.SpellTooltip(WUK.known[kind])
+  else GameTooltip:AddLine((kind:gsub("^%l", string.upper))) end
+end
+
 table.insert(WUK.inits, function()
   local f = CreateFrame("Frame", "WUKStrip", UIParent)
   -- ring of 6 orbit buttons around the shard core; soulstone + assignment lines underneath
@@ -140,6 +164,7 @@ table.insert(WUK.inits, function()
     b.count:SetPoint("BOTTOMRIGHT", -2, 2)
     b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
     f.icons[kind] = b
+    WUK.AttachTooltip(b, function() StoneTooltip(kind) end)
   end
   f.stone = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   f.stone:SetPoint("BOTTOM", 0, 20)
