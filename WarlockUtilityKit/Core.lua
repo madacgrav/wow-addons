@@ -29,7 +29,7 @@ end)
 
 function WUK.ScanBags()
   local c = { shard = 0, healthstone = 0, soulstone = 0, spellstone = 0, firestone = 0, ids = {}, slots = {} }
-  for bag = 0, NUM_BAG_SLOTS or 4 do
+  for bag = 0, NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4 do -- 5 = extra slot (soul bag on Forever)
     for slot = 1, C_Container.GetContainerNumSlots(bag) do
       local info = C_Container.GetContainerItemInfo(bag, slot)
       local kind = info and WUK.ClassifyItem(info.itemName or C_Item.GetItemInfo(info.itemID))
@@ -209,6 +209,24 @@ function WUK.Probe()
     local frame = _G[f]
     P("frame " .. f, frame and ("shown=" .. S(frame:IsShown()) .. " children=" .. S(select("#", frame:GetChildren()))) or "missing")
   end
+  -- bags: what the client returns per bag/slot (soul shard bag debugging)
+  P("NUM_BAG_SLOTS", NUM_BAG_SLOTS)
+  P("NUM_TOTAL_EQUIPPED_BAG_SLOTS", NUM_TOTAL_EQUIPPED_BAG_SLOTS)
+  P("Enum.BagIndex.ReagentBag", Enum.BagIndex and Enum.BagIndex.ReagentBag)
+  P("GetItemCount(6265)", C_Item.GetItemCount(6265))
+  for bag = -3, 12 do -- wide on purpose: find where the soul bag lives
+    local n = C_Container.GetContainerNumSlots(bag) or 0
+    local free, family = C_Container.GetContainerNumFreeSlots(bag)
+    if n > 0 then P("bag " .. bag, "slots=" .. n .. " free=" .. tostring(free) .. " family=" .. tostring(family)) end
+    for slot = 1, n do
+      local info = C_Container.GetContainerItemInfo(bag, slot)
+      if info and (info.itemID == 6265 or info.itemName == nil) then
+        P("  " .. bag .. "/" .. slot, "id=" .. tostring(info.itemID) .. " name=" .. tostring(info.itemName)
+          .. " getinfo=" .. tostring(info.itemID and C_Item.GetItemInfo(info.itemID)) .. " stack=" .. tostring(info.stackCount))
+      end
+    end
+  end
+  P("counts.shard", WUK.counts.shard)
   if not UnitExists("target") then return P("target", "none") end
   P("target hostile", UnitCanAttack("player", "target"))
   P("raid mark", S(GetRaidTargetIndex("target")))

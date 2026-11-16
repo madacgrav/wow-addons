@@ -1,0 +1,3 @@
+# Task
+
+Build (or confirm we don't need to build) a "business card" addon for WoW Forever (Interface 16001, `_forever_` client) covering professions, warlock summons and mage teleports/portals. It watches public chat channels (Trade, General, LFG, etc.) for players advertising those services, records who advertised what so the user can whisper them later, and, between players who both run the addon, exchanges the recipes/services each knows. Players can also flag themselves available or busy per profession/service. First step: check whether an existing Forever (or portable classic/retail) addon already does this, so we don't duplicate it.

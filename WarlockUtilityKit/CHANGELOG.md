@@ -2,11 +2,19 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockUtilityKit.toc`; each version is published as a `wuk-vX.Y.Z` GitHub release.
 
-## [0.3.2] — 2026-11-16
+## [0.3.3] — 2026-11-16
 
 ### Added
 - **Incubus as a preferred pet.** `/wuk pet incubus` and the Settings dropdown now offer the Incubus. The pet button counts it as out whether the game reports it as an Incubus or a Succubus.
 - **Pet family in `/wuk probe`.** The probe prints your current pet's creature family.
+
+## [0.3.2] — 2026-11-16
+
+### Fixed
+- **Soul shard bag count.** Shards in a soul bag equipped in the fifth (extra) bag slot are now counted. The bag scan stopped at bag 4 and never saw that slot.
+
+### Added
+- **`/wuk probe` bags section.** Prints bag constants, each container's slots, free slots and bag family, and the shard slots with item ID and name.
 
 ## [0.3.1] — 2026-10-22
 

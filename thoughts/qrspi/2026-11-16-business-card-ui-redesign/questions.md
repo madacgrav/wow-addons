@@ -1,0 +1,12 @@
+# Research Questions
+
+## Context
+Focus on frame/UI construction in WoW addons targeting the Forever client (Interface 16001). Relevant code lives in `C:/Users/madac/wt/wow-addons/2026-11-16-profession-business-card/BusinessCard/Panel.lua`, the repo addons under `D:/Source/wow-addons/` (TackleBox, WarlockCombatKit, WarlockUtilityKit, ProfessionPlanner), and third-party addons under `C:/Program Files (x86)/World of Warcraft/_forever_/Interface/AddOns/` (notably ForeverDungeonJournal, AtlasLootClassic, Baganator, GuildStock, Questie, Auctionator).
+
+## Questions
+1. How is the BusinessCard window built in `Panel.lua` — which templates, widgets, row layout, view switching, tooltip and detail-frame code exist, and what data fields does each row and card view have available to display (category, status, age, skill levels, recipes, addon flag)?
+2. In the repo addons (TackleBox `Panel.lua`/`CastBar.lua`/`Actions.lua`, WarlockCombatKit `Panel.lua`, WarlockUtilityKit `UI.lua`/`Summon.lua`), how are textures, icons, backdrops, color fills, status bars and AnimationGroups used, and what shared helpers or conventions recur across them?
+3. How do ForeverDungeonJournal (`Core/Journal.lua`, `Systems/PortraitPool.lua`, `Systems/BakedPortraits.lua`, `Systems/RPGMode.lua`, `Core/Fonts.lua`) and GuildStock (`UI.lua`) construct their visual presentation — custom art/media loading, portraits or models, fonts, headers, card-like panels, and any animated or sheen effects?
+4. How do AtlasLootClassic (`GUI/GUI.lua`, `GUI/ModelFrame.lua`, `GUI/Template_*.lua`, `Button/*.lua`) and Baganator (`ItemViewCommon/`, `CategoryViews/`, `SingleViews/Pools.lua`) implement list/grid rows, icon buttons, tab or category navigation, frame pooling and scrolling?
+5. What built-in (Blizzard) visual resources are available to addons on this client without shipping media — e.g. atlas names via `SetAtlas`/`C_Texture.GetAtlasInfo`, profession/spell icons via `GetSpellTexture`/`C_TradeSkillUI`, class icons/colors (`RAID_CLASS_COLORS`, `CLASS_ICON_TCOORDS`), portrait APIs (`SetPortraitTexture`), and which of these do the installed addons actually reference?
+6. What constraints apply to UI on this client: which templates (`BackdropTemplate`, `PortraitFrameTemplate`, `ScrollBox`/`WowScrollBoxList`, `DropdownButton`) and animation types are confirmed working in repo code or probe notes under `D:/Source/wow-addons/thoughts/`, and how do the repo addons handle custom media paths, sizing/scaling, and saving window position?
