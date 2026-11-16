@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.0
+- New ledger look: rock background, faint parchment, gold border and title, close button. Seen and My card are now tabs under the window. The card detail uses the same skin.
+
 ## 0.7.4
 - Ctrl-click /who closes Forever's group-finder who list (LFGParentFrame), which is where the results open.
 

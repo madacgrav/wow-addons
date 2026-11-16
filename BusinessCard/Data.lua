@@ -48,3 +48,10 @@ BC.PORTAL_DEST = { org = "ORG", orgrimmar = "ORG", ogri = "ORG", uc = "UC", unde
 -- keys = channelBaseName before " - " (probe-results.md)
 BC.DEFAULT_CHANNELS = { Trade = true, General = true, LookingForGroup = true, ["Trade (Services)"] = true,
   ["Trade (Local)"] = true, SAY = true, YELL = true, WHISPER = true }
+
+-- merchant-ledger palette {r,g,b[,a]}
+BC.THEME = {
+  ink = { 0.07, 0.06, 0.05, 0.97 }, parchment = { 1, 0.96, 0.84 }, cream = { 0.94, 0.88, 0.73 },
+  gold = { 0.72, 0.58, 0.32 }, goldBright = { 1, 0.82, 0.30 }, muted = { 0.55, 0.52, 0.46 },
+  zone = { 0.6, 0.8, 1 }, available = { 0.25, 0.9, 0.3 }, busy = { 0.95, 0.25, 0.2 }, off = { 0.5, 0.5, 0.5 },
+}

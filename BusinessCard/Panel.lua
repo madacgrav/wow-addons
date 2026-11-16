@@ -1,7 +1,8 @@
 local ADDON, BC = ...
 -- ponytail: fixed 20 rows, newest first; add a ScrollBox if 20 isn't enough
-local MAX_ROWS, ROW_H, TOP = 20, 24, 64
+local MAX_ROWS, ROW_H, TOP = 20, 24, 54
 local win
+local T = BC.THEME
 local ST_LABEL = { a = "|cff33ff33Available|r", b = "|cffff3333Busy|r", o = "|cff888888Off|r" }
 local SVC_LABEL = {}
 for _, s in ipairs(BC.SERVICES) do SVC_LABEL[s.key] = s.label or s.name end
@@ -41,11 +42,12 @@ local function RowEnter(self)
   GameTooltip:Show()
 end
 
-local function SetView(v) BC.db.view = v; BC.RefreshPanel() end
+local function SetView(v) BC.db.view = v; PanelTemplates_SetTab(win, v == "card" and 2 or 1); BC.RefreshPanel() end
 
 local function Build()
-  win = CreateFrame("Frame", "BusinessCardWin", UIParent, "BasicFrameTemplateWithInset")
-  win:SetSize(500, TOP + 30 + MAX_ROWS * ROW_H); win:SetFrameStrata("DIALOG")
+  win = CreateFrame("Frame", "BusinessCardWin", UIParent, "BackdropTemplate")
+  BC.Skin(win); BC.Parchment(win, 0.15)
+  win:SetSize(540, TOP + 40 + MAX_ROWS * ROW_H); win:SetFrameStrata("DIALOG")
   local pos = BC.db.frames.win
   if pos then win:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else win:SetPoint("CENTER") end
   win:SetMovable(true); win:EnableMouse(true); win:RegisterForDrag("LeftButton")
@@ -56,18 +58,28 @@ local function Build()
     BC.db.frames.win = { p, rp, x, y }
   end)
   tinsert(UISpecialFrames, "BusinessCardWin")
-  local title = win:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-  title:SetPoint("TOP", 0, -5); title:SetText("Business Cards")
+  local title = win:CreateFontString(nil, "OVERLAY"); BC.TitleFont(title, 20)
+  title:SetPoint("TOPLEFT", 18, -14); title:SetText("Business Cards")
+  local close = CreateFrame("Button", nil, win, "UIPanelCloseButton"); close:SetPoint("TOPRIGHT", -4, -4)
+  BC.Rule(win, -44)
+  local foot = BC.Rule(win, 0); foot:ClearAllPoints()
+  foot:SetPoint("BOTTOMLEFT", 12, 28); foot:SetPoint("BOTTOMRIGHT", -12, 28)
 
-  win.seenBtn = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
-  win.seenBtn:SetSize(80, 22); win.seenBtn:SetPoint("TOPLEFT", 12, -30); win.seenBtn:SetText("Seen")
-  win.seenBtn:SetScript("OnClick", function() SetView("seen") end)
-  win.cardBtn = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
-  win.cardBtn:SetSize(80, 22); win.cardBtn:SetPoint("LEFT", win.seenBtn, "RIGHT", 4, 0); win.cardBtn:SetText("My card")
-  win.cardBtn:SetScript("OnClick", function() SetView("card") end)
+  -- bottom tabs; named BusinessCardWinTabN so older PanelTemplates find them too
+  win.Tabs = {}
+  for i, v in ipairs({ { "Seen", "seen" }, { "My card", "card" } }) do
+    local tab = CreateFrame("Button", "BusinessCardWinTab" .. i, win, "PanelTabButtonTemplate")
+    tab:SetID(i); tab:SetText(v[1]); tab.view = v[2]
+    if i == 1 then tab:SetPoint("TOPLEFT", win, "BOTTOMLEFT", 12, 2)
+    else tab:SetPoint("LEFT", win.Tabs[i - 1], "RIGHT", -14, 0) end
+    tab:SetScript("OnClick", function(self) SetView(self.view) end)
+    PanelTemplates_TabResize(tab, 0)
+    win.Tabs[i] = tab
+  end
+  PanelTemplates_SetNumTabs(win, 2)
 
   win.filter = CreateFrame("DropdownButton", nil, win, "WowStyle1DropdownTemplate")
-  win.filter:SetWidth(150); win.filter:SetPoint("TOPRIGHT", -14, -30)
+  win.filter:SetWidth(150); win.filter:SetPoint("TOPRIGHT", -34, -14)
   win.filter:SetupMenu(function(_, root)
     local function Radio(label, key)
       root:CreateRadio(label, function() return BC.db.filter == key end, function() BC.db.filter = key; BC.RefreshPanel() end)
@@ -79,7 +91,7 @@ local function Build()
   win.rows = {}
   for i = 1, MAX_ROWS do
     local row = CreateFrame("Button", nil, win)
-    row:SetSize(472, ROW_H - 2); row:SetPoint("TOPLEFT", 14, -TOP - (i - 1) * ROW_H)
+    row:SetSize(508, ROW_H - 2); row:SetPoint("TOPLEFT", 16, -TOP - (i - 1) * ROW_H)
     row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     row.status = row:CreateTexture(nil, "ARTWORK"); row.status:SetSize(8, 8); row.status:SetPoint("LEFT", 2, 0)
     row.status:SetColorTexture(1, 1, 1, 1); row.status:Hide() -- card status badge
@@ -101,8 +113,8 @@ local function Build()
     win.rows[i] = row
   end
   win.footer = win:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-  win.footer:SetPoint("BOTTOMLEFT", 16, 10)
-  win:SetScript("OnShow", function() BC.RefreshPanel() end)
+  win.footer:SetPoint("BOTTOMLEFT", 18, 10); win.footer:SetTextColor(T.muted[1], T.muted[2], T.muted[3])
+  win:SetScript("OnShow", function() PanelTemplates_SetTab(win, BC.db.view == "card" and 2 or 1); BC.RefreshPanel() end)
   win:Hide() -- new frames start shown; TogglePanel's first call must show, not hide
 end
 
@@ -179,10 +191,12 @@ local function RecipeName(id)
 end
 
 local function BuildDetail()
-  detail = CreateFrame("Frame", "BusinessCardDetail", win, "BasicFrameTemplateWithInset")
+  detail = CreateFrame("Frame", "BusinessCardDetail", win, "BackdropTemplate")
+  BC.Skin(detail); BC.Parchment(detail, 0.15)
   detail:SetSize(300, 560); detail:SetPoint("TOPLEFT", win, "TOPRIGHT", 2, 0)
   tinsert(UISpecialFrames, "BusinessCardDetail")
-  detail.title = detail:CreateFontString(nil, "OVERLAY", "GameFontHighlight"); detail.title:SetPoint("TOP", 0, -5)
+  local close = CreateFrame("Button", nil, detail, "UIPanelCloseButton"); close:SetPoint("TOPRIGHT", -4, -4)
+  detail.title = detail:CreateFontString(nil, "OVERLAY"); BC.TitleFont(detail.title, 16); detail.title:SetPoint("TOP", 0, -12)
   detail.svcs = detail:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
   detail.svcs:SetPoint("TOPLEFT", 14, -30); detail.svcs:SetWidth(272); detail.svcs:SetJustifyH("LEFT")
   detail.profs = {}
