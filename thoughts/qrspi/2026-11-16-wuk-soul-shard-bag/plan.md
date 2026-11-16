@@ -72,7 +72,7 @@ The `/wuk probe` bags section (-3..12) stays as is.
 - [x] Deploy with robocopy (exit code 0-7)
 
 #### Manual
-- [ ] In game: `/reload` with N shards in the soul bag; the shard core shows N
+- [x] In game: `/reload` with N shards in the soul bag; the shard core shows N
 - [ ] Gain a shard: count +1. Summon a demon: count -1
 - [ ] A summon queue row shows no red "no shard" when N >= 1
 - [ ] `/wuk probe` shows `counts.shard: N`, matching `GetItemCount(6265)`
