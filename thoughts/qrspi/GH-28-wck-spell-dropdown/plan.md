@@ -360,6 +360,20 @@ eq(#WCK.BarSpells({}, em, {}), 0, "nothing known")
 - [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
 - [x] Deploy robocopy exits 0-7
 
+## Phase 2 revision 2 (user request: dock the bar, Life Tap core)
+- The bar docks to the right of the summoning circle.
+- `WCK.DATA.core = "Life Tap"`.
+  - A secure `WCKCoreCast` button (`/cast Life Tap`) sits on the core.
+  - `Panel.lua` core shows the Life Tap icon, greyed if it's not in the spellbook. Its tooltip moved to the button.
+  - The core no longer shows `WCK.next`. The suggestion is the pulsing bar button, or a core pulse when it's Life Tap.
+- Anchoring: the panel anchors to the core button (`TOPLEFT` at core centre minus `PANEL_GEOM.cx/cy`). The panel no longer has its own `MakeMovable("panel")`.
+  - `WCK.MakeMovable(f, key, x, y, handles)` gains `handles`, so Shift+drag on the panel moves the bar ("bar" key).
+  - The secure frames are never anchored to the panel, so the panel's in-combat `SetHeight` stays legal.
+- `BarSpells(rules, tail, known, core)` keeps the core spell off the bar. Test added.
+- The bar frame shows with `db.shown`. `showBar` only hides the strip buttons and the background.
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] Deploy robocopy exits 0-7
+
 ## Phase 3: Nightfall glow and grey-out
 
 ### Changes
@@ -385,7 +399,7 @@ end
 **Action**: modify. In `BuildRuleState`, change the loop source from Phase 1 to:
 
 ```lua
-  for _, e in ipairs(WCK.BarSpells(WCK.char.rules, WCK.DATA.tail, WCK.spellSet)) do
+  for _, e in ipairs(WCK.BarSpells(WCK.char.rules, WCK.DATA.tail, WCK.spellSet, WCK.DATA.core)) do
     local name = e.spell
     if WCK.spellSet[name] then
 ```

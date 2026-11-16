@@ -18,6 +18,8 @@ WCK.DATA.tracked = {
 
 -- fixed group at the right end of the rotation bar (when known), pulled out of the rule order: filler + emergency CC
 WCK.DATA.tail = { "Shadow Bolt", "Fear", "Banish" }
+-- the summoning circle's core: a fixed, clickable spell (never on the bar)
+WCK.DATA.core = "Life Tap"
 WCK.DATA.defaultRules = {
   { spell = "Corruption", cond = "notRecent", n = 15 }, { spell = "Curse of Agony", cond = "notRecent", n = 22 },
   { spell = "Bane of Agony", cond = "notRecent", n = 22 }, { spell = "Immolate", cond = "notRecent", n = 13 },

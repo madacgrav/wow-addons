@@ -102,5 +102,7 @@ eq(bs[4].spell, "Fear", "fear second"); eq(bs[5].spell, "Banish", "banish last")
 bs = WCK.BarSpells({ { spell = "Fear" } }, tl, { Fear = true })
 eq(#bs, 1, "fear moves to tail, unknown tail spells skipped"); eq(bs[1].tail, true, "fear in tail")
 eq(#WCK.BarSpells({}, tl, {}), 0, "nothing known")
+bs = WCK.BarSpells({ { spell = "Life Tap" }, { spell = "Corruption" } }, tl, {}, "Life Tap")
+eq(#bs, 1, "core spell kept off the bar"); eq(bs[1].spell, "Corruption", "rest stays")
 
 print("all tests passed")

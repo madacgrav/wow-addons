@@ -157,13 +157,13 @@ function WCK.RuleSpells(rules)
   return out
 end
 
--- rotation bar order: rule spells not in the tail, then the tail spells that are known (tail order)
+-- rotation bar order: rule spells not in the tail (and not the core spell), then the known tail spells (tail order)
 WCK.BAR_MAX = 13 -- 10 rules + Shadow Bolt/Fear/Banish
-function WCK.BarSpells(rules, tail, known)
+function WCK.BarSpells(rules, tail, known, core)
   local out, inTail = {}, {}
   for _, s in ipairs(tail) do inTail[s] = true end
   for _, s in ipairs(WCK.RuleSpells(rules)) do
-    if not inTail[s] then out[#out + 1] = { spell = s, tail = false } end
+    if not inTail[s] and s ~= core then out[#out + 1] = { spell = s, tail = false } end
   end
   for _, s in ipairs(tail) do
     if known[s] then out[#out + 1] = { spell = s, tail = true } end

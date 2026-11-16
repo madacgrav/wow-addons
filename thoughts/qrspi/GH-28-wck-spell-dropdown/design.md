@@ -82,6 +82,11 @@
     - Their highlights are the same as other buttons: they pulse if a rule makes one of them `WCK.next`, and go grey when not ready or usable. They are always clickable.
     - Pure `WCK.BarSpells(rules, emergency, known)` returns `{ {spell, emergency=bool}, ... }` (rule spells, then emergency spells not already listed and known). It's tested in `tests/run.lua`.
     - The button pool grows to `MAX_RULES + #emergency` = 12.
+12b. **Revised during Phase 2 (user request): dock the bar to the circle and make the core Life Tap.**
+    - The core is a fixed secure Life Tap button (`WCK.DATA.core`) and pulses when a rule suggests Life Tap. It no longer shows the suggestion icon.
+    - The bar docks to the right of the circle.
+    - The panel anchors to the secure core button, so decision 9's "not anchored" rule holds in the safe direction: no secure frame is anchored to the panel.
+    - Circle and bar move together via the bar's "bar" position.
 13. **Bar sits alongside the mouseover slots** and doesn't replace them. Slots are for key bindings, the bar is for clicking.
 14. **Toggle:** `db.showBar` (default true) with a "Show rotation buttons" checkbox next to "Show panel" (`Settings.lua` checks list). The bar also hides when `db.shown` is false. Show/hide follows the out-of-combat rule.
 15. **Click target:** reuse `CastMacro` (`/cast [@mouseover,harm,nodead][] <spell>`), the same as the slots. Clicking the bar puts the mouse over the bar, not a unit, so in practice it casts on the current target.
