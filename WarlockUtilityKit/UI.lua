@@ -47,10 +47,12 @@ function WUK.Header(parent, text, x, y)
   return h
 end
 
-function WUK.MakeMovable(f, key, x, y)
+-- free = dialog window: plain drag, ignores the lock, clamped on screen
+function WUK.MakeMovable(f, key, x, y, free)
   f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
+  if free then f:SetClampedToScreen(true) end
   f:SetScript("OnDragStart", function(self)
-    if IsShiftKeyDown() and not WUK.db.locked and not InCombatLockdown() then self:StartMoving() end
+    if free or (IsShiftKeyDown() and not WUK.db.locked and not InCombatLockdown()) then self:StartMoving() end
   end)
   f:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()

@@ -245,12 +245,12 @@ e. At the end of `UpdateSummonRows`, before the show/hide line, add:
 - [x] Deploy with robocopy
 
 #### Manual
-- [ ] With a groupmate queued, the panel has a dark purple body, a green 1 px edge, and a purple title bar with the shard icon reading "Summons (1)".
-- [ ] The panel height fits the rows.
-- [ ] Hovering the title bar shows the click-help tooltip.
-- [ ] Names are class-coloured, the zone is grey and the failure reason is red.
-- [ ] Shift-dragging the title bar or the body moves the panel, and `/wuk lock` prevents it.
-- [ ] Click, ctrl-click and right-click still summon, target and remove.
+- [x] With a groupmate queued, the panel has a dark purple body, a green 1 px edge, and a purple title bar with the shard icon reading "Summons (1)".
+- [x] The panel height fits the rows.
+- [x] Hovering the title bar shows the click-help tooltip.
+- [x] Names are class-coloured, the zone is grey and the failure reason is red.
+- [x] Shift-dragging the title bar or the body moves the panel, and `/wuk lock` prevents it.
+- [x] Click, ctrl-click and right-click still summon, target and remove.
 
 ---
 
@@ -301,8 +301,8 @@ function WUK.MakeMovable(f, key, x, y, free)
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] Deploy with robocopy
+- [x] `lua5.1 WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] Deploy with robocopy
 
 #### Manual
 - [ ] Right-click the minimap button: the board shows the themed frame, with the green headers Warlock / Curse / Banish / Soulstone above their columns.

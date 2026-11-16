@@ -94,34 +94,34 @@ local function Dropdown(row, x, width, build)
 end
 
 local function Build()
-  win = CreateFrame("Frame", "WUKBoard", UIParent, "BasicFrameTemplateWithInset")
-  win:SetSize(470, 90 + MAX_ROWS * 28); win:SetPoint("CENTER"); win:SetFrameStrata("DIALOG")
-  win:SetMovable(true); win:EnableMouse(true); win:RegisterForDrag("LeftButton")
-  win:SetScript("OnDragStart", win.StartMoving); win:SetScript("OnDragStop", win.StopMovingOrSizing)
+  win = CreateFrame("Frame", "WUKBoard", UIParent, "BackdropTemplate")
+  win:SetSize(560, 110 + MAX_ROWS * 28); win:SetFrameStrata("DIALOG")
+  WUK.Skin(win, "Warlock Assignments", { close = true })
+  WUK.MakeMovable(win, "board", -180, 0, true)
   tinsert(UISpecialFrames, "WUKBoard")
-  local title = win:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-  title:SetPoint("TOP", 0, -5); title:SetText("Warlock Assignments")
   win.leadText = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  win.leadText:SetPoint("TOPLEFT", 16, -30)
+  win.leadText:SetPoint("TOPLEFT", 14, -30); win.leadText:SetTextColor(unpack(WUK.THEME.text))
+  WUK.Header(win, "Warlock", 14, -50); WUK.Header(win, "Curse", 124, -50)
+  WUK.Header(win, "Banish", 270, -50); WUK.Header(win, "Soulstone", 396, -50)
 
   win.rows = {}
   for i = 1, MAX_ROWS do
     local row = CreateFrame("Frame", nil, win)
-    row:SetSize(440, 26); row:SetPoint("TOPLEFT", 14, -50 - (i - 1) * 28)
+    row:SetSize(532, 26); row:SetPoint("TOPLEFT", 14, -66 - (i - 1) * 28)
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.name:SetPoint("LEFT"); row.name:SetWidth(100); row.name:SetJustifyH("LEFT")
+    row.name:SetPoint("LEFT"); row.name:SetWidth(106); row.name:SetJustifyH("LEFT")
     row.dds = {
-      Dropdown(row, 106, 120, function(root)
+      Dropdown(row, 110, 140, function(root)
         Radio(root, "No curse", row, "curse", nil)
         for _, c in ipairs(WUK.CURSES) do
           if c.key ~= "shadow" or WUK.known.curseshadow then Radio(root, c.short, row, "curse", c.key) end
         end
       end),
-      Dropdown(row, 232, 90, function(root)
+      Dropdown(row, 256, 120, function(root)
         Radio(root, "No banish", row, "mark", 0)
         for m, label in ipairs(MARKS) do Radio(root, MarkIcon(m) .. " " .. label, row, "mark", m) end
       end),
-      Dropdown(row, 328, 110, function(root)
+      Dropdown(row, 382, 150, function(root)
         Radio(root, "No soulstone", row, "ss", nil)
         Radio(root, me, row, "ss", me)
         for _, u in ipairs(WUK.GroupUnits()) do
@@ -135,13 +135,13 @@ local function Build()
 
   local function Button(label, x, onClick)
     local b = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
-    b:SetSize(110, 22); b:SetPoint("BOTTOMLEFT", x, 14); b:SetText(label)
+    b:SetSize(120, 22); b:SetPoint("BOTTOMLEFT", x, 14); b:SetText(label)
     b:SetScript("OnClick", onClick)
     return b
   end
-  win.leadBtn = Button("Take lead", 16, WUK.ClaimLead)
-  Button("Sync", 132, WUK.RequestSync)
-  win.announceBtn = Button("Announce", 248, WUK.Announce)
+  win.leadBtn = Button("Take lead", 14, WUK.ClaimLead)
+  Button("Sync", 140, WUK.RequestSync)
+  win.announceBtn = Button("Announce", 266, WUK.Announce)
 
   function win:Sync()
     local list = WUK.GroupWarlocks()
