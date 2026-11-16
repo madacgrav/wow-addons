@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.0
+- Window (`/bcard` or keybind): Seen list with a category filter, newest first. Click to whisper, right-click to remove, tooltip shows the last ad. Movable and closes with Esc; `/bcard lock` stops dragging.
+
 ## 0.2.2
 - Stricter ad filter: a post must show an offer (WTS, LFW, tips, services, a price like 5g, or a profession link) and contain no LF/LFM/WTB/recruiting words. Saved entries are re-checked at login.
 

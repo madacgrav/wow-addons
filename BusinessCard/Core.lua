@@ -15,7 +15,8 @@ events:SetScript("OnEvent", function(_, event, ...)
   for _, fn in ipairs(handlers[event]) do fn(...) end
 end)
 
-local DEFAULTS = { locked = false, frames = {}, lastProbe = {}, seen = {}, channels = BC.DEFAULT_CHANNELS, maxAgeDays = 7 }
+local DEFAULTS = { locked = false, frames = {}, lastProbe = {}, seen = {}, channels = BC.DEFAULT_CHANNELS, maxAgeDays = 7,
+  view = "seen", filter = "all" }
 local CHAR_DEFAULTS = {}
 
 BC.On("ADDON_LOADED", function(name)
@@ -139,10 +140,11 @@ SLASH_BUSINESSCARD1 = "/bcard"
 SlashCmdList.BUSINESSCARD = function(msg)
   local cmd, arg = (msg or ""):match("^(%S*)%s*(.-)$")
   cmd = cmd:lower()
-  if cmd == "probe" then BC.Probe()
+  if cmd == "" then BC.TogglePanel()
+  elseif cmd == "probe" then BC.Probe()
   elseif cmd == "ping" and arg ~= "" then BC.Ping(arg)
   elseif cmd == "seen" then PrintSeen()
   elseif cmd == "lock" then BC.db.locked = not BC.db.locked; BC.Print(BC.db.locked and "locked" or "unlocked")
   elseif cmd == "reset" then wipe(BC.db.frames); BC.Print("positions reset - /reload to apply")
-  else BC.Print("/bcard seen | probe | ping <name> | lock | reset") end
+  else BC.Print("/bcard (window) | seen | probe | ping <name> | lock | reset") end
 end

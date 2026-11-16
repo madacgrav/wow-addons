@@ -62,4 +62,16 @@ seen = { Old = { cats = {}, at = 0 }, A = { cats = {}, at = 900000 }, B = { cats
 BC.SeenPrune(seen, 7 * 86400 + 1, 7 * 86400, 2)
 eq(seen.Old, nil, "old pruned"); eq(seen.A, nil, "cap drops oldest"); eq(seen.B ~= nil and seen.C ~= nil, true, "newest kept")
 
+-- Phase 3
+eq(BC.FormatAge(30), "now", "age now"); eq(BC.FormatAge(125), "2m", "age m")
+eq(BC.FormatAge(7200), "2h", "age h"); eq(BC.FormatAge(200000), "2d", "age d")
+seen = { A = { cats = { enchanting = 1 }, at = 100, text = "a" }, B = { cats = { portal = 1 }, at = 300, text = "b" },
+  C = { cats = { enchanting = 1, portal = 1 }, at = 200, text = "c" } }
+local rows = BC.SeenRows(seen, nil, "all", 400)
+eq(#rows, 3, "all rows"); eq(rows[1].name, "B", "newest first"); eq(rows[3].name, "A", "oldest last"); eq(rows[1].age, "1m", "row age")
+rows = BC.SeenRows(seen, nil, "enchanting", 400)
+eq(#rows, 2, "filtered"); eq(rows[1].name, "C", "filtered newest")
+eq(rows[1].card, nil, "no cards yet")
+eq(BC.CatList({ portal = 1, enchanting = 1 }), "Enchanting, Portals", "cat list order")
+
 print("all tests passed")

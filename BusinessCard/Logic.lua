@@ -50,3 +50,28 @@ function BC.SeenPrune(seen, now, maxAge, cap)
     for i = cap + 1, #keep do seen[keep[i]] = nil end
   end
 end
+
+function BC.FormatAge(s)
+  if s < 60 then return "now" elseif s < 3600 then return math.floor(s / 60) .. "m"
+  elseif s < 86400 then return math.floor(s / 3600) .. "h" end
+  return math.floor(s / 86400) .. "d"
+end
+
+-- filter = cat key or "all"; rows sorted newest first. cards is nil until Phase 5
+function BC.SeenRows(seen, cards, filter, now)
+  local rows = {}
+  for name, e in pairs(seen) do
+    if filter == "all" or e.cats[filter] then
+      rows[#rows + 1] = { name = name, cats = e.cats, at = e.at, age = BC.FormatAge(now - e.at), text = e.text,
+        dest = e.dest, card = cards and cards[name] }
+    end
+  end
+  table.sort(rows, function(a, b) return a.at > b.at end)
+  return rows
+end
+
+function BC.CatList(cats) -- "Enchanting, Portals" in BC.CATS order
+  local out = {}
+  for _, c in ipairs(BC.CATS) do if cats[c] then out[#out + 1] = BC.CAT_LABEL[c] end end
+  return table.concat(out, ", ")
+end
