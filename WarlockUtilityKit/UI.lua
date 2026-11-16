@@ -29,7 +29,6 @@ function WUK.ApplyShown()
 end
 
 function WUK.CurrentKeys() return WUK.ViewKeys(WUK.strip.view, WUK.known, WUK.strip.icons) end
-local function IndexOf(list, k) for i, v in ipairs(list) do if v == k then return i end end return 1 end
 
 -- places core + current view's orbit from strip.radius/angle; out of combat only (secure buttons)
 function WUK.LayoutRing()
@@ -95,19 +94,16 @@ function WUK.Animate()
 end
 
 local TINT = { party = { 1, 1, 1 }, buff = { 0.5, 0.75, 1 }, demon = { 1, 0.45, 0.45 } }
--- swap the orbit set; soulstone keeps its angle, ring re-blooms from 0 as the "flip"
+-- swap the orbit set around the shard core; ring re-blooms from 0 as the "flip"
 function WUK.SetView(view)
   local s = WUK.strip
   if InCombatLockdown() or s.view == view then return end
-  local old = WUK.CurrentKeys()
   s.view = view
-  local new = WUK.CurrentKeys()
-  s.angle = WUK.FlipAngle(s.angle, IndexOf(old, "soulstone"), #old, IndexOf(new, "soulstone"), #new)
   s.radius = 0
   local t = TINT[view] or TINT.party
-  s.icons.soulstone.icon:SetVertexColor(t[1], t[2], t[3])
+  local b = s.icons.shard
+  b.icon:SetVertexColor(t[1], t[2], t[3])
   WUK.LayoutRing(); WUK.Animate()
-  local b = s.icons.soulstone
   if GameTooltip:IsOwned(b) then b:GetScript("OnEnter")(b) end -- refresh the next-view hint
 end
 
@@ -160,9 +156,9 @@ local function StoneTooltip(kind)
   elseif WUK.known[kind] then WUK.SpellTooltip(WUK.known[kind])
   else GameTooltip:AddLine((kind:gsub("^%l", string.upper))) end
   if kind == "healthstone" then GameTooltip:AddLine("Right-click: trade to target", 1, 1, 1) end
-  if kind == "soulstone" then
+  if kind == "shard" then
     local nv = WUK.NextView(WUK.strip.view)
-    GameTooltip:AddLine("Right-click: " .. nv:gsub("^%l", string.upper) .. " view", 1, 1, 1)
+    GameTooltip:AddLine("Click: " .. nv:gsub("^%l", string.upper) .. " view", 1, 1, 1)
   end
 end
 
@@ -188,8 +184,8 @@ table.insert(WUK.inits, function()
     b:SetSize(size, size); WUK.AddGlow(b)
     b:SetFrameLevel(f:GetFrameLevel() + (kind == "shard" and 3 or 1)) -- core above orbit so collapsed buttons hide under it
     b:RegisterForClicks("AnyUp", "AnyDown")
-    -- healthstone/soulstone: right-click is an insecure hook (trade / view flip), so the macro binds button 1 only
-    b:SetAttribute((kind == "healthstone" or kind == "soulstone") and "type1" or "type", "macro")
+    -- healthstone: right-click is the trade hook, so the macro binds button 1 only
+    b:SetAttribute(kind == "healthstone" and "type1" or "type", "macro")
     b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints()
     local sh = b.icon:CreateAnimationGroup() -- one-shot pop when a stone becomes available
     local up = sh:CreateAnimation("Scale"); up:SetScale(1.3, 1.3); up:SetDuration(0.15); up:SetOrder(1)
@@ -205,9 +201,9 @@ table.insert(WUK.inits, function()
         if button == "RightButton" and not down then WUK.TradeHealthstone() end
       end)
     end
-    if kind == "soulstone" then
-      b:HookScript("OnClick", function(_, button, down)
-        if button == "RightButton" and not down then WUK.SetView(WUK.NextView(WUK.strip.view)) end
+    if kind == "shard" then -- the core has no macro (StoneMacro: nil), so any click flips the view
+      b:HookScript("OnClick", function(_, _, down)
+        if not down then WUK.SetView(WUK.NextView(WUK.strip.view)) end
       end)
     end
   end

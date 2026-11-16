@@ -169,6 +169,8 @@ The existing `TRADE_SHOW` handler (`Trade.lua:17-26`) places the stone. The `UI_
 
 ## Phase 3: View switching — Party ⇄ Buff
 
+> **Changed after in-game test (2026-11-16):** the view toggle is the **shard core**, not the soulstone. Any click on the core (it has no macro) cycles the view, and the core icon carries the tint and the "Click: X view" tooltip hint. The soulstone is back to v0.3.3 behaviour (`type`, no hook, no tint). Because the core never moves, `FlipAngle`/`IndexOf` were dropped, and `soulstone` was removed from the buff/demon lists and from the `ViewKeys` special case. The snippets below show the original soulstone version; the code is authoritative.
+
 ### Changes
 
 #### 1. View helpers
@@ -376,7 +378,7 @@ end)
 
 - Add this entry inside `WUK.VIEWS`:
   ```lua
-  demon = { "soulstone", "imp", "voidwalker", "succubus", "incubus", "felhunter", "felguard", "inferno", "doom", "feldom" },
+  demon = { "imp", "voidwalker", "succubus", "incubus", "felhunter", "felguard", "inferno", "doom", "feldom" },
   ```
 - `WUK.VIEW_ORDER = { "party", "buff", "demon" }`
 - Add:
@@ -396,7 +398,7 @@ end)
 - Add:
   ```lua
   eq(WUK.ViewRadius(6, 58), 58, "radius min"); near(WUK.ViewRadius(10, 58), 400 / (2 * math.pi), "radius grows")
-  eq(#WUK.ViewKeys("demon", { imp = "Summon Imp" }, all), 2, "demon known only")
+  eq(#WUK.ViewKeys("demon", { imp = "Summon Imp" }, all), 1, "demon known only")
   ```
 
 #### 3. Spell names
