@@ -178,8 +178,8 @@ end
 
 -- ring views: orbit keys clockwise from 12; party = the default ring
 WUK.VIEWS = {
-  party = { "healthstone", "soulstone", "spellstone", "firestone", "armor", "pet" },
-  buff = { "armor", "detect", "shadowward", "soullink", "unending", "eye", "sense" },
+  party = { "healthstone", "soulstone", "banish", "howl", "armor", "pet" },
+  buff = { "spellstone", "firestone", "armor", "detect", "shadowward", "soullink", "unending", "eye", "sense" },
 }
 WUK.VIEW_ORDER = { "party", "buff" }
 
@@ -189,11 +189,13 @@ function WUK.NextView(view)
   return o[1]
 end
 
--- keys to draw: the button must exist (has[k]); spell views also need the spell known
+-- always drawn (they grey out / glow on their own); every other key needs its spell known
+local ALWAYS = { healthstone = true, soulstone = true, armor = true, pet = true }
+-- keys to draw: the button must exist (has[k]) and be always-on or known
 function WUK.ViewKeys(view, known, has)
   local out = {}
   for _, k in ipairs(WUK.VIEWS[view] or WUK.VIEWS.party) do
-    if has[k] and (view == "party" or known[k]) then out[#out + 1] = k end
+    if has[k] and (ALWAYS[k] or known[k]) then out[#out + 1] = k end
   end
   return out
 end

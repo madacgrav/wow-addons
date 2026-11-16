@@ -170,6 +170,8 @@ The existing `TRADE_SHOW` handler (`Trade.lua:17-26`) places the stone. The `UI_
 ## Phase 3: View switching — Party ⇄ Buff
 
 > **Changed after in-game test (2026-11-16):** the view toggle is the **shard core**, not the soulstone. Any click on the core (it has no macro) cycles the view, and the core icon carries the tint and the "Click: X view" tooltip hint. The soulstone is back to v0.3.3 behaviour (`type`, no hook, no tint). Because the core never moves, `FlipAngle`/`IndexOf` were dropped, and `soulstone` was removed from the buff/demon lists and from the `ViewKeys` special case. The snippets below show the original soulstone version; the code is authoritative.
+>
+> **Second change after in-game test:** the summoning circle (rim + disc) is also tinted per view (`CIRCLE` table, `PaintCircle`). View contents changed: Party = healthstone, soulstone, banish, howl, armor, pet; Buff = spellstone, firestone, armor, detect, shadowward, soullink, unending, eye, sense. `ViewKeys` now draws a key if it is always-on (healthstone, soulstone, armor, pet) or its spell is known, in every view. New `SPELLS` keys `banish`, `howl` with spell buttons.
 
 ### Changes
 

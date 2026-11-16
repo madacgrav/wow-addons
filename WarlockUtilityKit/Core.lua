@@ -61,6 +61,7 @@ local SPELLS = {
   curseshadow = { "Curse of Shadow" },
   shadowward = { "Shadow Ward" }, unending = { "Unending Breath" },
   eye = { "Eye of Kilrogg" }, sense = { "Sense Demons" },
+  banish = { "Banish" }, howl = { "Howl of Terror" },
 }
 
 local function SpellbookNames()
