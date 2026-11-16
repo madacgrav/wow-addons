@@ -2,6 +2,12 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockUtilityKit.toc`; each version is published as a `wuk-vX.Y.Z` GitHub release.
 
+## [0.3.2] — 2026-11-16
+
+### Added
+- **Incubus as a preferred pet.** `/wuk pet incubus` and the Settings dropdown now offer the Incubus. The pet button counts it as out whether the game reports it as an Incubus or a Succubus.
+- **Pet family in `/wuk probe`.** The probe prints your current pet's creature family.
+
 ## [0.3.1] — 2026-10-22
 
 ### Fixed

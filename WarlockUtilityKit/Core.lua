@@ -49,7 +49,7 @@ local SPELLS = {
   armor = { "Demon Armor", "Demon Skin" },
   detect = { "Detect Greater Invisibility", "Detect Invisibility", "Detect Lesser Invisibility" },
   imp = { "Summon Imp" }, voidwalker = { "Summon Voidwalker" },
-  succubus = { "Summon Succubus" }, felhunter = { "Summon Felhunter" },
+  succubus = { "Summon Succubus" }, incubus = { "Summon Incubus" }, felhunter = { "Summon Felhunter" },
   soullink = { "Soul Link" }, ritual = { "Ritual of Summoning" },
   healthstone = { "Create Healthstone (Major)", "Create Healthstone (Greater)", "Create Healthstone",
                   "Create Healthstone (Lesser)", "Create Healthstone (Minor)" },
@@ -176,6 +176,7 @@ function WUK.Probe()
   local function S(v) if WUK.Secret(v) then return "SECRET" end return tostring(v) end
   local inInst, kind = IsInInstance()
   P("instance", tostring(inInst) .. " " .. tostring(kind))
+  P("pet family", UnitExists("pet") and S(UnitCreatureFamily("pet")) or "none")
   P("combat", InCombatLockdown())
   P("chat lockdown", C_ChatInfo.InChatMessagingLockdown and C_ChatInfo.InChatMessagingLockdown() or "n/a")
   for _, n in ipairs(PROBE_SPELLS) do

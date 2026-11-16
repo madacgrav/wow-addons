@@ -73,9 +73,9 @@ eq(WUK.IsPet(""), false, "empty not a pet")
 - [x] Deploy with robocopy.
 
 #### Manual (in game, after `/reload`)
-- [ ] `/wuk pet voidwalker` prints `preferred pet: voidwalker`, and the pet button switches to the Voidwalker icon.
-- [ ] `/wuk pet bogus` prints the usage text ending `pet <imp|voidwalker|succubus|felhunter>`.
-- [ ] In `/wuk config`, the Preferred pet dropdown lists Imp, Voidwalker, Succubus and Felhunter, and picking one sticks.
+- [x] `/wuk pet voidwalker` prints `preferred pet: voidwalker`, and the pet button switches to the Voidwalker icon.
+- [x] `/wuk pet bogus` prints the usage text ending `pet <imp|voidwalker|succubus|felhunter>`.
+- [x] In `/wuk config`, the Preferred pet dropdown lists Imp, Voidwalker, Succubus and Felhunter, and picking one sticks.
 
 ---
 
@@ -161,9 +161,9 @@ eq(WUK.PetIsOut("felhunter", "imp"), false, "wrong pet")
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`.
-- [ ] `grep -n "incubus" WarlockUtilityKit/Logic.lua WarlockUtilityKit/Core.lua` shows the PETS entry, the PetIsOut alias and the SPELLS entry.
-- [ ] Deploy with robocopy.
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`.
+- [x] `grep -n "incubus" WarlockUtilityKit/Logic.lua WarlockUtilityKit/Core.lua` shows the PETS entry, the PetIsOut alias and the SPELLS entry.
+- [x] Deploy with robocopy.
 
 #### Manual (in game, after `/reload`, on a warlock who has learned Summon Incubus)
 - [ ] The dropdown lists Imp, Voidwalker, Succubus, Incubus and Felhunter.

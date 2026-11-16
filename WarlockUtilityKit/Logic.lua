@@ -84,10 +84,14 @@ function WUK.SoulstoneRemaining(rec, now)
 end
 
 -- preferred-pet keys, in dropdown order; each is also a SPELLS key (Core.lua) and the lower-cased UnitCreatureFamily
-WUK.PETS = { "imp", "voidwalker", "succubus", "felhunter" }
+WUK.PETS = { "imp", "voidwalker", "succubus", "incubus", "felhunter" }
 function WUK.IsPet(key)
   for _, p in ipairs(WUK.PETS) do if p == key then return true end end
   return false
+end
+-- Forever's Incubus may report creature family "Succubus" (same Sayaad pet); accept either for the incubus choice
+function WUK.PetIsOut(choice, family)
+  return family ~= nil and (family == choice or (choice == "incubus" and family == "succubus"))
 end
 
 WUK.CURSES = {
