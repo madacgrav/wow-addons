@@ -9,37 +9,34 @@ local function Check(parent, label, y, get, onClick)
   cb:SetPoint("TOPLEFT", 16, y)
   local text = cb:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   text:SetPoint("LEFT", cb, "RIGHT", 4, 0); text:SetText(label)
+  text:SetTextColor(unpack(WUK.THEME.text))
   cb:SetScript("OnClick", function(self) onClick(self:GetChecked()); self:SetChecked(get()) end)
   cb.Sync = function(self) self:SetChecked(get()) end
   return cb
 end
 
 local function Build()
-  win = CreateFrame("Frame", "WUKSettings", UIParent, "BasicFrameTemplateWithInset")
-  win:SetSize(320, 314); win:SetPoint("CENTER"); win:SetFrameStrata("DIALOG")
-  win:SetMovable(true); win:EnableMouse(true); win:RegisterForDrag("LeftButton")
-  win:SetScript("OnDragStart", win.StartMoving); win:SetScript("OnDragStop", win.StopMovingOrSizing)
+  win = CreateFrame("Frame", "WUKSettings", UIParent, "BackdropTemplate")
+  win:SetSize(320, 336); win:SetFrameStrata("DIALOG")
+  WUK.Skin(win, "Warlock Utility Kit", { close = true })
+  WUK.MakeMovable(win, "settings", 280, 0, true) -- right of the board default (-180): no overlap
   tinsert(UISpecialFrames, "WUKSettings") -- Escape closes it
-  local title = win:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-  title:SetPoint("TOP", 0, -5); title:SetText("Warlock Utility Kit")
 
+  WUK.Header(win, "Strip & ring", 16, -32)
   local checks = {
-    Check(win, "Show strip", -36, function() return WUK.db.shown end, function(on) Run(on and "show" or "hide") end),
-    Check(win, "Lock frames (no Shift+drag)", -64, function() return WUK.db.locked end,
-      function(on) if on ~= WUK.db.locked then Run("lock") end end),
-    Check(win, "Dock Blizzard cooldown timers under strip", -92, function() return WUK.db.dockViewers end,
-      function(on) if on ~= WUK.db.dockViewers then Run("dock") end end),
-    Check(win, "Spin ring", -120, function() return WUK.db.spin end,
+    Check(win, "Show strip", -46, function() return WUK.db.shown end, function(on) Run(on and "show" or "hide") end),
+    Check(win, "Spin ring", -72, function() return WUK.db.spin end,
       function(on) if on ~= WUK.db.spin then Run("spin") end end),
-    Check(win, "Collapse ring until hover", -148, function() return WUK.db.collapse end,
+    Check(win, "Collapse ring until hover", -98, function() return WUK.db.collapse end,
       function(on) if on ~= WUK.db.collapse then Run("collapse") end end),
+    Check(win, "Dock Blizzard cooldown timers under strip", -124, function() return WUK.db.dockViewers end,
+      function(on) if on ~= WUK.db.dockViewers then Run("dock") end end),
   }
 
-  local label = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  label:SetPoint("TOPLEFT", 20, -188); label:SetText("Preferred pet")
+  WUK.Header(win, "Pet", 16, -162)
   -- Mainline 11.0+ menu API (UIDropDownMenu is deprecated)
   local dd = CreateFrame("DropdownButton", nil, win, "WowStyle1DropdownTemplate")
-  dd:SetWidth(160); dd:SetPoint("TOPLEFT", 18, -206)
+  dd:SetWidth(160); dd:SetPoint("TOPLEFT", 18, -178)
   dd:SetupMenu(function(_, root)
     for _, pet in ipairs(WUK.PETS) do
       root:CreateRadio(pet:sub(1, 1):upper() .. pet:sub(2),
@@ -47,6 +44,10 @@ local function Build()
         function() Run("pet " .. pet) end)
     end
   end)
+
+  WUK.Header(win, "Frames", 16, -218)
+  checks[#checks + 1] = Check(win, "Lock frames (no Shift+drag)", -232, function() return WUK.db.locked end,
+    function(on) if on ~= WUK.db.locked then Run("lock") end end)
 
   local reset = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
   reset:SetSize(130, 22); reset:SetPoint("BOTTOMLEFT", 16, 16); reset:SetText("Reset positions")

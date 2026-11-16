@@ -305,12 +305,12 @@ function WUK.MakeMovable(f, key, x, y, free)
 - [x] Deploy with robocopy
 
 #### Manual
-- [ ] Right-click the minimap button: the board shows the themed frame, with the green headers Warlock / Curse / Banish / Soulstone above their columns.
-- [ ] "No curse", "No banish" and "No soulstone" show untruncated.
-- [ ] Dropdown menus open on top of the board, and selections still sync to another WUK warlock.
-- [ ] A plain drag moves the board. After `/reload` it reopens where it was left.
-- [ ] Escape and the X button both close it.
-- [ ] The Take lead / Sync / Announce buttons work and are evenly spaced.
+- [x] Right-click the minimap button: the board shows the themed frame, with the green headers Warlock / Curse / Banish / Soulstone above their columns.
+- [x] "No curse", "No banish" and "No soulstone" show untruncated.
+- [x] Dropdown menus open on top of the board, and selections still sync to another WUK warlock.
+- [x] A plain drag moves the board. After `/reload` it reopens where it was left.
+- [x] Escape and the X button both close it.
+- [x] The Take lead / Sync / Announce buttons work and are evenly spaced.
 
 ---
 
@@ -377,8 +377,8 @@ c. **Sections**: re-lay out the controls. The getters and setters stay the same.
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockUtilityKit/tests/run.lua` prints `all tests passed`
-- [ ] Deploy with robocopy
+- [x] `lua5.1 WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] Deploy with robocopy
 
 #### Manual
 - [ ] Left-click the minimap button: settings shows the themed frame with the green sections Strip & ring / Pet / Frames.

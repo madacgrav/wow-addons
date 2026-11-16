@@ -2,6 +2,21 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockUtilityKit.toc`; each version is published as a `wuk-vX.Y.Z` GitHub release.
 
+## [0.4.0] — 2026-11-16
+
+### Changed
+- **Warlock look for the summon queue, assignment board and settings.** All three use one dark void-purple window with a fel-green edge and a purple title bar.
+- **Summon queue panel.** Short "Summons (n)" title, click help on hover, class-coloured names, height fits the queue.
+- **Assignment board.** Column headers, wider dropdowns so labels fit, remembers its position.
+- **Settings.** Grouped into Strip & ring / Pet / Frames, opens beside the board instead of on top of it, remembers its position.
+
+### Added
+- **Open the summon queue by hand.** A "Summon queue" button in Settings, or `/wuk summon`, opens the panel even when nobody has asked for a summon (not in combat).
+
+### Fixed
+- **Summon queue only holds group members.** Requests from people outside your party or raid are ignored, and people who leave the group drop off the queue.
+- **Successful summons leave the queue.** The row you clicked is removed when Ritual of Summoning succeeds, even if you cast something else in between; a failed or interrupted ritual keeps it.
+
 ## [0.3.3] — 2026-11-16
 
 ### Added
