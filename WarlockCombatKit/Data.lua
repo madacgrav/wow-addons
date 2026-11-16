@@ -16,8 +16,8 @@ WCK.DATA.tracked = {
   ["Howl of Terror"] = { kind = "cc", stale = 8 },
 }
 
--- emergency spells, always at the end of the rotation bar when known
-WCK.DATA.emergency = { "Fear", "Banish" }
+-- fixed group at the right end of the rotation bar (when known), pulled out of the rule order: filler + emergency CC
+WCK.DATA.tail = { "Shadow Bolt", "Fear", "Banish" }
 WCK.DATA.defaultRules = {
   { spell = "Corruption", cond = "notRecent", n = 15 }, { spell = "Curse of Agony", cond = "notRecent", n = 22 },
   { spell = "Bane of Agony", cond = "notRecent", n = 22 }, { spell = "Immolate", cond = "notRecent", n = 13 },

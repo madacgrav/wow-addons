@@ -143,7 +143,7 @@ end
 
 ```lua
 -- emergency spells, always at the end of the rotation bar when known
-WCK.DATA.emergency = { "Fear", "Banish" }
+WCK.DATA.tail = { "Fear", "Banish" }
 ```
 
 - Confirm nothing else references rotation: `grep -rn "DATA.rotation" WarlockCombatKit` should be empty.
@@ -259,7 +259,7 @@ end)
 -- secure part: out of combat only; PLAYER_REGEN_ENABLED -> Refresh applies rule edits made in combat
 table.insert(WCK.refreshers, function()
   if InCombatLockdown() or not bar then return end
-  local list = WCK.BarSpells(WCK.char.rules, WCK.DATA.emergency, WCK.spellSet)
+  local list = WCK.BarSpells(WCK.char.rules, WCK.DATA.tail, WCK.spellSet)
   local x = PAD
   for i, b in ipairs(buttons) do
     local e = list[i]
@@ -350,6 +350,16 @@ eq(#WCK.BarSpells({}, em, {}), 0, "nothing known")
 
 ---
 
+## Phase 2 revision (user request, after Phase 2)
+- The tail of the bar is `WCK.DATA.tail = { "Shadow Bolt", "Fear", "Banish" }` (Data.lua), with Shadow Bolt first.
+- `BarSpells(rules, tail, known)` drops tail spells from the rule part and appends the known tail spells in tail order. The entry flag is `tail`.
+- `BAR_MAX = 13`.
+- Rotation.lua uses `e.tail`.
+- Tests are updated. README and CHANGELOG are reworded.
+- Phase 3 snippets below read `WCK.DATA.tail` in place of the old emergency list.
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] Deploy robocopy exits 0-7
+
 ## Phase 3: Nightfall glow and grey-out
 
 ### Changes
@@ -375,7 +385,7 @@ end
 **Action**: modify. In `BuildRuleState`, change the loop source from Phase 1 to:
 
 ```lua
-  for _, e in ipairs(WCK.BarSpells(WCK.char.rules, WCK.DATA.emergency, WCK.spellSet)) do
+  for _, e in ipairs(WCK.BarSpells(WCK.char.rules, WCK.DATA.tail, WCK.spellSet)) do
     local name = e.spell
     if WCK.spellSet[name] then
 ```

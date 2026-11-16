@@ -74,6 +74,7 @@
     - Highlights read the button's frozen spell, so they stay correct in combat even if the rules changed.
     - Grey is visual only. The button is never disabled, and clicks always go through (the game itself rejects a cast that isn't possible). `SetDesaturated` goes on the icon texture only, never `Disable()` or `EnableMouse(false)` on the button.
 12. **Emergency buttons:** Fear and Banish always sit at the right end of the bar, after the rule spells.
+    - **Revised during Phase 2 (user request):** the end group is `WCK.DATA.tail = { "Shadow Bolt", "Fear", "Banish" }`, with Shadow Bolt first. Tail spells are pulled out of the rule order, so they never show twice and always sit in the end group. The flag is `tail` instead of `emergency`, and `BAR_MAX` = 13. Rules still evaluate Shadow Bolt normally. Only its bar position changes. The bullets below are the original wording.
     - The fixed list is `WCK.DATA.emergency = { "Fear", "Banish" }` in `Data.lua`. This is deliberate and separate from rules.
     - Each one shows only if it's in `WCK.spellSet`.
     - A spell already in the rules keeps its rule-order slot and isn't repeated at the end.

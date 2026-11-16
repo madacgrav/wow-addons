@@ -157,13 +157,16 @@ function WCK.RuleSpells(rules)
   return out
 end
 
--- rotation bar order: rule spells, then emergency spells that are known and not already there
-WCK.BAR_MAX = 12 -- 10 rules + Fear + Banish
-function WCK.BarSpells(rules, emergency, known)
-  local out, seen = {}, {}
-  for _, s in ipairs(WCK.RuleSpells(rules)) do seen[s] = true; out[#out + 1] = { spell = s, emergency = false } end
-  for _, s in ipairs(emergency) do
-    if known[s] and not seen[s] then seen[s] = true; out[#out + 1] = { spell = s, emergency = true } end
+-- rotation bar order: rule spells not in the tail, then the tail spells that are known (tail order)
+WCK.BAR_MAX = 13 -- 10 rules + Shadow Bolt/Fear/Banish
+function WCK.BarSpells(rules, tail, known)
+  local out, inTail = {}, {}
+  for _, s in ipairs(tail) do inTail[s] = true end
+  for _, s in ipairs(WCK.RuleSpells(rules)) do
+    if not inTail[s] then out[#out + 1] = { spell = s, tail = false } end
+  end
+  for _, s in ipairs(tail) do
+    if known[s] then out[#out + 1] = { spell = s, tail = true } end
   end
   return out
 end

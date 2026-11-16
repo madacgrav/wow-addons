@@ -93,12 +93,14 @@ eq(#rs, 2, "distinct"); eq(rs[1], "Corruption", "order"); eq(rs[2], "Shadow Bolt
 eq(#WCK.RuleSpells(nil), 0, "nil rules")
 
 -- GH-28 Phase 2
-local em = { "Fear", "Banish" }
-local bs = WCK.BarSpells({ { spell = "Corruption" }, { spell = "Shadow Bolt" }, { spell = "Corruption" } }, em, { Fear = true, Banish = true })
-eq(#bs, 4, "rules + emergency"); eq(bs[1].spell, "Corruption", "rule order"); eq(bs[2].emergency, false, "rule flag")
-eq(bs[3].spell, "Fear", "fear after rules"); eq(bs[3].emergency, true, "emergency flag"); eq(bs[4].spell, "Banish", "banish last")
-bs = WCK.BarSpells({ { spell = "Fear" } }, em, { Fear = true })
-eq(#bs, 1, "fear not repeated, unknown banish skipped"); eq(bs[1].emergency, false, "fear keeps rule slot")
-eq(#WCK.BarSpells({}, em, {}), 0, "nothing known")
+local tl = { "Shadow Bolt", "Fear", "Banish" }
+local all = { ["Shadow Bolt"] = true, Fear = true, Banish = true }
+local bs = WCK.BarSpells({ { spell = "Corruption" }, { spell = "Shadow Bolt" }, { spell = "Immolate" }, { spell = "Corruption" } }, tl, all)
+eq(#bs, 5, "rules + tail"); eq(bs[1].spell, "Corruption", "rule order"); eq(bs[2].spell, "Immolate", "bolt pulled out of rules")
+eq(bs[2].tail, false, "rule flag"); eq(bs[3].spell, "Shadow Bolt", "bolt first in tail"); eq(bs[3].tail, true, "tail flag")
+eq(bs[4].spell, "Fear", "fear second"); eq(bs[5].spell, "Banish", "banish last")
+bs = WCK.BarSpells({ { spell = "Fear" } }, tl, { Fear = true })
+eq(#bs, 1, "fear moves to tail, unknown tail spells skipped"); eq(bs[1].tail, true, "fear in tail")
+eq(#WCK.BarSpells({}, tl, {}), 0, "nothing known")
 
 print("all tests passed")

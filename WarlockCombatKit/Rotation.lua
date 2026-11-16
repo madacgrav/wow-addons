@@ -1,5 +1,5 @@
 local ADDON, WCK = ...
--- rotation bar: one fixed-spell secure button per rule spell, then Fear/Banish. The spell set changes only out
+-- rotation bar: one fixed-spell secure button per rule spell, then Shadow Bolt/Fear/Banish. The spell set changes only out
 -- of combat (secure attributes); highlights are plain textures, so they redraw in combat.
 -- Own UIParent frame, never anchored to WCKPanel: protected children would lock the panel's resize in combat.
 local SIZE, GAP, EGAP, PAD = 32, 4, 8, 6
@@ -29,12 +29,12 @@ end)
 -- secure part: out of combat only; PLAYER_REGEN_ENABLED -> Refresh applies rule edits made in combat
 table.insert(WCK.refreshers, function()
   if InCombatLockdown() or not bar then return end
-  local list = WCK.BarSpells(WCK.char.rules, WCK.DATA.emergency, WCK.spellSet)
+  local list = WCK.BarSpells(WCK.char.rules, WCK.DATA.tail, WCK.spellSet)
   local x = PAD
   for i, b in ipairs(buttons) do
     local e = list[i]
     if e then
-      if e.emergency and i > 1 and not list[i - 1].emergency then x = x + EGAP end
+      if e.tail and i > 1 and not list[i - 1].tail then x = x + EGAP end
       b.spell = e.spell
       b:SetAttribute("macrotext", WCK.CastMacro(e.spell))
       b.icon:SetTexture(C_Spell.GetSpellTexture(e.spell) or 134400) -- 134400 = question mark

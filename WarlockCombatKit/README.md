@@ -69,7 +69,7 @@ A rule passes when you know the spell, it is off cooldown, and its condition hol
 
 ## Rotation buttons
 
-A bar of round buttons, one per spell in your rules (in rule order), then Fear and Banish after a gap (when you know them) for emergencies.
+A bar of round buttons, one per spell in your rules (in rule order), then a fixed group after a gap: Shadow Bolt, Fear and Banish (when you know them). Shadow Bolt always sits in that group, even if a rule uses it.
 
 - Click a button to cast its spell on your target.
 - The button for the spell the core suggests pulses purple.
