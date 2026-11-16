@@ -39,16 +39,16 @@ function BC.RoundPortrait(parent, size)
 end
 
 local function NewLine(card)
-  local l = CreateFrame("Frame", nil, card); l:SetSize(276, 22)
+  local l = CreateFrame("Frame", nil, card); l:SetSize(336, 22)
   l.icon = l:CreateTexture(nil, "ARTWORK"); l.icon:SetSize(18, 18); l.icon:SetPoint("LEFT"); l.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
   l.name = l:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   l.name:SetPoint("LEFT", 24, 0); l.name:SetWidth(90); l.name:SetJustifyH("LEFT"); l.name:SetWordWrap(false)
-  l.bar = CreateFrame("StatusBar", nil, l); l.bar:SetSize(90, 8); l.bar:SetPoint("LEFT", 118, 0) -- TackleBox Panel.lua:91-94
+  l.bar = CreateFrame("StatusBar", nil, l); l.bar:SetSize(100, 8); l.bar:SetPoint("LEFT", 118, 0) -- TackleBox Panel.lua:91-94
   l.bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar"); l.bar:SetStatusBarColor(T.gold[1], T.gold[2], T.gold[3])
   l.bar:SetMinMaxValues(0, 1)
   local bg = l.bar:CreateTexture(nil, "BACKGROUND"); bg:SetAllPoints(); bg:SetColorTexture(0, 0, 0, 0.55)
   l.skill = l:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); l.skill:SetPoint("LEFT", l.bar, "RIGHT", 4, 0)
-  l.pill = BC.Pill(l, 60, card); l.pill:SetPoint("RIGHT")
+  l.pill = BC.Pill(l, 84, card); l.pill:SetPoint("RIGHT")
   return l
 end
 
@@ -70,7 +70,7 @@ end
 
 function BC.NewCard(parent)
   local card = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-  card:SetWidth(300); BC.Skin(card, "tooltip", { 0.12, 0.10, 0.07, 0.96 }); BC.Parchment(card, 0.22, 3)
+  card:SetWidth(360); BC.Skin(card, "tooltip", { 0.12, 0.10, 0.07, 0.96 }); BC.Parchment(card, 0.22, 3)
   card.portrait = BC.RoundPortrait(card, 44); card.portrait.holder:SetPoint("TOPLEFT", 6, -6)
   card.title = card:CreateFontString(nil, "OVERLAY"); BC.TitleFont(card.title, 18); card.title:SetPoint("TOPLEFT", 84, -18)
   card.title:SetPoint("RIGHT", -110, 0); card.title:SetJustifyH("LEFT"); card.title:SetWordWrap(false)
