@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.0
+- Card detail (shift-click a row): their status and services, a button per profession, and the full recipe list fetched on request with a search box. Shows when they have no card or have not opened that profession yet.
+
 ## 0.5.0
 - Card sharing: your card goes to your guild 10 s after login and after any status change. Advertisers you see in chat get a silent card request (once per session, never inside instances), and shift-click asks again. Rows show a green or red status dot and a letter icon when the person runs BusinessCard; the tooltip lists their card. Guildmates who never advertised appear from their card. Trial or Veteran accounts print one warning and keep the ad log.
 

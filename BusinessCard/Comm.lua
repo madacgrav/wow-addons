@@ -62,3 +62,19 @@ table.insert(BC.inits, function()
   table.insert(BC.onStatus, BroadcastGuild)
   BroadcastGuild() -- login broadcast, 10 s after login
 end)
+
+-- recipe lists on request: RQ asks, RL answers in base-36 chunks (Phase 6)
+local buf, lists = {}, {} -- lists[name..":"..prof] = ids, session cache
+function BC.RequestRecipes(name, prof) BC.Send(BC.PROTO .. "|RQ|" .. prof, "WHISPER", name) end
+function BC.RecipeList(name, prof) return lists[name .. ":" .. prof] end
+
+function BC.OnComm(name, m, sender)
+  if m.kind == "RQ" then
+    local chunks = BC.ChunkIDs(BC.char.recipes[m.prof] or {}, 200)
+    if #chunks == 0 then return BC.Send(table.concat({ BC.PROTO, "RL", m.prof, 0, 0, "-" }, "|"), "WHISPER", sender) end
+    for i, c in ipairs(chunks) do BC.Send(table.concat({ BC.PROTO, "RL", m.prof, i, #chunks, c }, "|"), "WHISPER", sender) end
+  elseif m.kind == "RL" then
+    local ids = BC.Reassemble(buf, name .. ":" .. m.prof, m.seq, m.total, m.part, time())
+    if ids then lists[name .. ":" .. m.prof] = ids; BC.RefreshDetail() end
+  end
+end

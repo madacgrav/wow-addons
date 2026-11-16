@@ -112,4 +112,30 @@ eq(#rows, 2, "card-only row merged"); eq(rows[1].name, "A", "seen row first"); e
 eq(rows[2].name, "G", "card-only row"); eq(rows[2].cats.enchanting, true, "card-only cats")
 eq(#BC.SeenRows({}, { G = d }, "portal", 200), 0, "card-only filtered")
 
+-- Phase 6
+for _, n in ipairs({ 0, 35, 36, 1263080 }) do eq(tonumber(BC.B36(n), 36), n, "b36 " .. n) end
+local ids = {}
+for i = 1, 500 do ids[i] = 1000 + i * 2531 end
+local chunks = BC.ChunkIDs(ids, 200)
+local back = {}
+for _, c in ipairs(chunks) do
+  assert(#c <= 200, "chunk " .. #c .. " bytes")
+  for t in c:gmatch("[^,]+") do back[#back + 1] = tonumber(t, 36) end
+end
+eq(#back, 500, "chunks round trip count"); eq(back[500], ids[500], "chunks round trip value")
+eq(#BC.ChunkIDs({}, 200), 0, "no ids no chunks")
+local buf = {}
+eq(BC.Reassemble(buf, "Bob:333", 2, 2, "b", 10), nil, "partial")
+local got = BC.Reassemble(buf, "Bob:333", 1, 2, "a,1", 11)
+eq(#got, 3, "out of order complete"); eq(got[1], 10, "a"); eq(got[2], 1, "1"); eq(got[3], 11, "b"); eq(buf["Bob:333"], nil, "buffer cleared")
+eq(BC.Reassemble(buf, "Bob:197", 1, 3, "a", 20), nil, "missing chunk")
+BC.Reassemble(buf, "Other:1", 1, 2, "a", 51); eq(buf["Bob:197"], nil, "stale purged after 30s")
+eq(#BC.Reassemble(buf, "Bob:165", 0, 0, "", 60), 0, "total 0 is empty list")
+eq(BC.Decode("1|RQ|333").prof, 333, "decode RQ")
+local rl = BC.Decode("1|RL|333|2|5|a,b"); eq(rl.seq, 2, "RL seq"); eq(rl.total, 5, "RL total"); eq(rl.part, "a,b", "RL part")
+eq(BC.Decode("1|RL|333|0|0|-").part, "", "RL empty")
+eq(BC.Decode("1|RL|333|6|5|a"), nil, "seq > total rejected"); eq(BC.Decode("1|RQ|x"), nil, "bad RQ")
+local line = table.concat({ "1", "RL", 999999, 999, 999, string.rep("z", 200) }, "|")
+assert(#line <= 255, "RL line " .. #line .. " bytes")
+
 print("all tests passed")

@@ -794,7 +794,7 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua BusinessCard/tests/run.lua` prints `all tests passed`
+- [x] `lua BusinessCard/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] Shift-click a guildmate with the addon. Their professions are listed; click Enchanting, and the recipe names appear within about 10 s. The search narrows the list.

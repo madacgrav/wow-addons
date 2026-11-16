@@ -125,6 +125,13 @@ function BC.Decode(msg)
     if f[6] ~= "-" then for k, st in f[6]:gmatch("([%w%-]+):(%a)") do c.svcs[#c.svcs + 1] = { key = k, st = st } end end
     return c
   end
+  if f[2] == "RQ" and #f == 3 and tonumber(f[3]) then return { kind = "RQ", prof = tonumber(f[3]) } end
+  if f[2] == "RL" and #f == 6 then
+    local prof, seq, total = tonumber(f[3]), tonumber(f[4]), tonumber(f[5])
+    if prof and seq and total and seq <= total then
+      return { kind = "RL", prof = prof, seq = seq, total = total, part = f[6] ~= "-" and f[6] or "" }
+    end
+  end
 end
 
 BC.PROF_CAT = { [333] = "enchanting", [197] = "tailoring", [165] = "leatherworking", [171] = "alchemy", [164] = "blacksmithing",
@@ -151,4 +158,37 @@ function BC.CardStatus(c, cat)
   end
   if found and c.g == "b" then return "b" end
   return found
+end
+
+local DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
+function BC.B36(n)
+  local s = ""
+  repeat local d = n % 36; s = DIGITS:sub(d + 1, d + 1) .. s; n = math.floor(n / 36) until n == 0
+  return s
+end
+
+-- comma-joined base-36 ids, each chunk <= maxBytes
+function BC.ChunkIDs(ids, maxBytes)
+  local chunks, cur, len = {}, {}, 0
+  for _, id in ipairs(ids) do
+    local t = BC.B36(id)
+    if len > 0 and len + 1 + #t > maxBytes then chunks[#chunks + 1] = table.concat(cur, ","); cur, len = {}, 0 end
+    cur[#cur + 1] = t; len = len + (len > 0 and 1 or 0) + #t
+  end
+  if #cur > 0 then chunks[#chunks + 1] = table.concat(cur, ",") end
+  return chunks
+end
+
+-- buf[key] = {total, parts={}, n, at}; returns the full id list when complete, {} for total 0, else nil
+function BC.Reassemble(buf, key, seq, total, part, now)
+  for k, b in pairs(buf) do if now - b.at > 30 then buf[k] = nil end end
+  if total == 0 then return {} end
+  local b = buf[key]
+  if not b or b.total ~= total then b = { total = total, parts = {}, n = 0, at = now }; buf[key] = b end
+  if not b.parts[seq] then b.parts[seq] = part; b.n = b.n + 1 end
+  if b.n < total then return nil end
+  buf[key] = nil
+  local ids = {}
+  for i = 1, total do for t in (b.parts[i] or ""):gmatch("[^,]+") do ids[#ids + 1] = tonumber(t, 36) end end
+  return ids
 end
