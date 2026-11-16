@@ -65,13 +65,19 @@ function BC.FormatAge(s)
   return math.floor(s / 86400) .. "d"
 end
 
+-- freshest zone: a /who result newer than the card wins, then the card's zone, then the zone heard from chat
+function BC.PickZone(e, card)
+  if e.whoAt and (not card or e.whoAt >= (card.at or 0)) then return e.zone end
+  return (card and card.zone) or e.zone
+end
+
 -- filter = cat key or "all"; rows sorted newest first. cards is nil until Phase 5
 function BC.SeenRows(seen, cards, filter, now)
   local rows = {}
   for name, e in pairs(seen) do
     if filter == "all" or e.cats[filter] then
       rows[#rows + 1] = { name = name, cats = e.cats, at = e.at, age = BC.FormatAge(now - e.at), text = e.text,
-        dest = e.dest, card = cards and cards[name], zone = (cards and cards[name] and cards[name].zone) or e.zone }
+        dest = e.dest, card = cards and cards[name], zone = BC.PickZone(e, cards and cards[name]) }
     end
   end
   for name, c in pairs(cards or {}) do -- guildmates who never advertised

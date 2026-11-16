@@ -156,4 +156,9 @@ rows = BC.SeenRows(seen, { Z = zc }, "all", 10)
 eq(rows[1].zone, "Thunder Bluff", "card zone wins over heard zone")
 eq(BC.SeenRows(seen, nil, "all", 10)[1].zone, "Orgrimmar", "heard zone without card")
 
+eq(BC.PickZone({ zone = "Org", whoAt = 20 }, { zone = "TB", at = 10 }), "Org", "newer who beats card")
+eq(BC.PickZone({ zone = "Org", whoAt = 5 }, { zone = "TB", at = 10 }), "TB", "newer card beats who")
+eq(BC.PickZone({ zone = "Org" }, nil), "Org", "heard zone alone")
+eq(BC.PickZone({}, { at = 1 }), nil, "no zone anywhere")
+
 print("all tests passed")

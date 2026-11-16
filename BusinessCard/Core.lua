@@ -183,6 +183,35 @@ table.insert(BC.inits, function()
   BC.On("SKILL_LINES_CHANGED", function() if BC.RefreshPanel then BC.RefreshPanel() end end)
 end)
 
+-- /who lookup for one name: SendWho needs a hardware event, so only call this from a click
+local whoTarget, friendsWasShown
+function BC.Who(name)
+  if not C_FriendList or not C_FriendList.SendWho then return BC.Print("/who is not available") end
+  whoTarget, friendsWasShown = name, FriendsFrame and FriendsFrame:IsShown()
+  C_FriendList.SetWhoToUi(true)
+  C_FriendList.SendWho('n-"' .. name .. '"')
+  BC.Print("looking up " .. name .. "...")
+end
+
+BC.On("WHO_LIST_UPDATE", function()
+  if not whoTarget then return end
+  local target = whoTarget
+  whoTarget = nil
+  -- the who list can open the Friends window; close it again if we caused that
+  if FriendsFrame and FriendsFrame:IsShown() and not friendsWasShown then HideUIPanel(FriendsFrame) end
+  for i = 1, C_FriendList.GetNumWhoResults() do
+    local w = C_FriendList.GetWhoInfo(i)
+    if w and not BC.Secret(w.fullName) and Ambiguate(w.fullName, "none") == target and not BC.Secret(w.area) then
+      local e = BC.Seen()[target] or (BC.Cards and BC.Cards()[target])
+      if e then e.zone, e.whoAt = w.area, time() end
+      BC.Print(target .. ": level " .. tostring(w.level) .. " " .. tostring(w.classStr) .. " in " .. tostring(w.area))
+      if BC.RefreshPanel then BC.RefreshPanel() end
+      return
+    end
+  end
+  BC.Print(target .. " not found by /who (offline or hidden)")
+end)
+
 function BC.Ping(name)
   local r = C_ChatInfo.SendAddonMessage(BC.PREFIX, "ping", "WHISPER", name)
   BC.ProbeLine("ping " .. name, "result " .. tostring(r) .. " guild " .. tostring(IsInGuild()))

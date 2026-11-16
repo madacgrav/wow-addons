@@ -28,6 +28,7 @@ Phase 1 is a probe gate; phases 2–6 each add one feature end to end.
   - Sources, in order: the card's `zone` (7th `C` field, sent on login, status change and `ZONE_CHANGED_NEW_AREA`), then the channel suffix (`BC.ChannelZone`, skips language channels like `English 53`), then `GetRealZoneText()` for say and yell.
   - `Decode` accepts 6- or 7-field cards.
   - The window is widened to 500.
+  - Most Trade posts carry no zone (the language channel `Trade - English 53`), so 0.7.1 adds ctrl-click `/who`: `C_FriendList.SendWho('n-"Name"')` from the click (a hardware event), `WHO_LIST_UPDATE` stores `zone` and `whoAt` on the entry, and `BC.PickZone` prefers the freshest source.
 - **Requests dropped (user decision after P2 in-game test):** LF/WTB posts are never stored. `OnAd` returns when `r.request`, and the Requests checkbox, `showRequests` and the `SeenRows` request filter are removed. `Classify` still computes `request`.
 - **Cards from guildmates who never advertised (P5):** stored in `db.cards` and merged into Seen rows, with categories derived from their card. Without this, guild exchange would be invisible.
 

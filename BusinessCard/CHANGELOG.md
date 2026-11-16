@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.1
+- Ctrl-click a Seen row to run /who on that person: prints level, class and zone, and fills the zone column. Rows without a zone say so in the tooltip.
+
 ## 0.7.0
 - Seen shows where each person is: the zone their BusinessCard reports, else the zone of the channel they posted in (General, LocalDefense, Trade (Local)), or your zone for say and yell. Cross-city Trade posts have no zone. Cards now carry your zone and re-send to the guild when you change zones.
 

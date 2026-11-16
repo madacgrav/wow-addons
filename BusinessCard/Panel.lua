@@ -17,6 +17,7 @@ local function RowClick(self, btn)
     if BC.OnCardRowClick then BC.OnCardRowClick(self) end -- Phase 4
   elseif btn == "RightButton" then BC.Seen()[self.key] = nil; BC.RefreshPanel()
   elseif IsShiftKeyDown() then BC.Ask(self.key, true); BC.ShowDetail(self.key)
+  elseif IsControlKeyDown() then BC.Who(self.key)
   else Whisper(self.key) end
 end
 
@@ -26,7 +27,8 @@ local function RowEnter(self)
   GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
   GameTooltip:AddLine(d.name, 1, 0.82, 0)
   GameTooltip:AddLine(BC.CatList(d.cats), 0.8, 0.8, 0.8)
-  if d.zone then GameTooltip:AddLine("Last seen in " .. d.zone, 0.6, 0.8, 1) end
+  if d.zone then GameTooltip:AddLine("Last seen in " .. d.zone, 0.6, 0.8, 1)
+  else GameTooltip:AddLine("Zone unknown - ctrl-click to /who", 0.6, 0.8, 1) end
   if d.text then GameTooltip:AddLine(d.text .. " (" .. d.age .. ")", 1, 1, 1, true) end
   if d.card then
     GameTooltip:AddLine(d.card.g == "b" and "Card: busy" or "Card:", 0.9, 0.7, 0.3)
@@ -35,7 +37,7 @@ local function RowEnter(self)
     end
     for _, sv in ipairs(d.card.svcs) do GameTooltip:AddLine("  " .. (SVC_LABEL[sv.key] or sv.key) .. " " .. ST_LABEL[sv.st], 1, 1, 1) end
   end
-  GameTooltip:AddLine("Click: whisper  Shift-click: card  Right-click: remove", 0.5, 0.5, 0.5)
+  GameTooltip:AddLine("Click: whisper  Ctrl-click: /who  Shift-click: card  Right-click: remove", 0.5, 0.5, 0.5)
   GameTooltip:Show()
 end
 
