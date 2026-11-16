@@ -16,7 +16,7 @@ events:SetScript("OnEvent", function(_, event, ...)
 end)
 
 local DEFAULTS = { locked = false, frames = {}, lastProbe = {}, seen = {}, channels = BC.DEFAULT_CHANNELS, maxAgeDays = 7,
-  view = "seen", filter = "all" }
+  view = "seen", filter = "all", cards = {} }
 local CHAR_DEFAULTS = { status = { g = "a" }, recipes = {}, rev = 0 }
 
 BC.On("ADDON_LOADED", function(name)

@@ -85,4 +85,31 @@ eq(BC.SetStatus(ch, "g", "b"), true, "status changed"); eq(ch.rev, 1, "rev bumpe
 eq(BC.SetStatus(ch, "g", "b"), false, "unchanged"); eq(ch.rev, 1, "rev kept")
 eq(BC.NextStatus("a"), "b", "a->b"); eq(BC.NextStatus("b"), "o", "b->o"); eq(BC.NextStatus("o"), "a", "o->a"); eq(BC.NextStatus(nil), "b", "nil->b")
 
+-- Phase 5
+local msg = BC.EncodeCard(card)
+local d = BC.Decode(msg)
+eq(d.kind, "C", "decode kind"); eq(d.rev, 4, "decode rev"); eq(d.g, "b", "decode g")
+eq(#d.profs, 2, "decode profs"); eq(d.profs[2].id, 197, "prof id"); eq(d.profs[2].skill, 124, "prof skill"); eq(d.profs[2].st, "o", "prof st")
+eq(d.svcs[1].key, "S", "svc key"); eq(d.svcs[1].st, "a", "svc st")
+local empty = BC.EncodeCard(BC.BuildCard({}, {}, { g = "a" }, 0))
+eq(empty, "1|C|0|a|-|-", "empty card"); eq(#BC.Decode(empty).profs, 0, "empty profs")
+local maxProfs, maxSvcs = {}, {}
+for i, id in ipairs({ 171, 164, 333, 202, 165, 197 }) do maxProfs[i] = { id = id, skill = 300 } end
+for i, sv in ipairs(BC.SERVICES) do maxSvcs[i] = sv.key end
+local big = BC.EncodeCard(BC.BuildCard(maxProfs, maxSvcs, { g = "a" }, 99999))
+assert(#big <= 255, "max card is " .. #big .. " bytes"); eq(#BC.Decode(big).svcs, #BC.SERVICES, "max card svcs")
+eq(BC.Decode("2|C|0|a|-|-"), nil, "wrong proto"); eq(BC.Decode("1|C|0|a|-"), nil, "short C")
+eq(BC.Decode("1|C|x|a|-|-"), nil, "bad rev"); eq(BC.Decode("1|C|0|x|-|-"), nil, "bad status"); eq(BC.Decode(nil), nil, "nil msg")
+eq(BC.Decode("ping"), nil, "probe ping ignored"); eq(BC.Decode("1|Q").kind, "Q", "request")
+local cc = BC.CardCats(d)
+eq(cc.enchanting, true, "card cat"); eq(cc.tailoring, nil, "off skipped"); eq(cc.summon, true, "svc cat")
+eq(BC.CardStatus(d, "enchanting"), "b", "global busy wins")
+d.g = "a"
+eq(BC.CardStatus(d, "enchanting"), "a", "available"); eq(BC.CardStatus(d, "tailoring"), nil, "off is unknown")
+eq(BC.CardStatus(d, "portal"), nil, "not listed"); eq(BC.CardStatus(nil, "all"), nil, "no card")
+rows = BC.SeenRows({ A = { cats = { portal = 1 }, at = 100 } }, { G = d, A = d }, "all", 200)
+eq(#rows, 2, "card-only row merged"); eq(rows[1].name, "A", "seen row first"); eq(rows[1].card, d, "card attached")
+eq(rows[2].name, "G", "card-only row"); eq(rows[2].cats.enchanting, true, "card-only cats")
+eq(#BC.SeenRows({}, { G = d }, "portal", 200), 0, "card-only filtered")
+
 print("all tests passed")

@@ -22,6 +22,7 @@ Phase 1 is a probe gate; phases 2–6 each add one feature end to end.
 - **Category filter (P3):** a dropdown (`WowStyle1DropdownTemplate`, as in `WarlockUtilityKit/Board.lua:90-94`) instead of TackleBox icon tabs. 12+ categories don't fit as tabs. Seen and My card are two top buttons.
 - **Ads need an offer signal (P2 in-game test, 0.2.2):** `request = req or not offer`. Any request word (now including `lfm`, `lfg`, `recruiting`, `guild`) drops the post. Otherwise it is kept only with an offer word (the list is extended with provider nouns, `providing`, `services`, `pst`, `mats`), a price token like `5g`, or a `|Htrade:` link. See the current `Data.lua`.
 - **Whisper uses `ChatFrame_SendTell(name)` (P3):** Forever names contain spaces ("Thugtar Darkflame"), so `/w name` parsing is avoided. `/w` is the fallback only if `SendTell` is missing.
+- **`CardStatus` returns nil when the card lists nothing for the filtered category (P5),** instead of `b`, so no red dot shows for a category the person never offered. Card `at` is refreshed on every same-rev `C`, so active peers aren't pruned.
 - **Requests dropped (user decision after P2 in-game test):** LF/WTB posts are never stored. `OnAd` returns when `r.request`, and the Requests checkbox, `showRequests` and the `SeenRows` request filter are removed. `Classify` still computes `request`.
 - **Cards from guildmates who never advertised (P5):** stored in `db.cards` and merged into Seen rows, with categories derived from their card. Without this, guild exchange would be invisible.
 
@@ -525,9 +526,9 @@ end
 - [x] `lua BusinessCard/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] My card lists real professions with skill. A warlock shows Summon; a mage shows the learned teleports and portals.
-- [ ] Clicking cycles the status. `/bcard busy` and `/bcard avail` flip Overall. The state survives `/reload`.
-- [ ] Open Enchanting: the footer shows the recipe count, and it survives `/reload`.
+- [x] My card lists real professions with skill. A warlock shows Summon; a mage shows the learned teleports and portals.
+- [x] Clicking cycles the status. `/bcard busy` and `/bcard avail` flip Overall. The state survives `/reload`.
+- [x] Open Enchanting: the footer shows the recipe count, and it survives `/reload`.
 
 ---
 
@@ -687,7 +688,7 @@ end)
 
 ### Verification
 #### Automated
-- [ ] `lua BusinessCard/tests/run.lua` prints `all tests passed`
+- [x] `lua BusinessCard/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] Two guildmates with the addon see each other in Seen within about 10 s of login, with badge and icon.

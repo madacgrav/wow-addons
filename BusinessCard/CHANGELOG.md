@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.0
+- Card sharing: your card goes to your guild 10 s after login and after any status change. Advertisers you see in chat get a silent card request (once per session, never inside instances), and shift-click asks again. Rows show a green or red status dot and a letter icon when the person runs BusinessCard; the tooltip lists their card. Guildmates who never advertised appear from their card. Trial or Veteran accounts print one warning and keep the ad log.
+
 ## 0.4.0
 - My card tab: your professions with skill and your summon/portal services, each set to Available, Busy or Off by clicking; an Overall switch and `/bcard busy` / `/bcard avail`. Opening a profession window caches its learned recipes for later sharing.
 

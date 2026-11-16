@@ -2,6 +2,9 @@ local ADDON, BC = ...
 -- ponytail: fixed 20 rows, newest first; add a ScrollBox if 20 isn't enough
 local MAX_ROWS, ROW_H, TOP = 20, 24, 64
 local win
+local ST_LABEL = { a = "|cff33ff33Available|r", b = "|cffff3333Busy|r", o = "|cff888888Off|r" }
+local SVC_LABEL = {}
+for _, s in ipairs(BC.SERVICES) do SVC_LABEL[s.key] = s.label or s.name end
 
 local function Whisper(name)
   -- Forever names contain spaces ("Thugtar Darkflame"); SendTell targets the name directly
@@ -13,7 +16,7 @@ local function RowClick(self, btn)
   if BC.db.view == "card" then
     if BC.OnCardRowClick then BC.OnCardRowClick(self) end -- Phase 4
   elseif btn == "RightButton" then BC.Seen()[self.key] = nil; BC.RefreshPanel()
-  elseif IsShiftKeyDown() then BC.ShowDetail(self.key)
+  elseif IsShiftKeyDown() then BC.Ask(self.key, true); BC.ShowDetail(self.key)
   else Whisper(self.key) end
 end
 
@@ -24,6 +27,13 @@ local function RowEnter(self)
   GameTooltip:AddLine(d.name, 1, 0.82, 0)
   GameTooltip:AddLine(BC.CatList(d.cats), 0.8, 0.8, 0.8)
   if d.text then GameTooltip:AddLine(d.text .. " (" .. d.age .. ")", 1, 1, 1, true) end
+  if d.card then
+    GameTooltip:AddLine(d.card.g == "b" and "Card: busy" or "Card:", 0.9, 0.7, 0.3)
+    for _, p in ipairs(d.card.profs) do
+      GameTooltip:AddLine("  " .. (BC.PROF_NAMES[p.id] or p.id) .. " " .. p.skill .. " " .. ST_LABEL[p.st], 1, 1, 1)
+    end
+    for _, sv in ipairs(d.card.svcs) do GameTooltip:AddLine("  " .. (SVC_LABEL[sv.key] or sv.key) .. " " .. ST_LABEL[sv.st], 1, 1, 1) end
+  end
   GameTooltip:AddLine("Click: whisper  Shift-click: card  Right-click: remove", 0.5, 0.5, 0.5)
   GameTooltip:Show()
 end
@@ -69,7 +79,9 @@ local function Build()
     row:SetSize(392, ROW_H - 2); row:SetPoint("TOPLEFT", 14, -TOP - (i - 1) * ROW_H)
     row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     row.status = row:CreateTexture(nil, "ARTWORK"); row.status:SetSize(8, 8); row.status:SetPoint("LEFT", 2, 0)
-    row.status:SetColorTexture(1, 1, 1, 1); row.status:Hide() -- status badge, Phase 5
+    row.status:SetColorTexture(1, 1, 1, 1); row.status:Hide() -- card status badge
+    row.icon = row:CreateTexture(nil, "ARTWORK"); row.icon:SetSize(12, 12); row.icon:SetPoint("RIGHT", -34, 0)
+    row.icon:SetTexture("Interface\\Icons\\INV_Letter_15"); row.icon:Hide() -- runs BusinessCard
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     row.name:SetPoint("LEFT", 14, 0); row.name:SetWidth(130); row.name:SetJustifyH("LEFT"); row.name:SetWordWrap(false)
     row.cats = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
@@ -96,7 +108,10 @@ function BC.RenderSeen(rows, total)
     row.key, row.data = v and v.name, v
     if v then
       row.name:SetText(v.name); row.cats:SetText(BC.CatList(v.cats)); row.age:SetText(v.age)
-      if BC.DecorateRow then BC.DecorateRow(row, v) end -- Phase 5 badge
+      local st = BC.CardStatus(v.card, BC.db.filter)
+      row.status:SetShown(st ~= nil)
+      if st == "a" then row.status:SetColorTexture(0.2, 0.9, 0.2, 1) elseif st == "b" then row.status:SetColorTexture(0.9, 0.2, 0.2, 1) end
+      row.icon:SetShown(v.card ~= nil)
     end
   end
   win.footer:SetText(math.min(#rows, MAX_ROWS) .. " shown / " .. total .. " seen")
@@ -118,9 +133,6 @@ function BC.RefreshPanel()
   end)
 end
 
-local ST_LABEL = { a = "|cff33ff33Available|r", b = "|cffff3333Busy|r", o = "|cff888888Off|r" }
-local SVC_LABEL = {}
-for _, s in ipairs(BC.SERVICES) do SVC_LABEL[s.key] = s.label or s.name end
 
 -- My card view: row 1 = overall, then professions, then services; click cycles status
 function BC.RenderMyCard(w)
@@ -134,7 +146,7 @@ function BC.RenderMyCard(w)
     local v = rows[i]
     row:SetShown(v ~= nil)
     row.key, row.data = v and v.key, nil
-    row.status:Hide()
+    row.status:Hide(); row.icon:Hide()
     if v then row.name:SetText(v.name); row.cats:SetText(ST_LABEL[v.st or "a"]); row.age:SetText(v.skill) end
   end
   local cached = {}
