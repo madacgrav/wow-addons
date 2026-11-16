@@ -150,6 +150,27 @@ WCK.On("PLAYER_TALENT_UPDATE", WCK.Refresh)
 -- rotation helper: display only, the player presses their own key
 WCK.USABLE_OK = true -- probe run 1: IsSpellUsable is non-secret in combat (open world); pcall/Secret still guard it
 
+-- spellbook cache feeding the rule/slot dropdowns and rule state; rebuilt at login and on SPELLS_CHANGED
+WCK.spellTabs, WCK.spellSet = {}, {}
+function WCK.ScanSpellbook()
+  local ok, entries = pcall(function()
+    local out, bank = {}, Enum.SpellBookSpellBank.Player
+    for i = 1, C_SpellBook.GetNumSpellBookSkillLines() do
+      local line = C_SpellBook.GetSpellBookSkillLineInfo(i)
+      if line and not line.shouldHide then
+        for slot = line.itemIndexOffset + 1, line.itemIndexOffset + line.numSpellBookItems do
+          local info = C_SpellBook.GetSpellBookItemInfo(slot, bank)
+          if info then out[#out + 1] = { tab = line.name, name = info.name, itemType = info.itemType, isPassive = info.isPassive } end
+        end
+      end
+    end
+    return out
+  end)
+  if not ok then return end -- keep the last good cache (secret reads or a missing API land here)
+  local okB, tabs, set = pcall(WCK.BuildSpellTabs, entries)
+  if okB then WCK.spellTabs, WCK.spellSet = tabs, set end
+end
+
 function WCK.Known(name)
   local ok, info = pcall(C_Spell.GetSpellInfo, name)
   return ok and info and IsPlayerSpell(info.spellID) or false
@@ -157,8 +178,8 @@ end
 
 function WCK.BuildRuleState(now)
   local s = { known = {}, ready = {}, usable = {}, lastOnTarget = {}, proc = next(WCK.procs) ~= nil, marked = false }
-  for _, name in ipairs(WCK.DATA.rotation) do
-    if WCK.Known(name) then
+  for _, name in ipairs(WCK.RuleSpells(WCK.char.rules)) do
+    if WCK.spellSet[name] then
       s.known[name] = true
       local okC, cd = pcall(C_Spell.GetSpellCooldown, name)
       if okC and cd and not WCK.Secret(cd.isActive) and not WCK.Secret(cd.isOnGCD) then
@@ -180,7 +201,8 @@ function WCK.BuildRuleState(now)
 end
 
 table.insert(WCK.refreshers, function() -- file scope: runs after the proc refresher, before the panel's
-  WCK.next = WCK.EvalRules(WCK.char.rules, WCK.BuildRuleState(GetTime()))
+  WCK.ruleState = WCK.BuildRuleState(GetTime())
+  WCK.next = WCK.EvalRules(WCK.char.rules, WCK.ruleState)
 end)
 WCK.On("SPELL_UPDATE_COOLDOWN", WCK.Refresh)
 WCK.On("PLAYER_TARGET_CHANGED", WCK.Refresh)
@@ -195,6 +217,8 @@ end
 table.insert(WCK.inits, function()
   -- not via MergeDefaults: a merged list would mix the saved rules with the defaults
   if WCK.char.rules == nil then WCK.char.rules = WCK.CopyRules(WCK.DATA.defaultRules) end
+  WCK.ScanSpellbook()
+  WCK.On("SPELLS_CHANGED", function() WCK.ScanSpellbook(); WCK.Refresh() end)
   WCK.map = WCK.NewCastMap()
   WCK.On("UNIT_SPELLCAST_SENT", function(unit, target, castGUID, spellID)
     if unit ~= "player" then return end

@@ -16,10 +16,14 @@ end
 -- Rotation rule editor: pooled rows over WCK.char.rules
 -- ponytail: 10 rules max, add a ScrollBox if users want more
 local MAX_RULES = 10
-local function KnownSpells()
-  local out = {}
-  for _, name in ipairs(WCK.DATA.rotation) do if WCK.Known(name) then out[#out + 1] = name end end
-  return out
+-- one submenu per spellbook tab; radios inside
+local function SpellMenu(root, isChecked, pick)
+  for _, tab in ipairs(WCK.spellTabs) do
+    local sub = root:CreateButton(tab.name)
+    for _, name in ipairs(tab.spells) do
+      sub:CreateRadio(name, function() return isChecked(name) end, function() pick(name) end)
+    end
+  end
 end
 
 table.insert(WCK.settingsSections, function(win, y)
@@ -33,10 +37,8 @@ table.insert(WCK.settingsSections, function(win, y)
     r.spell = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
     r.spell:SetWidth(120); r.spell:SetPoint("LEFT", 14, 0)
     r.spell:SetupMenu(function(_, root)
-      for _, name in ipairs(KnownSpells()) do
-        root:CreateRadio(name, function() return WCK.char.rules[i] and WCK.char.rules[i].spell == name end,
-          function() WCK.char.rules[i].spell = name; Changed() end)
-      end
+      SpellMenu(root, function(name) return WCK.char.rules[i] and WCK.char.rules[i].spell == name end,
+        function(name) WCK.char.rules[i].spell = name; Changed() end)
     end)
     r.cond = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
     r.cond:SetWidth(110); r.cond:SetPoint("LEFT", r.spell, "RIGHT", 4, 0)
@@ -105,9 +107,7 @@ table.insert(WCK.settingsSections, function(win, y)
     end
     r.spell:SetupMenu(function(_, root)
       root:CreateRadio("(none)", function() return WCK.char.slots[i] == nil end, function() Set(nil) end)
-      for _, name in ipairs(KnownSpells()) do
-        root:CreateRadio(name, function() return WCK.char.slots[i] == name end, function() Set(name) end)
-      end
+      SpellMenu(root, function(name) return WCK.char.slots[i] == name end, Set)
     end)
     rows[i] = r
   end

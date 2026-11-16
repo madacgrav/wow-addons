@@ -75,4 +75,21 @@ eq(WCK.CastMacro("Corruption"), "/cast [@mouseover,harm,nodead][] Corruption", "
 eq(WCK.CastMacro(nil), "", "no spell"); eq(WCK.CastMacro(""), "", "empty spell")
 eq(WCK.CastMacro("Curse of Agony"), "/cast [@mouseover,harm,nodead][] Curse of Agony", "spaces kept")
 
+-- GH-28 Phase 1
+local tabs, set = WCK.BuildSpellTabs({
+  { tab = "General", name = "Auto Attack", itemType = 1 },
+  { tab = "Affliction", name = "Wrack", itemType = 1 },
+  { tab = "Affliction", name = "Corruption", itemType = 1 },
+  { tab = "Affliction", name = "Nightfall", itemType = 1, isPassive = true },
+  { tab = "Affliction", name = "Haunt", itemType = 2 },      -- future spell
+  { tab = "Demonology", name = "Summon Imp", itemType = 4 },  -- flyout: tab ends up empty
+  { tab = "Destruction", name = "Corruption", itemType = 1 }, -- duplicate: first tab wins
+})
+eq(#tabs, 2, "empty tab dropped"); eq(tabs[1].name, "General", "book order")
+eq(tabs[2].spells[1], "Corruption", "sorted"); eq(tabs[2].spells[2], "Wrack", "sorted 2"); eq(#tabs[2].spells, 2, "passive+future dropped")
+eq(set.Wrack, true, "set"); eq(set.Nightfall, nil, "passive not in set")
+local rs = WCK.RuleSpells({ { spell = "Corruption" }, { spell = "Shadow Bolt" }, { spell = "Corruption" }, { spell = "" }, {} })
+eq(#rs, 2, "distinct"); eq(rs[1], "Corruption", "order"); eq(rs[2], "Shadow Bolt", "order 2")
+eq(#WCK.RuleSpells(nil), 0, "nil rules")
+
 print("all tests passed")
