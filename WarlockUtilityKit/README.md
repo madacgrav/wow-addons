@@ -60,7 +60,7 @@ Turn spin and collapse on or off with `/wuk spin`, `/wuk collapse`, or the Setti
 
 Pick the pet the pet button summons:
 
-- `/wuk pet imp | voidwalker | succubus | felhunter`
+- `/wuk pet imp | voidwalker | succubus | incubus | felhunter`
 - or use the **Preferred pet** dropdown in Settings.
 
 If you haven't learned the chosen pet, the button summons the Imp. The pet choice is saved per character.
@@ -148,7 +148,7 @@ Escape closes the window.
 | `/wuk show` / `/wuk hide` | Show or hide the ring |
 | `/wuk lock` | Toggle the frame lock |
 | `/wuk reset` | Reset frame positions (then `/reload`) |
-| `/wuk pet <imp\|voidwalker\|succubus\|felhunter>` | Set the preferred pet |
+| `/wuk pet <imp\|voidwalker\|succubus\|incubus\|felhunter>` | Set the preferred pet |
 | `/wuk probe` | Print diagnostics (for bug reports) |
 
 `show`, `hide`, `dock`, `spin` and `collapse` are refused in combat.

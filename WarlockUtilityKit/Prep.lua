@@ -32,7 +32,7 @@ table.insert(WUK.refreshers, function()
   local pet = WUK.known[WUK.char.pet] and WUK.char.pet or "imp"
   local spell = WUK.known[pet]
   petBtn.icon:SetTexture(spell and C_Spell.GetSpellTexture(spell) or 134400)
-  local out = WUK.PetFamily() == pet
+  local out = WUK.PetIsOut(pet, WUK.PetFamily())
   petBtn.icon:SetDesaturated(not out)
   WUK.SetAlert(petBtn, spell ~= nil and not out)
   if not InCombatLockdown() then petBtn:SetAttribute("macrotext", spell and ("/cast " .. spell) or "") end

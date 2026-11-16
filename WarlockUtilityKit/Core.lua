@@ -49,7 +49,7 @@ local SPELLS = {
   armor = { "Demon Armor", "Demon Skin" },
   detect = { "Detect Greater Invisibility", "Detect Invisibility", "Detect Lesser Invisibility" },
   imp = { "Summon Imp" }, voidwalker = { "Summon Voidwalker" },
-  succubus = { "Summon Succubus" }, felhunter = { "Summon Felhunter" },
+  succubus = { "Summon Succubus" }, incubus = { "Summon Incubus" }, felhunter = { "Summon Felhunter" },
   soullink = { "Soul Link" }, ritual = { "Ritual of Summoning" },
   healthstone = { "Create Healthstone (Major)", "Create Healthstone (Greater)", "Create Healthstone",
                   "Create Healthstone (Lesser)", "Create Healthstone (Minor)" },
@@ -176,6 +176,7 @@ function WUK.Probe()
   local function S(v) if WUK.Secret(v) then return "SECRET" end return tostring(v) end
   local inInst, kind = IsInInstance()
   P("instance", tostring(inInst) .. " " .. tostring(kind))
+  P("pet family", UnitExists("pet") and S(UnitCreatureFamily("pet")) or "none")
   P("combat", InCombatLockdown())
   P("chat lockdown", C_ChatInfo.InChatMessagingLockdown and C_ChatInfo.InChatMessagingLockdown() or "n/a")
   for _, n in ipairs(PROBE_SPELLS) do
@@ -248,7 +249,7 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   if cmd == "show" or cmd == "hide" then WUK.db.shown = (cmd == "show"); WUK.ApplyShown()
   elseif cmd == "lock" then WUK.db.locked = not WUK.db.locked; WUK.Print(WUK.db.locked and "locked" or "unlocked")
   elseif cmd == "reset" then wipe(WUK.db.frames); WUK.Print("positions reset - /reload to apply")
-  elseif cmd == "pet" and (arg == "imp" or arg == "voidwalker" or arg == "succubus" or arg == "felhunter") then
+  elseif cmd == "pet" and WUK.IsPet(arg) then
     WUK.char.pet = arg; WUK.Print("preferred pet: " .. arg); WUK.Refresh()
   elseif cmd == "config" then WUK.ToggleSettings()
   elseif cmd == "probe" then WUK.Probe()
@@ -262,5 +263,5 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   elseif cmd == "spin" or cmd == "collapse" then
     if InCombatLockdown() then return WUK.Print("not in combat") end
     WUK.db[cmd] = not WUK.db[cmd]; WUK.Print("ring " .. cmd .. " " .. (WUK.db[cmd] and "on" or "off")); WUK.Refresh()
-  else WUK.Print("/wuk config | board | lead | dock | spin | collapse | show | hide | lock | reset | probe | pet <imp|voidwalker|succubus|felhunter>") end
+  else WUK.Print("/wuk config | board | lead | dock | spin | collapse | show | hide | lock | reset | probe | pet <" .. table.concat(WUK.PETS, "|") .. ">") end
 end
