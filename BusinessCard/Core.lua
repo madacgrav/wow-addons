@@ -17,7 +17,7 @@ end)
 
 local DEFAULTS = { locked = false, frames = {}, lastProbe = {}, seen = {}, channels = BC.DEFAULT_CHANNELS, maxAgeDays = 7,
   view = "seen", filter = "all" }
-local CHAR_DEFAULTS = {}
+local CHAR_DEFAULTS = { status = { g = "a" }, recipes = {}, rev = 0 }
 
 BC.On("ADDON_LOADED", function(name)
   if name ~= ADDON then return end
@@ -131,6 +131,56 @@ local function PrintSeen()
   BC.Print(#names .. " seen")
 end
 
+-- my card: professions need no open window (TackleBox/Core.lua:28-35); 7th return is the skill line
+function BC.ReadProfessions()
+  local out, p = {}, { GetProfessions() }
+  for i = 1, 6 do if p[i] then
+    local name, _, rank, _, _, _, line = GetProfessionInfo(p[i])
+    if line then out[#out + 1] = { id = line, name = name, skill = rank } end
+  end end
+  return out
+end
+
+function BC.ReadServices()
+  local out = {}
+  for _, s in ipairs(BC.SERVICES) do
+    if IsPlayerSpell(s.id) or C_Spell.GetSpellInfo(s.name) then out[#out + 1] = s.key end
+  end
+  return out
+end
+
+function BC.MyCard() return BC.BuildCard(BC.ReadProfessions(), BC.ReadServices(), BC.char.status, BC.char.rev) end
+
+-- learned recipe IDs per profession; window must be open (ProfessionPlanner/Core.lua:28-40)
+local tries = 0
+function BC.ScanRecipes()
+  if not C_TradeSkillUI.IsTradeSkillReady() then return end
+  local info = C_TradeSkillUI.GetBaseProfessionInfo()
+  local prof = info and info.professionID
+  if not prof then return end
+  local ids = {}
+  for _, id in ipairs(C_TradeSkillUI.GetAllRecipeIDs()) do
+    local ri, pi = C_TradeSkillUI.GetRecipeInfo(id), C_TradeSkillUI.GetProfessionInfoByRecipeID(id)
+    if ri and ri.learned and pi and (pi.professionID == prof or pi.parentProfessionID == prof) then ids[#ids + 1] = id end
+  end
+  if #ids == 0 and tries < 5 then tries = tries + 1; return C_Timer.After(0.5, BC.ScanRecipes) end
+  tries = 0
+  if #ids > 0 then BC.char.recipes[prof] = ids; if BC.RefreshPanel then BC.RefreshPanel() end end
+end
+
+BC.onStatus = {} -- hooks after any status change (Phase 5 broadcasts)
+function BC.ChangeStatus(key, st)
+  if not BC.SetStatus(BC.char, key, st) then return end
+  for _, fn in ipairs(BC.onStatus) do fn() end
+  if BC.RefreshPanel then BC.RefreshPanel() end
+end
+
+table.insert(BC.inits, function()
+  BC.On("TRADE_SKILL_SHOW", BC.ScanRecipes)
+  BC.On("TRADE_SKILL_LIST_UPDATE", BC.ScanRecipes)
+  BC.On("SKILL_LINES_CHANGED", function() if BC.RefreshPanel then BC.RefreshPanel() end end)
+end)
+
 function BC.Ping(name)
   local r = C_ChatInfo.SendAddonMessage(BC.PREFIX, "ping", "WHISPER", name)
   BC.ProbeLine("ping " .. name, "result " .. tostring(r) .. " guild " .. tostring(IsInGuild()))
@@ -144,7 +194,9 @@ SlashCmdList.BUSINESSCARD = function(msg)
   elseif cmd == "probe" then BC.Probe()
   elseif cmd == "ping" and arg ~= "" then BC.Ping(arg)
   elseif cmd == "seen" then PrintSeen()
+  elseif cmd == "busy" then BC.ChangeStatus("g", "b"); BC.Print("you are busy")
+  elseif cmd == "avail" then BC.ChangeStatus("g", "a"); BC.Print("you are available")
   elseif cmd == "lock" then BC.db.locked = not BC.db.locked; BC.Print(BC.db.locked and "locked" or "unlocked")
   elseif cmd == "reset" then wipe(BC.db.frames); BC.Print("positions reset - /reload to apply")
-  else BC.Print("/bcard (window) | seen | probe | ping <name> | lock | reset") end
+  else BC.Print("/bcard (window) | seen | busy | avail | probe | ping <name> | lock | reset") end
 end

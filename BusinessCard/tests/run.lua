@@ -74,4 +74,15 @@ eq(#rows, 2, "filtered"); eq(rows[1].name, "C", "filtered newest")
 eq(rows[1].card, nil, "no cards yet")
 eq(BC.CatList({ portal = 1, enchanting = 1 }), "Enchanting, Portals", "cat list order")
 
+-- Phase 4
+local card = BC.BuildCard({ { id = 333, name = "Enchanting", skill = 150 }, { id = 197, name = "Tailoring", skill = 124 } },
+  { "S" }, { g = "b", p197 = "o" }, 4)
+eq(card.rev, 4, "card rev"); eq(card.g, "b", "card global")
+eq(card.profs[1].st, "a", "default status"); eq(card.profs[2].st, "o", "status override"); eq(card.profs[1].skill, 150, "skill")
+eq(card.svcs[1].key, "S", "service key"); eq(card.svcs[1].st, "a", "service default")
+local ch = { status = { g = "a" }, rev = 0 }
+eq(BC.SetStatus(ch, "g", "b"), true, "status changed"); eq(ch.rev, 1, "rev bumped")
+eq(BC.SetStatus(ch, "g", "b"), false, "unchanged"); eq(ch.rev, 1, "rev kept")
+eq(BC.NextStatus("a"), "b", "a->b"); eq(BC.NextStatus("b"), "o", "b->o"); eq(BC.NextStatus("o"), "a", "o->a"); eq(BC.NextStatus(nil), "b", "nil->b")
+
 print("all tests passed")

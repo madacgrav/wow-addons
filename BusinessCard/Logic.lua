@@ -75,3 +75,21 @@ function BC.CatList(cats) -- "Enchanting, Portals" in BC.CATS order
   for _, c in ipairs(BC.CATS) do if cats[c] then out[#out + 1] = BC.CAT_LABEL[c] end end
   return table.concat(out, ", ")
 end
+
+-- profs = {{id, name, skill}}, svcs = {key...}, status = {g="a"|"b", [statusKey]="a"|"b"|"o"}
+-- Card = {rev, g, profs={{id, skill, st}}, svcs={{key, st}}}
+function BC.BuildCard(profs, svcs, status, rev)
+  local c = { rev = rev, g = status.g or "a", profs = {}, svcs = {} }
+  for _, p in ipairs(profs) do c.profs[#c.profs + 1] = { id = p.id, skill = p.skill, st = status["p" .. p.id] or "a" } end
+  for _, k in ipairs(svcs) do c.svcs[#c.svcs + 1] = { key = k, st = status[k] or "a" } end
+  return c
+end
+
+function BC.SetStatus(char, key, st) -- key "g", "p<id>" or a service key
+  if char.status[key] == st then return false end
+  char.status[key] = st; char.rev = char.rev + 1
+  return true
+end
+
+local NEXT = { a = "b", b = "o", o = "a" }
+function BC.NextStatus(st) return NEXT[st or "a"] end

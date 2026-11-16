@@ -522,7 +522,7 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua BusinessCard/tests/run.lua` prints `all tests passed`
+- [x] `lua BusinessCard/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] My card lists real professions with skill. A warlock shows Summon; a mage shows the learned teleports and portals.

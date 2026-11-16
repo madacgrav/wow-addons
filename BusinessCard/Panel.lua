@@ -118,6 +118,37 @@ function BC.RefreshPanel()
   end)
 end
 
+local ST_LABEL = { a = "|cff33ff33Available|r", b = "|cffff3333Busy|r", o = "|cff888888Off|r" }
+local SVC_LABEL = {}
+for _, s in ipairs(BC.SERVICES) do SVC_LABEL[s.key] = s.label or s.name end
+
+-- My card view: row 1 = overall, then professions, then services; click cycles status
+function BC.RenderMyCard(w)
+  local card, st = BC.MyCard(), BC.char.status
+  local rows = { { key = "g", name = "Overall", st = card.g, skill = "" } }
+  for _, p in ipairs(card.profs) do
+    rows[#rows + 1] = { key = "p" .. p.id, name = BC.PROF_NAMES[p.id] or ("Profession " .. p.id), st = p.st, skill = tostring(p.skill) }
+  end
+  for _, s in ipairs(card.svcs) do rows[#rows + 1] = { key = s.key, name = SVC_LABEL[s.key], st = s.st, skill = "" } end
+  for i, row in ipairs(w.rows) do
+    local v = rows[i]
+    row:SetShown(v ~= nil)
+    row.key, row.data = v and v.key, nil
+    row.status:Hide()
+    if v then row.name:SetText(v.name); row.cats:SetText(ST_LABEL[v.st or "a"]); row.age:SetText(v.skill) end
+  end
+  local cached = {}
+  for id, ids in pairs(BC.char.recipes) do cached[#cached + 1] = (BC.PROF_NAMES[id] or id) .. " " .. #ids end
+  table.sort(cached)
+  w.footer:SetText(#cached > 0 and ("Recipes cached: " .. table.concat(cached, ", ")) or "Open a profession window to cache recipes")
+end
+
+function BC.OnCardRowClick(row)
+  local cur = BC.char.status[row.key] or "a"
+  if row.key == "g" then BC.ChangeStatus("g", cur == "a" and "b" or "a")
+  else BC.ChangeStatus(row.key, BC.NextStatus(cur)) end
+end
+
 function BC.ShowDetail(name) BC.Print("card detail for " .. name .. " comes in a later version") end
 
 function BC.TogglePanel()

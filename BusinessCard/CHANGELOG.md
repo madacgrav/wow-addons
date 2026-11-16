@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.0
+- My card tab: your professions with skill and your summon/portal services, each set to Available, Busy or Off by clicking; an Overall switch and `/bcard busy` / `/bcard avail`. Opening a profession window caches its learned recipes for later sharing.
+
 ## 0.3.1
 - Fix: the first `/bcard` now opens the window (it took two).
 
