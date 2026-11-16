@@ -208,6 +208,20 @@ function WUK.Probe()
     local frame = _G[f]
     P("frame " .. f, frame and ("shown=" .. S(frame:IsShown()) .. " children=" .. S(select("#", frame:GetChildren()))) or "missing")
   end
+  -- bags: what the client returns per bag/slot (soul shard bag debugging)
+  P("NUM_BAG_SLOTS", NUM_BAG_SLOTS)
+  for bag = 0, NUM_BAG_SLOTS or 4 do
+    local free, family = C_Container.GetContainerNumFreeSlots(bag)
+    P("bag " .. bag, "slots=" .. tostring(C_Container.GetContainerNumSlots(bag)) .. " free=" .. tostring(free) .. " family=" .. tostring(family))
+    for slot = 1, C_Container.GetContainerNumSlots(bag) do
+      local info = C_Container.GetContainerItemInfo(bag, slot)
+      if info and (info.itemID == 6265 or info.itemName == nil) then
+        P("  " .. bag .. "/" .. slot, "id=" .. tostring(info.itemID) .. " name=" .. tostring(info.itemName)
+          .. " getinfo=" .. tostring(info.itemID and C_Item.GetItemInfo(info.itemID)) .. " stack=" .. tostring(info.stackCount))
+      end
+    end
+  end
+  P("counts.shard", WUK.counts.shard)
   if not UnitExists("target") then return P("target", "none") end
   P("target hostile", UnitCanAttack("player", "target"))
   P("raid mark", S(GetRaidTargetIndex("target")))
