@@ -359,18 +359,20 @@ end)
 - [x] Deploy with robocopy.
 
 #### Manual
-- [ ] On login, Party view looks and behaves exactly as in v0.3.3: same 6 orbit buttons and order, spin, collapse, alerts.
-- [ ] Right-click the soulstone: the ring closes and re-blooms showing the soulstone (tinted blue) plus only the buffs you know. The soulstone stays under the cursor.
-- [ ] Clicking each buff casts it (Detect Invisibility on a friendly target works). Tooltips show each spell.
-- [ ] Right-click again: back to Party, with a white soulstone.
-- [ ] Left-click the soulstone in either view: uses or creates a soulstone, as before.
-- [ ] In Buff view, move the mouse off: the ring collapses, and the next hover shows Party.
-- [ ] In Buff view, pull a mob: the ring snaps to Party at full radius. Right-click in combat does nothing. No "action blocked" errors.
-- [ ] The soulstone tooltip hint reads "Right-click: Buff view", then "Right-click: Party view".
+- [x] On login, Party view looks and behaves exactly as in v0.3.3: same 6 orbit buttons and order, spin, collapse, alerts.
+- [x] Right-click the soulstone: the ring closes and re-blooms showing the soulstone (tinted blue) plus only the buffs you know. The soulstone stays under the cursor.
+- [x] Clicking each buff casts it (Detect Invisibility on a friendly target works). Tooltips show each spell.
+- [x] Right-click again: back to Party, with a white soulstone.
+- [x] Left-click the soulstone in either view: uses or creates a soulstone, as before.
+- [x] In Buff view, move the mouse off: the ring collapses, and the next hover shows Party.
+- [x] In Buff view, pull a mob: the ring snaps to Party at full radius. Right-click in combat does nothing. No "action blocked" errors.
+- [x] The soulstone tooltip hint reads "Right-click: Buff view", then "Right-click: Party view".
 
 ---
 
 ## Phase 4: Demon view and ring growth; release 0.4.0
+
+> **Changed during implementation:** soulstone left the views (Phase 3 change), so the biggest view (Buff, Demon) has 9 buttons. 9 × 40px fits at R = 58, so `ViewRadius` and the radius changes in step 5 were skipped and the ring keeps its size. Step 2 drops the `ViewRadius` tests. CHANGELOG text describes the shipped behaviour (shard toggle, circle colours, new Party/Buff contents).
 
 ### Changes
 
@@ -456,9 +458,9 @@ The pet button (`strip.icons.pet`) stays Party-only. The demon keys are separate
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockUtilityKit/tests/run.lua` passes.
-- [ ] `grep -n "Version" WarlockUtilityKit/WarlockUtilityKit.toc` shows `0.4.0`.
-- [ ] Deploy with robocopy.
+- [x] `lua5.1 WarlockUtilityKit/tests/run.lua` passes.
+- [x] `grep -n "Version" WarlockUtilityKit/WarlockUtilityKit.toc` shows `0.4.0`.
+- [x] Deploy with robocopy.
 
 #### Manual
 - [ ] Right-click cycles Party → Buff (blue) → Demon (red) → Party (white).

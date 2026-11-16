@@ -180,8 +180,9 @@ end
 WUK.VIEWS = {
   party = { "healthstone", "soulstone", "banish", "howl", "armor", "pet" },
   buff = { "spellstone", "firestone", "armor", "detect", "shadowward", "soullink", "unending", "eye", "sense" },
+  demon = { "imp", "voidwalker", "succubus", "incubus", "felhunter", "felguard", "inferno", "doom", "feldom" },
 }
-WUK.VIEW_ORDER = { "party", "buff" }
+WUK.VIEW_ORDER = { "party", "buff", "demon" }
 
 function WUK.NextView(view)
   local o = WUK.VIEW_ORDER

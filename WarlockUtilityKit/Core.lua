@@ -62,6 +62,7 @@ local SPELLS = {
   shadowward = { "Shadow Ward" }, unending = { "Unending Breath" },
   eye = { "Eye of Kilrogg" }, sense = { "Sense Demons" },
   banish = { "Banish" }, howl = { "Howl of Terror" },
+  felguard = { "Summon Felguard" }, inferno = { "Inferno" }, doom = { "Ritual of Doom" }, feldom = { "Fel Domination" },
 }
 
 local function SpellbookNames()

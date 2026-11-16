@@ -2,6 +2,16 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockUtilityKit.toc`; each version is published as a `wuk-vX.Y.Z` GitHub release.
 
+## [0.4.0] — 2026-11-16
+
+### Added
+- **Ring tooltips.** Every ring button shows its spell or item tooltip on hover.
+- **Healthstone trade.** Right-click the healthstone to open a trade with your friendly target with a stone already in the window. Left-click still eats one, or creates one when you have none.
+- **Ring views.** Click the soul shard in the centre of the ring to flip it: Party (default) → Buff → Demon. The shard and the circle change colour per view (purple, blue, red). Only spells you know appear. The ring returns to Party when it collapses or you enter combat.
+  - **Party:** healthstone, soulstone, Banish, Howl of Terror, armor, pet.
+  - **Buff:** spellstone, firestone, armor, Detect Invisibility, Shadow Ward, Soul Link, Unending Breath, Eye of Kilrogg, Sense Demons.
+  - **Demon:** every summon, Inferno, Ritual of Doom, Fel Domination.
+
 ## [0.3.3] — 2026-11-16
 
 ### Added

@@ -110,8 +110,8 @@ eq(WUK.PetIsOut("succubus", "incubus"), false, "alias is one-way")
 eq(WUK.PetIsOut("felhunter", "imp"), false, "wrong pet")
 
 -- Ring views
-local function near(a, b, label) if math.abs(a - b) > 1e-6 then error(label .. ": " .. a .. " vs " .. b, 2) end end
-eq(WUK.NextView("party"), "buff", "next party"); eq(WUK.NextView("buff"), "party", "next wraps")
+eq(WUK.NextView("party"), "buff", "next party"); eq(WUK.NextView("buff"), "demon", "next buff")
+eq(WUK.NextView("demon"), "party", "next wraps")
 eq(WUK.NextView("bogus"), "party", "next unknown")
 local all = setmetatable({}, { __index = function() return true end })
 eq(#WUK.ViewKeys("party", {}, all), 4, "party always-on keys")
@@ -120,5 +120,6 @@ local bk = WUK.ViewKeys("buff", { armor = "Demon Armor" }, all)
 eq(#bk, 1, "buff known only"); eq(bk[1], "armor", "known buff")
 eq(#WUK.ViewKeys("buff", { firestone = "Create Firestone" }, all), 2, "buff stone needs create spell")
 eq(#WUK.ViewKeys("party", {}, { healthstone = true }), 1, "missing button dropped")
+eq(#WUK.ViewKeys("demon", { imp = "Summon Imp" }, all), 1, "demon known only")
 
 print("all tests passed")

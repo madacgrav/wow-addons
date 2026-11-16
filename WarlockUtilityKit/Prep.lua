@@ -57,7 +57,8 @@ table.insert(WUK.inits, function()
 end)
 
 -- one secure button per view spell; LayoutRing shows/hides them by view
-local SPELL_KEYS = { "banish", "howl", "detect", "shadowward", "soullink", "unending", "eye", "sense" }
+local SPELL_KEYS = { "banish", "howl", "detect", "shadowward", "soullink", "unending", "eye", "sense",
+  "imp", "voidwalker", "succubus", "incubus", "felhunter", "felguard", "inferno", "doom", "feldom" }
 function WUK.SpellButton(key)
   local b = CreateFrame("Button", "WUKSpell_" .. key, WUK.strip, "SecureActionButtonTemplate")
   b:SetSize(36, 36); b:RegisterForClicks("AnyUp", "AnyDown"); b:SetAttribute("type", "macro")
