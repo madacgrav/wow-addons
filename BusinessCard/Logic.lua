@@ -16,17 +16,19 @@ function BC.ChannelKey(base) if type(base) ~= "string" then return nil end retur
 function BC.StripLinks(text) return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h", ""):gsub("|h", "")) end
 
 -- returns { cats = {cat=true}, request = bool, dest = "ORG"? } or nil when nothing matched
+-- request = true means "not an advertisement": a request word, or no offer signal at all
 function BC.Classify(text)
   if type(text) ~= "string" then return nil end
   local cats, any, req, offer, dest = {}, false, false, false, nil
   for w in BC.StripLinks(text):lower():gmatch("%w+") do
     for cat, words in pairs(BC.WORDS) do if words[w] then cats[cat] = true; any = true end end
     req = req or BC.REQUEST_WORDS[w] or false
-    offer = offer or BC.OFFER_WORDS[w] or false
+    offer = offer or BC.OFFER_WORDS[w] or w:match("^%d+g$") ~= nil
     dest = dest or BC.PORTAL_DEST[w]
   end
   if not any then return nil end
-  return { cats = cats, request = req and not offer, dest = cats.portal and dest or nil }
+  offer = offer or text:find("|Htrade:", 1, true) ~= nil
+  return { cats = cats, request = req or not offer, dest = cats.portal and dest or nil }
 end
 
 function BC.SeenAdd(seen, name, r, text, now)

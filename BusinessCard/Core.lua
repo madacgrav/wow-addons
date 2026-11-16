@@ -109,7 +109,10 @@ table.insert(BC.inits, function()
   BC.On("CHAT_MSG_YELL", function(text, sender) OnAd("YELL", text, sender) end)
   BC.On("CHAT_MSG_WHISPER", function(text, sender) OnAd("WHISPER", text, sender) end)
   local seen = BC.Seen()
-  for name, e in pairs(seen) do if e.req then seen[name] = nil end end -- requests logged by 0.2.0
+  for name, e in pairs(seen) do -- re-check saved entries against the current classifier
+    local r = BC.Classify(e.text)
+    if not r or r.request then seen[name] = nil end
+  end
   if not InCombatLockdown() then BC.SeenPrune(seen, time(), BC.db.maxAgeDays * 86400, 500) end
 end)
 

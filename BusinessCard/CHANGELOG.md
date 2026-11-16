@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.2
+- Stricter ad filter: a post must show an offer (WTS, LFW, tips, services, a price like 5g, or a profession link) and contain no LF/LFM/WTB/recruiting words. Saved entries are re-checked at login.
+
 ## 0.2.1
 - Ad log keeps advertisers only: LF/WTB posts are no longer stored, and ones saved by 0.2.0 are removed at login.
 

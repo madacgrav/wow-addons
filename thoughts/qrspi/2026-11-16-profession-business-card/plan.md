@@ -20,6 +20,7 @@ Phase 1 is a probe gate; phases 2–6 each add one feature end to end.
 **Deviations from structure.md**
 - **Link classification (P2):** no `|H(%a+):(%d+)` ID extraction. Link payloads are stripped and the visible link text (`[Enchant Bracer - …]`, `[Tailoring]`) goes through the same keyword tokenizer. Same result, no item or profession lookups.
 - **Category filter (P3):** a dropdown (`WowStyle1DropdownTemplate`, as in `WarlockUtilityKit/Board.lua:90-94`) instead of TackleBox icon tabs. 12+ categories don't fit as tabs. Seen and My card are two top buttons.
+- **Ads need an offer signal (P2 in-game test, 0.2.2):** `request = req or not offer`. Any request word (now including `lfm`, `lfg`, `recruiting`, `guild`) drops the post. Otherwise it is kept only with an offer word (the list is extended with provider nouns, `providing`, `services`, `pst`, `mats`), a price token like `5g`, or a `|Htrade:` link. See the current `Data.lua`.
 - **Requests dropped (user decision after P2 in-game test):** LF/WTB posts are never stored. `OnAd` returns when `r.request`, and the Requests checkbox, `showRequests` and the `SeenRows` request filter are removed. `Classify` still computes `request`.
 - **Cards from guildmates who never advertised (P5):** stored in `db.cards` and merged into Seen rows, with categories derived from their card. Without this, guild exchange would be invisible.
 

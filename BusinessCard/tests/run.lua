@@ -31,6 +31,21 @@ eq(cats(BC.Classify("WTS |cff1eff00|Hitem:13446::::::::60:::::|h[Major Healing P
 eq(BC.Classify(nil), nil, "non-string")
 eq(BC.Classify("portal to if").dest, nil, "'if' is not a destination")
 
+-- real Trade lines from the 0.2.1 in-game test: ad = true means kept
+local function ad(text) local x = BC.Classify(text); return x ~= nil and not x.request end
+eq(ad("lfm uldaman enchanting run. 225-250 training"), false, "group post")
+eq(ad("~300~  |cffffd000|Htrade:Player-6929-00166F7D:13920:333|h[Enchanting]|h|r Zyns Emporium is now OPEN"), true, "trade link shop")
+eq(ad("FREE PORT TO TB"), true, "free port")
+eq(ad("BS LFW CAN APPLY ANY SPURS"), true, "bs lfw")
+eq(ad("<ChatDPS> is recruiting! Recruiting all classes, engineers welcome"), false, "guild recruit")
+eq(ad("can i not train alch pass 75 in undercity???"), false, "question chatter")
+eq(ad("Providing Mage services, Water/Food (have 55), can TP to you and provide Portals. Tips appreciated :)!"), true, "mage services")
+eq(ad("lf free port to UC cause you're a cool guy B)"), false, "lf free port")
+eq(ad("WTS |cffffd000|Henchant:1257412|h[Tailoring: Silk Reagent Bag]|h|r your mats or mine"), true, "wts bag")
+eq(ad("Lockpick in the area! Calling all lockboxes (140)!"), true, "lockpick")
+eq(ad("youre not a bot, youll never make money enchanting"), false, "chatter")
+eq(ad("summons to BRD 5g"), true, "price is offer")
+
 eq(BC.ChannelKey("Trade - English 53"), "Trade", "channel key trade")
 eq(BC.ChannelKey("Trade (Services) - English 53"), "Trade (Services)", "channel key services")
 eq(BC.ChannelKey("General - Orgrimmar"), "General", "channel key general")

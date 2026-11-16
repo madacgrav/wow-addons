@@ -36,8 +36,12 @@ BC.WORDS = {
   portal = set{ "port", "ports", "portal", "portals", "teleport", "tele" },
   other = set{ "lockpick", "lockpicking", "lockbox", "lockboxes" },
 }
-BC.REQUEST_WORDS = set{ "lf", "wtb", "need", "needs", "needing", "buying", "anyone", "someone", "somebody" }
-BC.OFFER_WORDS = set{ "wts", "lfw", "selling", "offering", "avail", "available", "tips", "tip", "free" }
+-- an ad must carry an offer signal (offer word, price like "5g", or a |Htrade: profession link) and no request word
+BC.REQUEST_WORDS = set{ "lf", "lfm", "lfg", "wtb", "need", "needs", "needing", "buying", "anyone", "someone", "somebody",
+  "recruiting", "recruit", "guild" }
+BC.OFFER_WORDS = set{ "wts", "lfw", "selling", "offering", "avail", "available", "tips", "tip", "free", "providing",
+  "service", "services", "open", "pst", "mats", "cheap", "enchanter", "tailor", "alchemist", "blacksmith", "engineer",
+  "leatherworker", "jewelcrafter", "lockpick", "lockpicking" }
 -- "if" deliberately omitted (common English word)
 BC.PORTAL_DEST = { org = "ORG", orgrimmar = "ORG", ogri = "ORG", uc = "UC", undercity = "UC", tb = "TB", thunder = "TB",
   thunderbluff = "TB", sw = "SW", stormwind = "SW", ironforge = "IF", darn = "DARN", darnassus = "DARN" }
