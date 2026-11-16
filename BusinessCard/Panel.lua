@@ -82,6 +82,8 @@ local function InitRow(row, v)
   local c = BC.StatusColor(BC.CardStatus(v.card, BC.db.filter))
   row.dot:SetShown(c ~= nil); if c then row.dot:SetVertexColor(c[1], c[2], c[3]) end
   row.badge:SetShown(v.card ~= nil)
+  -- recycled rows can carry a paused flash (paused animations keep their alpha): always reset first
+  row.flash:Stop(); row.glow:SetAlpha(0)
   if flash[v.name] then flash[v.name] = nil; row.flash:Play() end -- once per new ad, even if scrolled
 end
 

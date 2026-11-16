@@ -222,7 +222,7 @@ function BC.RefreshDetail()
   end
   local ids = card and detail.prof and BC.RecipeList(who, detail.prof)
   local st = DetailState(card, ids, detail.prof)
-  detail.search:SetShown(card ~= nil)
+  detail.search:SetShown(card ~= nil); detail.bar:SetShown(st == "list")
   if st ~= "list" then
     detail.state:Show(); detail.state.icon:SetTexture(STATE[st][1]); detail.state.text:SetText(STATE[st][2])
     if st == "requesting" then detail.spin:Play() else detail.spin:Stop() end
