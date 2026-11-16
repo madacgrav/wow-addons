@@ -14,9 +14,9 @@ The addon only loads for warlocks.
 
 ## The panel
 
-One movable panel shaped like a summoning circle, with your enemies hanging below it as soul bands. **Shift+drag** moves it; `/wck lock` or the settings checkbox locks it in place.
+One movable panel shaped like a summoning circle, with the rotation buttons docked to its right and your enemies hanging below it as soul bands. **Shift+drag** the circle or the bar to move them together; `/wck lock` or the settings checkbox locks them in place.
 
-- **Core** (centre of the circle): the next spell from your rotation rules. It is grey when no rule matches, and pops when the suggestion changes. Hover it for the spell name.
+- **Core** (centre of the circle): **Life Tap**. Click it to cast; **right-click** opens the options. It pulses purple when a rule suggests Life Tap. Hover it to see the current suggestion.
 - **Proc orb** (lower-right edge of the circle): glows fel green and pulses while Nightfall is up.
 - **Cast map** (rows below): one row per enemy you have cast on, up to 8 rows.
   - Each row shows the mob's name and icons for your DoTs, curses, banes and crowd control on that mob. The newest icon is on the left.
@@ -48,7 +48,7 @@ Nightfall on Forever only shows a buff icon: no button glow, no screen overlay. 
 
 ## Rotation helper
 
-The core shows the first rule in your list that passes. It is **display only**: you press your own keys. A clickable core is not possible, because addons cannot change what a button casts during combat. The mouseover cast slots below are the closest thing.
+The first rule in your list that passes is the suggestion: its button on the rotation bar pulses purple (or the Life Tap core, if the rule is Life Tap). Nothing casts on its own: you click or press your own keys.
 
 A rule passes when you know the spell, it is off cooldown, and its condition holds:
 
@@ -66,6 +66,17 @@ A rule passes when you know the spell, it is off cooldown, and its condition hol
   - Shadow Bolt on proc;
   - Shadow Bolt.
 - Rules are saved per character.
+
+## Rotation buttons
+
+A bar of round buttons docked to the right of the circle, one per spell in your rules (in rule order, except Life Tap, which is the circle's core), then a fixed group after a gap: Shadow Bolt, Fear and Banish (when you know them). Shadow Bolt always sits in that group, even if a rule uses it.
+
+- Click a button to cast its spell on your target.
+- The button for the suggested spell (first passing rule) pulses purple and stays in colour; every other button is greyed out. Grey buttons still cast when clicked.
+- The Shadow Bolt button glows fel green (and stays in colour) while Nightfall is up.
+- Shift+drag the bar's edge or the circle to move the whole kit (out of combat).
+- A rule edit you make in combat updates the bar when combat ends.
+- Turn the bar off with "Show rotation buttons" in `/wck config` (the Life Tap core stays).
 
 ## Mouseover cast slots
 
@@ -85,7 +96,7 @@ A slot change you make in combat takes effect when combat ends. Slots are saved 
 ## Settings window
 
 `/wck config` or a left-click on the minimap button opens the settings window. It has:
-- **Toggles:** Show panel, Lock panel, Mark CC'd mobs on nameplates, Proc alerts, Proc sound.
+- **Toggles:** Show panel, Show rotation buttons, Lock panel, Mark CC'd mobs on nameplates, Proc alerts, Proc sound.
 - **Sections:** the Rotation rule editor and the Mouseover cast slots.
 - **Reset positions** button.
 

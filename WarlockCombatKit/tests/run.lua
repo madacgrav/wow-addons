@@ -75,4 +75,42 @@ eq(WCK.CastMacro("Corruption"), "/cast [@mouseover,harm,nodead][] Corruption", "
 eq(WCK.CastMacro(nil), "", "no spell"); eq(WCK.CastMacro(""), "", "empty spell")
 eq(WCK.CastMacro("Curse of Agony"), "/cast [@mouseover,harm,nodead][] Curse of Agony", "spaces kept")
 
+-- GH-28 Phase 1
+local tabs, set = WCK.BuildSpellTabs({
+  { tab = "General", name = "Auto Attack", itemType = 1 },
+  { tab = "Affliction", name = "Wrack", itemType = 1 },
+  { tab = "Affliction", name = "Corruption", itemType = 1 },
+  { tab = "Affliction", name = "Nightfall", itemType = 1, isPassive = true },
+  { tab = "Affliction", name = "Haunt", itemType = 2 },      -- future spell
+  { tab = "Demonology", name = "Summon Imp", itemType = 4 },  -- flyout: tab ends up empty
+  { tab = "Destruction", name = "Corruption", itemType = 1 }, -- duplicate: first tab wins
+})
+eq(#tabs, 2, "empty tab dropped"); eq(tabs[1].name, "General", "book order")
+eq(tabs[2].spells[1], "Corruption", "sorted"); eq(tabs[2].spells[2], "Wrack", "sorted 2"); eq(#tabs[2].spells, 2, "passive+future dropped")
+eq(set.Wrack, true, "set"); eq(set.Nightfall, nil, "passive not in set")
+local rs = WCK.RuleSpells({ { spell = "Corruption" }, { spell = "Shadow Bolt" }, { spell = "Corruption" }, { spell = "" }, {} })
+eq(#rs, 2, "distinct"); eq(rs[1], "Corruption", "order"); eq(rs[2], "Shadow Bolt", "order 2")
+eq(#WCK.RuleSpells(nil), 0, "nil rules")
+
+-- GH-28 Phase 2
+local tl = { "Shadow Bolt", "Fear", "Banish" }
+local all = { ["Shadow Bolt"] = true, Fear = true, Banish = true }
+local bs = WCK.BarSpells({ { spell = "Corruption" }, { spell = "Shadow Bolt" }, { spell = "Immolate" }, { spell = "Corruption" } }, tl, all)
+eq(#bs, 5, "rules + tail"); eq(bs[1].spell, "Corruption", "rule order"); eq(bs[2].spell, "Immolate", "bolt pulled out of rules")
+eq(bs[2].tail, false, "rule flag"); eq(bs[3].spell, "Shadow Bolt", "bolt first in tail"); eq(bs[3].tail, true, "tail flag")
+eq(bs[4].spell, "Fear", "fear second"); eq(bs[5].spell, "Banish", "banish last")
+bs = WCK.BarSpells({ { spell = "Fear" } }, tl, { Fear = true })
+eq(#bs, 1, "fear moves to tail, unknown tail spells skipped"); eq(bs[1].tail, true, "fear in tail")
+eq(#WCK.BarSpells({}, tl, {}), 0, "nothing known")
+bs = WCK.BarSpells({ { spell = "Life Tap" }, { spell = "Corruption" } }, tl, {}, "Life Tap")
+eq(#bs, 1, "core spell kept off the bar"); eq(bs[1].spell, "Corruption", "rest stays")
+
+-- GH-28 Phase 3 (grey = not the suggestion)
+local pl = { { key = "nightfall", spell = "Shadow Bolt" } }
+local lk = WCK.ButtonLook("Corruption", "Corruption", {}, pl); eq(lk.dim, false, "suggested in colour"); eq(lk.fel, false, "no proc")
+eq(WCK.ButtonLook("Fear", "Corruption", {}, pl).dim, true, "others grey")
+lk = WCK.ButtonLook("Shadow Bolt", "Corruption", { nightfall = true }, pl); eq(lk.fel, true, "nightfall glows bolt"); eq(lk.dim, false, "proc keeps colour")
+eq(WCK.ButtonLook("Fear", nil, { nightfall = true }, pl).fel, false, "nightfall not on fear")
+eq(WCK.ButtonLook("Fear", nil, {}, pl).dim, true, "no suggestion: all grey")
+
 print("all tests passed")

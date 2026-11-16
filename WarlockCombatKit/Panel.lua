@@ -1,20 +1,25 @@
 local ADDON, WCK = ...
--- the panel: a summoning circle (next spell at its heart, Nightfall orb on its rim) with soul tethers
+-- the panel: a summoning circle (Life Tap at its heart, Nightfall orb on its rim) with soul tethers
 -- hanging below it, one per enemy you've cursed. No box. Not secure, so safe to redraw in combat.
 local CIRCLE, CORE, ICON, ROW_H, MAX_ROWS, MAX_ICONS, WIDTH = 84, 44, 18, 22, 8, 8, 236
 local CX, CY = CIRCLE / 2, -CIRCLE / 2               -- circle centre, from the panel's top-left
 local SHADOW, FEL = { 0.58, 0.31, 0.92 }, { 0.45, 1, 0.3 } -- shadow purple, fel green
+WCK.PANEL_GEOM = { cx = CX, cy = CY, circle = CIRCLE, core = CORE } -- Rotation.lua docks the Life Tap button on the core
 
-function WCK.MakeMovable(f, key, x, y)
-  f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
-  f:SetScript("OnDragStart", function(self)
-    if IsShiftKeyDown() and not WCK.db.locked and not InCombatLockdown() then self:StartMoving() end
-  end)
-  f:SetScript("OnDragStop", function(self)
-    self:StopMovingOrSizing()
-    local p, _, rp, px, py = self:GetPoint()
+-- handles: extra frames whose Shift+drag moves f (the panel hangs off the rotation bar and drags it)
+function WCK.MakeMovable(f, key, x, y, handles)
+  local function Start()
+    if IsShiftKeyDown() and not WCK.db.locked and not InCombatLockdown() then f:StartMoving() end
+  end
+  local function Stop()
+    f:StopMovingOrSizing()
+    local p, _, rp, px, py = f:GetPoint()
     WCK.db.frames[key] = { p, rp, px, py }
-  end)
+  end
+  f:SetMovable(true)
+  for _, h in ipairs({ f, unpack(handles or {}) }) do
+    h:EnableMouse(true); h:RegisterForDrag("LeftButton"); h:SetScript("OnDragStart", Start); h:SetScript("OnDragStop", Stop)
+  end
   local pos = WCK.db.frames[key]
   f:ClearAllPoints()
   if pos then f:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) else f:SetPoint("CENTER", UIParent, "CENTER", x, y) end
@@ -78,6 +83,7 @@ local function Round(owner, t)
   t:AddMaskTexture(m)
   return t
 end
+WCK.Round = Round
 
 -- round texture centred on the circle
 local function Disc(f, layer, sub, size)
@@ -124,20 +130,10 @@ table.insert(WCK.inits, function()
   f.swirl = Disc(f, "BORDER", 1, CIRCLE - 8); f.swirl:SetTexture("Interface\\Icons\\Spell_Shadow_Twilight")
   f.swirl:SetBlendMode("ADD"); f.swirl:SetAlpha(0.4); Spin(f.swirl, 60)
 
-  -- heart of the circle: the next spell, round, on a dark well
+  -- heart of the circle: Life Tap (WCK.DATA.core), round, on a dark well
   f.well = Disc(f, "ARTWORK", 0, CORE + 6); f.well:SetColorTexture(0, 0, 0, 0.9)
   f.core = Disc(f, "ARTWORK", 1, CORE); f.core:SetTexture("Interface\\Icons\\Spell_Shadow_DeathCoil"); f.core:SetDesaturated(true)
-  f.coreShine = Pop(f.core)
-  -- textures take no mouse, so a plain frame over the core carries the tooltip
-  local hit = CreateFrame("Frame", nil, f); hit:SetSize(CORE, CORE); hit:SetPoint("CENTER", f, "TOPLEFT", CX, CY)
-  hit:EnableMouse(true)
-  hit:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-    GameTooltip:AddLine(WCK.next and ("Next: " .. WCK.next) or "No rule matches", SHADOW[1] + 0.3, SHADOW[2] + 0.4, 1)
-    GameTooltip:AddLine("Rules: /wck config", 1, 1, 1)
-    GameTooltip:Show()
-  end)
-  hit:SetScript("OnLeave", GameTooltip_Hide)
+  -- clicks and the tooltip live on the secure Life Tap button Rotation.lua lays over the core
 
   -- proc orbs sit on the circle's rim, lower right, glowing fel green when they fire
   f.procs = {}
@@ -186,17 +182,15 @@ table.insert(WCK.inits, function()
     end
     r:Hide(); f.rows[i] = r
   end
-  WCK.MakeMovable(f, "panel", 260, -160) -- clear of WUK's strip at CENTER 0,-220
+  -- no position of its own: Rotation.lua anchors the panel to the Life Tap button and makes the whole kit movable
   WCK.panel = f
 end)
 
 function WCK.RenderPanel()
   local f = WCK.panel
   f:SetShown(WCK.db.shown)
-  f.core:SetTexture(WCK.next and C_Spell.GetSpellTexture(WCK.next) or "Interface\\Icons\\Spell_Shadow_DeathCoil")
-  f.core:SetDesaturated(not WCK.next)
-  if WCK.next and WCK.next ~= f.lastNext then f.coreShine:Play() end
-  f.lastNext = WCK.next
+  f.core:SetTexture(C_Spell.GetSpellTexture(WCK.DATA.core) or "Interface\\Icons\\Spell_Shadow_DeathCoil")
+  f.core:SetDesaturated(not WCK.spellSet[WCK.DATA.core])
   for _, b in ipairs(f.procs) do
     local on = WCK.db.procAlerts and WCK.procs[b.key] or false
     b.icon:SetAlpha(on and 1 or 0.3); b.icon:SetDesaturated(not on)

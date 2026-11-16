@@ -2,6 +2,18 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockCombatKit.toc`; each version is published as a `wck-vX.Y.Z` GitHub release.
 
+## [0.2.0] — 2026-11-16
+
+### Fixed
+- Rule and slot spell menus list every active spell in your spellbook, grouped by spellbook tab, instead of a fixed list. Wrack and other talent spells now appear. (#28)
+
+### Added
+- **Rotation buttons.** A movable bar of round, clickable buttons: one per spell in your rules, then Shadow Bolt, Fear and Banish in a fixed group at the end. The suggested spell pulses purple. Rule edits made in combat apply after combat. Toggle with "Show rotation buttons". (#28)
+- Bar buttons other than the suggested spell are greyed out (still clickable); the Shadow Bolt button glows fel green during Nightfall. Right-click the circle to open options. (#28)
+
+### Changed
+- The summoning circle's core is now a clickable **Life Tap** button (it pulses when a rule suggests Life Tap), and the rotation bar is docked to its right; the circle and bar move together. The suggestion now shows as a pulsing bar button instead of the core icon. (#28)
+
 ## [0.1.0] — 2026-10-22
 
 First release: an in-combat helper for warlocks, separate from Warlock Utility Kit.

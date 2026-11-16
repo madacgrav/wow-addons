@@ -16,11 +16,10 @@ WCK.DATA.tracked = {
   ["Howl of Terror"] = { kind = "cc", stale = 8 },
 }
 
--- spells offered in the rule editor (filtered to known spells when the menu opens)
-WCK.DATA.rotation = { "Shadow Bolt", "Incinerate", "Searing Pain", "Soul Fire", "Shadowburn", "Conflagrate", "Drain Life",
-  "Drain Soul", "Life Tap", "Haunt", "Chaos Bolt", "Corruption", "Immolate", "Siphon Life", "Unstable Affliction",
-  "Curse of Agony", "Bane of Agony", "Curse of Doom", "Bane of Doom", "Curse of the Elements", "Curse of Recklessness",
-  "Fear", "Death Coil", "Howl of Terror" }
+-- fixed group at the right end of the rotation bar (when known), pulled out of the rule order: filler + emergency CC
+WCK.DATA.tail = { "Shadow Bolt", "Fear", "Banish" }
+-- the summoning circle's core: a fixed, clickable spell (never on the bar)
+WCK.DATA.core = "Life Tap"
 WCK.DATA.defaultRules = {
   { spell = "Corruption", cond = "notRecent", n = 15 }, { spell = "Curse of Agony", cond = "notRecent", n = 22 },
   { spell = "Bane of Agony", cond = "notRecent", n = 22 }, { spell = "Immolate", cond = "notRecent", n = 13 },

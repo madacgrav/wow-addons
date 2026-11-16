@@ -132,6 +132,52 @@ function WCK.CopyRules(rules)
   return out
 end
 
+-- spellbook rows {tab, name, itemType, isPassive} -> tabs {{name, spells={sorted}}} in book order, set {[name]=true}
+-- itemType 1 = Enum.SpellBookItemType.Spell (FutureSpell/Flyout/PetAction dropped); passives dropped; first tab wins a duplicate
+function WCK.BuildSpellTabs(entries)
+  local tabs, set, byTab = {}, {}, {}
+  for _, e in ipairs(entries) do
+    if e.itemType == 1 and not e.isPassive and type(e.name) == "string" and e.name ~= "" and not set[e.name] then
+      local t = byTab[e.tab]
+      if not t then t = { name = e.tab, spells = {} }; byTab[e.tab] = t; tabs[#tabs + 1] = t end
+      t.spells[#t.spells + 1] = e.name; set[e.name] = true
+    end
+  end
+  for _, t in ipairs(tabs) do table.sort(t.spells) end
+  return tabs, set
+end
+
+-- distinct non-empty rule spells, in rule order
+function WCK.RuleSpells(rules)
+  local out, seen = {}, {}
+  for _, r in ipairs(rules or {}) do
+    local s = r.spell
+    if type(s) == "string" and s ~= "" and not seen[s] then seen[s] = true; out[#out + 1] = s end
+  end
+  return out
+end
+
+-- rotation bar order: rule spells not in the tail (and not the core spell), then the known tail spells (tail order)
+WCK.BAR_MAX = 13 -- 10 rules + Shadow Bolt/Fear/Banish
+function WCK.BarSpells(rules, tail, known, core)
+  local out, inTail = {}, {}
+  for _, s in ipairs(tail) do inTail[s] = true end
+  for _, s in ipairs(WCK.RuleSpells(rules)) do
+    if not inTail[s] and s ~= core then out[#out + 1] = { spell = s, tail = false } end
+  end
+  for _, s in ipairs(tail) do
+    if known[s] then out[#out + 1] = { spell = s, tail = true } end
+  end
+  return out
+end
+
+-- bar button look: fel = a proc on this spell is up; dim = not the suggestion (and no proc) -- visual only, it stays clickable
+function WCK.ButtonLook(spell, nextSpell, procs, procList)
+  local fel = false
+  for _, p in ipairs(procList) do if p.spell == spell and procs[p.key] then fel = true end end
+  return { dim = spell ~= nextSpell and not fel, fel = fel }
+end
+
 -- mouseover cast slots: hostile mouseover, else the normal target
 WCK.SLOTS = 6
 function WCK.CastMacro(spell)
