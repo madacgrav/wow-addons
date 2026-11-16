@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.3
+- Ctrl-click /who: keeps closing the Friends/Who window for 3 seconds after the lookup, since it opens late.
+
 ## 0.7.2
 - Ctrl-click /who closes the Who window once the result is read (unless you had it open already).
 

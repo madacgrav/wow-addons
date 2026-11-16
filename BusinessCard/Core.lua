@@ -184,10 +184,29 @@ table.insert(BC.inits, function()
 end)
 
 -- /who lookup for one name: SendWho needs a hardware event, so only call this from a click
-local whoTarget, friendsWasShown
+local whoTarget, wasOpen
+local WHO_FRAMES = { "FriendsFrame", "WhoFrame" }
+local function WhoOpen() for _, n in ipairs(WHO_FRAMES) do local f = _G[n]; if f and f:IsShown() then return true end end end
+
+-- close the Who/Friends window for 3 s after our lookup (it opens late, from Blizzard's own handlers)
+local function SuppressWhoWindow()
+  if wasOpen then return end
+  local t = 0
+  local ticker
+  ticker = C_Timer.NewTicker(0.1, function()
+    t = t + 0.1
+    for _, n in ipairs(WHO_FRAMES) do
+      local f = _G[n]
+      if f and f:IsShown() and not InCombatLockdown() then HideUIPanel(f); if f:IsShown() then f:Hide() end end
+    end
+    if t >= 3 then ticker:Cancel() end
+  end)
+end
+
 function BC.Who(name)
   if not C_FriendList or not C_FriendList.SendWho then return BC.Print("/who is not available") end
-  whoTarget, friendsWasShown = name, FriendsFrame and FriendsFrame:IsShown()
+  whoTarget, wasOpen = name, WhoOpen()
+  SuppressWhoWindow()
   C_FriendList.SetWhoToUi(true)
   C_FriendList.SendWho('n-"' .. name .. '"')
   BC.Print("looking up " .. name .. "...")
@@ -198,10 +217,6 @@ BC.On("WHO_LIST_UPDATE", function()
   local target = whoTarget
   whoTarget = nil
 
-  -- the Friends window opens in its own WHO_LIST_UPDATE handler, which can run after ours: close it next frame
-  if not friendsWasShown then
-    C_Timer.After(0, function() if FriendsFrame and FriendsFrame:IsShown() then HideUIPanel(FriendsFrame) end end)
-  end
   for i = 1, C_FriendList.GetNumWhoResults() do
     local w = C_FriendList.GetWhoInfo(i)
     if w and not BC.Secret(w.fullName) and Ambiguate(w.fullName, "none") == target and not BC.Secret(w.area) then
