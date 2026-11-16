@@ -4,63 +4,76 @@ local win
 
 local function Run(cmd) SlashCmdList.WARLOCKUTILITYKIT(cmd) end
 
+-- fallback demon portraits when the summon spell isn't known yet (Incubus shares the Succubus art)
+local PET_ICON = {
+  imp = "Interface\\Icons\\Spell_Shadow_SummonImp", voidwalker = "Interface\\Icons\\Spell_Shadow_SummonVoidWalker",
+  succubus = "Interface\\Icons\\Spell_Shadow_SummonSuccubus", incubus = "Interface\\Icons\\Spell_Shadow_SummonSuccubus",
+  felhunter = "Interface\\Icons\\Spell_Shadow_SummonFelHunter",
+}
+
 local function Check(parent, label, y, get, onClick)
   local cb = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
   cb:SetPoint("TOPLEFT", 16, y)
   local text = cb:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   text:SetPoint("LEFT", cb, "RIGHT", 4, 0); text:SetText(label)
+  text:SetTextColor(unpack(WUK.THEME.text))
   cb:SetScript("OnClick", function(self) onClick(self:GetChecked()); self:SetChecked(get()) end)
   cb.Sync = function(self) self:SetChecked(get()) end
   return cb
 end
 
 local function Build()
-  win = CreateFrame("Frame", "WUKSettings", UIParent, "BasicFrameTemplateWithInset")
-  win:SetSize(320, 314); win:SetPoint("CENTER"); win:SetFrameStrata("DIALOG")
-  win:SetMovable(true); win:EnableMouse(true); win:RegisterForDrag("LeftButton")
-  win:SetScript("OnDragStart", win.StartMoving); win:SetScript("OnDragStop", win.StopMovingOrSizing)
+  win = CreateFrame("Frame", "WUKSettings", UIParent, "BackdropTemplate")
+  win:SetSize(320, 336); win:SetFrameStrata("DIALOG")
+  WUK.Skin(win, "Warlock Utility Kit", { close = true, swirl = true })
+  WUK.MakeMovable(win, "settings", 280, 0, true) -- right of the board default (-180): no overlap
   tinsert(UISpecialFrames, "WUKSettings") -- Escape closes it
-  local title = win:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-  title:SetPoint("TOP", 0, -5); title:SetText("Warlock Utility Kit")
 
+  WUK.Header(win, "Strip & ring", 16, -32, 288)
   local checks = {
-    Check(win, "Show strip", -36, function() return WUK.db.shown end, function(on) Run(on and "show" or "hide") end),
-    Check(win, "Lock frames (no Shift+drag)", -64, function() return WUK.db.locked end,
-      function(on) if on ~= WUK.db.locked then Run("lock") end end),
-    Check(win, "Dock Blizzard cooldown timers under strip", -92, function() return WUK.db.dockViewers end,
-      function(on) if on ~= WUK.db.dockViewers then Run("dock") end end),
-    Check(win, "Spin ring", -120, function() return WUK.db.spin end,
+    Check(win, "Show strip", -46, function() return WUK.db.shown end, function(on) Run(on and "show" or "hide") end),
+    Check(win, "Spin ring", -72, function() return WUK.db.spin end,
       function(on) if on ~= WUK.db.spin then Run("spin") end end),
-    Check(win, "Collapse ring until hover", -148, function() return WUK.db.collapse end,
+    Check(win, "Collapse ring until hover", -98, function() return WUK.db.collapse end,
       function(on) if on ~= WUK.db.collapse then Run("collapse") end end),
+    Check(win, "Dock Blizzard cooldown timers under strip", -124, function() return WUK.db.dockViewers end,
+      function(on) if on ~= WUK.db.dockViewers then Run("dock") end end),
   }
 
-  local label = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  label:SetPoint("TOPLEFT", 20, -188); label:SetText("Preferred pet")
+  WUK.Header(win, "Pet", 16, -162, 288)
+  -- portrait of the chosen demon next to the dropdown
+  local petIcon = win:CreateTexture(nil, "ARTWORK")
+  petIcon:SetSize(24, 24); petIcon:SetPoint("TOPLEFT", 18, -180); petIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  local function ShowPet()
+    local p = WUK.char.pet
+    local tex = WUK.known[p] and C_Spell and C_Spell.GetSpellTexture and C_Spell.GetSpellTexture(WUK.known[p])
+    petIcon:SetTexture(tex or PET_ICON[p] or PET_ICON.imp)
+  end
   -- Mainline 11.0+ menu API (UIDropDownMenu is deprecated)
   local dd = CreateFrame("DropdownButton", nil, win, "WowStyle1DropdownTemplate")
-  dd:SetWidth(160); dd:SetPoint("TOPLEFT", 18, -206)
+  dd:SetWidth(160); dd:SetPoint("TOPLEFT", 48, -178)
   dd:SetupMenu(function(_, root)
     for _, pet in ipairs(WUK.PETS) do
       root:CreateRadio(pet:sub(1, 1):upper() .. pet:sub(2),
         function() return WUK.char.pet == pet end,
-        function() Run("pet " .. pet) end)
+        function() Run("pet " .. pet); ShowPet() end)
     end
   end)
 
-  local reset = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
-  reset:SetSize(130, 22); reset:SetPoint("BOTTOMLEFT", 16, 16); reset:SetText("Reset positions")
-  reset:SetScript("OnClick", function() Run("reset") end)
+  WUK.Header(win, "Frames", 16, -218, 288)
+  checks[#checks + 1] = Check(win, "Lock frames (no Shift+drag)", -232, function() return WUK.db.locked end,
+    function(on) if on ~= WUK.db.locked then Run("lock") end end)
 
-  local board = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
-  board:SetSize(130, 22); board:SetPoint("BOTTOMRIGHT", -16, 16); board:SetText("Assignment board")
-  board:SetScript("OnClick", function() Run("board") end)
+  WUK.Button(win, "Reset positions", 130, function() Run("reset") end):SetPoint("BOTTOMLEFT", 16, 16)
+  WUK.Button(win, "Assignment board", 130, function() Run("board") end):SetPoint("BOTTOMRIGHT", -16, 16)
+  WUK.Button(win, "Summon queue", 130, function() Run("summon") end):SetPoint("BOTTOMRIGHT", -16, 42)
 
   function win:Sync()
     for _, cb in ipairs(checks) do cb:Sync() end
     dd:GenerateMenu() -- refresh the shown selection
+    ShowPet()
   end
-  win:SetScript("OnShow", win.Sync)
+  win:HookScript("OnShow", win.Sync) -- HookScript: keeps the skin's fade-in
   win:Hide()
 end
 

@@ -254,6 +254,7 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   elseif cmd == "config" then WUK.ToggleSettings()
   elseif cmd == "probe" then WUK.Probe()
   elseif cmd == "board" then WUK.ToggleBoard()
+  elseif cmd == "summon" then WUK.ToggleSummon()
   elseif cmd == "lead" then WUK.ClaimLead()
   elseif cmd == "dock" then
     if InCombatLockdown() then return WUK.Print("not in combat") end
@@ -263,5 +264,5 @@ SlashCmdList.WARLOCKUTILITYKIT = function(msg)
   elseif cmd == "spin" or cmd == "collapse" then
     if InCombatLockdown() then return WUK.Print("not in combat") end
     WUK.db[cmd] = not WUK.db[cmd]; WUK.Print("ring " .. cmd .. " " .. (WUK.db[cmd] and "on" or "off")); WUK.Refresh()
-  else WUK.Print("/wuk config | board | lead | dock | spin | collapse | show | hide | lock | reset | probe | pet <" .. table.concat(WUK.PETS, "|") .. ">") end
+  else WUK.Print("/wuk config | board | summon | lead | dock | spin | collapse | show | hide | lock | reset | probe | pet <" .. table.concat(WUK.PETS, "|") .. ">") end
 end
