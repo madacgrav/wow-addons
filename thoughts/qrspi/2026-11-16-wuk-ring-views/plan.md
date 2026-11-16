@@ -88,10 +88,10 @@ end
 - [x] Deploy with robocopy.
 
 #### Manual
-- [ ] Hover the shard core, healthstone, soulstone, spellstone and firestone, each with a stone in your bags: the bag item tooltip shows.
-- [ ] Hover each stone with none in your bags: the "Create X" spell tooltip shows, or the kind's name if the spell is not learned.
-- [ ] Hover armor and pet: the spell tooltip shows. The pet tooltip matches your `/wuk pet` choice.
-- [ ] Moving the mouse off a button hides the tooltip. No Lua errors (`/console scriptErrors 1`).
+- [x] Hover the shard core, healthstone, soulstone, spellstone and firestone, each with a stone in your bags: the bag item tooltip shows.
+- [x] Hover each stone with none in your bags: the "Create X" spell tooltip shows, or the kind's name if the spell is not learned.
+- [x] Hover armor and pet: the spell tooltip shows. The pet tooltip matches your `/wuk pet` choice.
+- [x] Moving the mouse off a button hides the tooltip. No Lua errors (`/console scriptErrors 1`).
 
 ---
 
@@ -154,8 +154,8 @@ The existing `TRADE_SHOW` handler (`Trade.lua:17-26`) places the stone. The `UI_
 
 ### Verification
 #### Automated
-- [ ] `lua5.1 WarlockUtilityKit/tests/run.lua` passes.
-- [ ] Deploy with robocopy.
+- [x] `lua5.1 WarlockUtilityKit/tests/run.lua` passes.
+- [x] Deploy with robocopy.
 
 #### Manual
 - [ ] No healthstone, left-click: casts Create Healthstone.

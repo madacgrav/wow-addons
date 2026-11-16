@@ -131,6 +131,7 @@ local function StoneTooltip(kind)
   elseif kind == "shard" then GameTooltip:AddLine("Soul Shards: 0")
   elseif WUK.known[kind] then WUK.SpellTooltip(WUK.known[kind])
   else GameTooltip:AddLine((kind:gsub("^%l", string.upper))) end
+  if kind == "healthstone" then GameTooltip:AddLine("Right-click: trade to target", 1, 1, 1) end
 end
 
 table.insert(WUK.inits, function()
@@ -154,7 +155,8 @@ table.insert(WUK.inits, function()
     b:SetSize(size, size); WUK.AddGlow(b)
     b:SetFrameLevel(f:GetFrameLevel() + (kind == "shard" and 3 or 1)) -- core above orbit so collapsed buttons hide under it
     b:RegisterForClicks("AnyUp", "AnyDown")
-    b:SetAttribute("type", "macro")
+    -- healthstone: right-click is the trade hook, so the macro binds button 1 only
+    b:SetAttribute(kind == "healthstone" and "type1" or "type", "macro")
     b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints()
     local sh = b.icon:CreateAnimationGroup() -- one-shot pop when a stone becomes available
     local up = sh:CreateAnimation("Scale"); up:SetScale(1.3, 1.3); up:SetDuration(0.15); up:SetOrder(1)
@@ -165,6 +167,11 @@ table.insert(WUK.inits, function()
     b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
     f.icons[kind] = b
     WUK.AttachTooltip(b, function() StoneTooltip(kind) end)
+    if kind == "healthstone" then
+      b:HookScript("OnClick", function(_, button, down)
+        if button == "RightButton" and not down then WUK.TradeHealthstone() end
+      end)
+    end
   end
   f.stone = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   f.stone:SetPoint("BOTTOM", 0, 20)
