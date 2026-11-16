@@ -94,6 +94,16 @@ function WUK.Animate()
 end
 
 local TINT = { party = { 1, 1, 1 }, buff = { 0.5, 0.75, 1 }, demon = { 1, 0.45, 0.45 } }
+-- summoning circle per view: rim and disc colours (party = the original purple)
+local CIRCLE = {
+  party = { rim = { 0.58, 0.51, 0.79, 0.55 }, disc = { 0.04, 0, 0.07, 0.7 } },
+  buff = { rim = { 0.35, 0.55, 0.95, 0.55 }, disc = { 0, 0.03, 0.08, 0.7 } },
+  demon = { rim = { 0.85, 0.3, 0.3, 0.55 }, disc = { 0.08, 0, 0.01, 0.7 } },
+}
+local function PaintCircle(s, view)
+  local c = CIRCLE[view] or CIRCLE.party
+  s.rim:SetColorTexture(unpack(c.rim)); s.disc:SetColorTexture(unpack(c.disc))
+end
 -- swap the orbit set around the shard core; ring re-blooms from 0 as the "flip"
 function WUK.SetView(view)
   local s = WUK.strip
@@ -103,6 +113,7 @@ function WUK.SetView(view)
   local t = TINT[view] or TINT.party
   local b = s.icons.shard
   b.icon:SetVertexColor(t[1], t[2], t[3])
+  PaintCircle(s, view)
   WUK.LayoutRing(); WUK.Animate()
   if GameTooltip:IsOwned(b) then b:GetScript("OnEnter")(b) end -- refresh the next-view hint
 end
@@ -170,8 +181,8 @@ table.insert(WUK.inits, function()
   f.angle, f.radius, f.targetRadius = 0, R, R
   f.view = "party"
   -- summoning circle instead of a box: purple rim, dark disc, shadow swirl turning against the spin
-  f.rim = Disc(f, "BACKGROUND", 0); f.rim:SetColorTexture(0.58, 0.51, 0.79, 0.55)
-  f.disc = Disc(f, "BACKGROUND", 1); f.disc:SetColorTexture(0.04, 0, 0.07, 0.7)
+  f.rim = Disc(f, "BACKGROUND", 0); f.disc = Disc(f, "BACKGROUND", 1)
+  PaintCircle(f, "party")
   f.swirl = Disc(f, "BORDER", 0); f.swirl:SetTexture("Interface\\Icons\\Spell_Shadow_Twilight")
   f.swirl:SetBlendMode("ADD"); f.swirl:SetAlpha(0.35)
   local turn = f.swirl:CreateAnimationGroup(); turn:SetLooping("REPEAT")
