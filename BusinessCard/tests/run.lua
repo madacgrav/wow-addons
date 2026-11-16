@@ -161,4 +161,38 @@ eq(BC.PickZone({ zone = "Org", whoAt = 5 }, { zone = "TB", at = 10 }), "TB", "ne
 eq(BC.PickZone({ zone = "Org" }, nil), "Org", "heard zone alone")
 eq(BC.PickZone({}, { at = 1 }), nil, "no zone anywhere")
 
+-- UI redesign P2
+local ic = BC.RowIcons({ portal = true, enchanting = true, summon = true, alchemy = true }, 3)
+eq(#ic, 3, "row icons capped"); eq(ic[1], BC.CAT_ICON.enchanting, "row icons in CATS order")
+eq(ic[3], BC.CAT_ICON.summon, "portal dropped past cap")
+eq(#BC.RowIcons(nil, 3), 0, "no cats no icons")
+eq(BC.StatusColor("a"), BC.THEME.available, "available colour"); eq(BC.StatusColor("b"), BC.THEME.busy, "busy colour")
+eq(BC.StatusColor("o"), BC.THEME.off, "off colour"); eq(BC.StatusColor(nil), nil, "unknown no colour")
+for _, c in ipairs(BC.CATS) do assert(BC.CAT_ICON[c], "icon for " .. c) end
+for _, s in ipairs(BC.SERVICES) do assert(BC.SVC_ICON[s.key], "icon for " .. s.key) end
+
+-- UI redesign P3
+eq(BC.SkillFrac(150), 0.5, "skill half"); eq(BC.SkillFrac(400), 1, "skill clamps high")
+eq(BC.SkillFrac(nil), 0, "skill nil"); eq(BC.SkillFrac(75, 150), 0.5, "skill custom cap")
+local cm = BC.CardModel({ g = "b", profs = { { id = 333, skill = 225, st = "o" } }, svcs = { { key = "P-ORG", st = "a" } } }, { self = true })
+eq(cm.g, "b", "model global"); eq(cm.portrait, "player", "self portrait")
+eq(cm.profs[1].name, "Enchanting", "model prof name"); eq(cm.profs[1].key, "p333", "model prof key")
+eq(cm.profs[1].icon, BC.PROF_ICON[333], "model prof icon"); eq(cm.profs[1].st, "o", "model prof status")
+eq(cm.svcs[1].label, "Portal: Orgrimmar", "model svc label")
+eq(BC.CardModel({ profs = {}, svcs = { { key = "S", st = "a" } } }).portrait, BC.SVC_ICON.S, "stranger portrait = first svc icon")
+eq(BC.CardModel({}).portrait, BC.ICON_FALLBACK, "empty card fallback portrait")
+
+-- UI redesign P5
+local nr = { { name = "A", at = 10 }, { name = "B", at = 20 } }
+local ns, mx = BC.NewSince(nr, nil); eq(next(ns), nil, "first render flashes nothing"); eq(mx, 20, "max at tracked")
+ns, mx = BC.NewSince({ { name = "C", at = 25 }, nr[1], nr[2] }, 20)
+eq(ns.C, true, "newer ad flagged"); eq(ns.B, nil, "old ad not flagged"); eq(mx, 25, "max advances")
+
+-- recipe materials (schematic shape from in-game /dump of recipe 2963)
+local rg = BC.Reagents({ reagentSlotSchematics = {
+  { reagentType = 1, quantityRequired = 2, reagents = { { itemID = 2589 } } },
+  { reagentType = 0, quantityRequired = 1, reagents = { { itemID = 9999 } } } } })
+eq(#rg, 1, "only basic reagents"); eq(rg[1].itemID, 2589, "reagent item"); eq(rg[1].qty, 2, "reagent qty")
+eq(#BC.Reagents(nil), 0, "no schematic no reagents")
+
 print("all tests passed")

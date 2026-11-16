@@ -48,3 +48,31 @@ BC.PORTAL_DEST = { org = "ORG", orgrimmar = "ORG", ogri = "ORG", uc = "UC", unde
 -- keys = channelBaseName before " - " (probe-results.md)
 BC.DEFAULT_CHANNELS = { Trade = true, General = true, LookingForGroup = true, ["Trade (Services)"] = true,
   ["Trade (Local)"] = true, SAY = true, YELL = true, WHISPER = true }
+
+-- merchant-ledger palette {r,g,b[,a]}
+BC.THEME = {
+  ink = { 0.07, 0.06, 0.05, 1 }, parchment = { 1, 0.96, 0.84 }, cream = { 0.94, 0.88, 0.73 },
+  gold = { 0.72, 0.58, 0.32 }, goldBright = { 1, 0.82, 0.30 }, muted = { 0.55, 0.52, 0.46 },
+  zone = { 0.6, 0.8, 1 }, available = { 0.25, 0.9, 0.3 }, busy = { 0.95, 0.25, 0.2 }, off = { 0.5, 0.5, 0.5 },
+}
+
+-- built-in icons only (no shipped media); swap any path that renders blank in game
+local I = "Interface\\Icons\\"
+BC.CAT_ICON = { enchanting = I .. "Trade_Engraving", tailoring = I .. "Trade_Tailoring",
+  leatherworking = I .. "INV_Misc_ArmorKit_17", alchemy = I .. "Trade_Alchemy", blacksmithing = I .. "Trade_BlackSmithing",
+  engineering = I .. "Trade_Engineering", jewelcrafting = I .. "INV_Misc_Gem_02", cooking = I .. "INV_Misc_Food_15",
+  firstaid = I .. "Spell_Holy_SealOfSacrifice", summon = I .. "Spell_Shadow_Twilight",
+  portal = I .. "Spell_Arcane_PortalIronForge", other = I .. "INV_Misc_Key_03" }
+BC.SVC_ICON = { S = I .. "Spell_Shadow_Twilight" }
+for _, d in ipairs({ { "ORG", "Orgrimmar" }, { "UC", "UnderCity" }, { "TB", "ThunderBluff" }, { "SW", "StormWind" },
+  { "IF", "IronForge" }, { "DARN", "Darnassus" } }) do
+  BC.SVC_ICON["T-" .. d[1]] = I .. "Spell_Arcane_Teleport" .. d[2]; BC.SVC_ICON["P-" .. d[1]] = I .. "Spell_Arcane_Portal" .. d[2]
+end
+BC.SVC_LABEL = {}
+for _, s in ipairs(BC.SERVICES) do BC.SVC_LABEL[s.key] = s.label or s.name end
+BC.ICON_FALLBACK = I .. "INV_Letter_15"
+BC.PROF_ICON = { [171] = I .. "Trade_Alchemy", [164] = I .. "Trade_BlackSmithing", [333] = I .. "Trade_Engraving",
+  [202] = I .. "Trade_Engineering", [165] = I .. "INV_Misc_ArmorKit_17", [197] = I .. "Trade_Tailoring",
+  [185] = I .. "INV_Misc_Food_15", [129] = I .. "Spell_Holy_SealOfSacrifice", [186] = I .. "Trade_Mining",
+  [182] = I .. "Spell_Nature_NatureTouchGrow", [393] = I .. "INV_Misc_Pelt_Wolf_01", [356] = I .. "Trade_Fishing",
+  [755] = I .. "INV_Misc_Gem_02" }

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.8.5
+- Card detail: hover a recipe to see its materials (icon, quantity and how many you have in bags and bank). Shift-click a recipe to link it in chat.
+
+## 0.8.4
+- Subtle motion: new ads flash gold once in the Seen list, available dots breathe, pills pop when clicked, cards and pills brighten their border on hover, and a gold sheen sweeps a card in the detail pane when it arrives or changes.
+
+## 0.8.3
+- Card detail (shift-click) shows their business card, a row of profession icon tabs, a search box and a scrolling recipe list. Empty and loading states show an icon (the "Requesting..." one spins).
+
+## 0.8.2
+- My card is now a real business card: your round portrait, name and zone, each profession with an icon, skill bar and status pill, your services as icons with status dots, and a big Available/Busy pill. Click any pill or service icon to change its status.
+- Window background is fully opaque (nothing behind shows through).
+
+## 0.8.1
+- Seen list scrolls, so every entry is reachable (no more 20-row cap). Taller rows show a status dot, the name in gold if they run BusinessCard, category icons, zone, age and a card badge, with stripes and a gold hover.
+
+## 0.8.0
+- New ledger look: rock background, faint parchment, gold border and title, close button. Seen and My card are now tabs under the window. The card detail uses the same skin.
+
 ## 0.7.4
 - Ctrl-click /who closes Forever's group-finder who list (LFGParentFrame), which is where the results open.
 

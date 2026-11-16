@@ -208,3 +208,57 @@ function BC.Reassemble(buf, key, seq, total, part, now)
   for i = 1, total do for t in (b.parts[i] or ""):gmatch("[^,]+") do ids[#ids + 1] = tonumber(t, 36) end end
   return ids
 end
+
+-- display helpers (UI redesign)
+function BC.RowIcons(cats, max) -- icon paths in BC.CATS order, capped
+  local out = {}
+  for _, c in ipairs(BC.CATS) do
+    if cats and cats[c] and #out < (max or 3) then out[#out + 1] = BC.CAT_ICON[c] or BC.ICON_FALLBACK end
+  end
+  return out
+end
+
+local ST_THEME = { a = "available", b = "busy", o = "off" }
+function BC.StatusColor(st) return st and BC.THEME[ST_THEME[st]] or nil end
+
+function BC.SkillFrac(skill, cap)
+  local n = tonumber(skill) or 0
+  return math.max(0, math.min(1, n / (cap or 300))) -- ponytail: cards carry no max skill; 300 = classic cap
+end
+
+-- basic reagents {itemID, qty} from a C_TradeSkillUI recipe schematic (reagentType 1 = Basic)
+function BC.Reagents(sch)
+  local out = {}
+  for _, slot in ipairs(sch and sch.reagentSlotSchematics or {}) do
+    local r = slot.reagents and slot.reagents[1]
+    if slot.reagentType == 1 and r and r.itemID then out[#out + 1] = { itemID = r.itemID, qty = slot.quantityRequired or 1 } end
+  end
+  return out
+end
+
+-- names whose ad is newer than lastAt; first render (lastAt nil) flashes nothing
+function BC.NewSince(rows, lastAt)
+  local out, maxAt = {}, lastAt or 0
+  for _, v in ipairs(rows) do
+    if lastAt and (v.at or 0) > lastAt then out[v.name] = true end
+    if (v.at or 0) > maxAt then maxAt = v.at end
+  end
+  return out, maxAt
+end
+
+-- card view model; opts.self: portrait "player", else first prof/service icon in the portrait ring
+function BC.CardModel(card, opts)
+  local m = { g = card.g or "a", profs = {}, svcs = {}, zone = card.zone }
+  for _, p in ipairs(card.profs or {}) do
+    m.profs[#m.profs + 1] = { key = "p" .. p.id, icon = BC.PROF_ICON[p.id] or BC.ICON_FALLBACK,
+      name = BC.PROF_NAMES[p.id] or ("Profession " .. p.id), skill = tonumber(p.skill) or 0,
+      frac = BC.SkillFrac(p.skill), st = p.st or "a" }
+  end
+  for _, s in ipairs(card.svcs or {}) do
+    m.svcs[#m.svcs + 1] = { key = s.key, icon = BC.SVC_ICON[s.key] or BC.ICON_FALLBACK,
+      label = BC.SVC_LABEL[s.key] or s.key, st = s.st or "a" }
+  end
+  if opts and opts.self then m.portrait = "player"
+  else m.portrait = (m.profs[1] and m.profs[1].icon) or (m.svcs[1] and m.svcs[1].icon) or BC.ICON_FALLBACK end
+  return m
+end
