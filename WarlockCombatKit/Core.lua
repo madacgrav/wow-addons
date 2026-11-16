@@ -20,7 +20,7 @@ events:SetScript("OnEvent", function(_, event, ...)
 end)
 
 local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 240, plateMarker = false,
-  procAlerts = true, procSound = true }
+  procAlerts = true, procSound = true, showBar = true }
 local CHAR_DEFAULTS = { slots = {} }
 
 WCK.On("ADDON_LOADED", function(name)

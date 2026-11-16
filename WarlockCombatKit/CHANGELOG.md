@@ -7,6 +7,9 @@ All notable changes to this addon. Versions match `## Version` in `WarlockCombat
 ### Fixed
 - Rule and slot spell menus list every active spell in your spellbook, grouped by spellbook tab, instead of a fixed list. Wrack and other talent spells now appear. (#28)
 
+### Added
+- **Rotation buttons.** A movable bar of round, clickable buttons: one per spell in your rules, then Fear and Banish for emergencies. The suggested spell pulses purple. Rule edits made in combat apply after combat. Toggle with "Show rotation buttons". (#28)
+
 ## [0.1.0] — 2026-10-22
 
 First release: an in-combat helper for warlocks, separate from Warlock Utility Kit.

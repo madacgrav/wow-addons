@@ -132,16 +132,19 @@ local function Build()
   win.syncs = {
     WCK.Check(win, "Show panel", -36, function() return WCK.db.shown end,
       function(on) WCK.db.shown = on; WCK.Refresh() end),
-    WCK.Check(win, "Lock panel (no Shift+drag)", -64, function() return WCK.db.locked end,
+    WCK.Check(win, "Show rotation buttons", -64, function() return WCK.db.showBar end,
+      function(on) WCK.db.showBar = on; WCK.Refresh()
+        if InCombatLockdown() then WCK.Print("rotation bar change applies after combat") end end),
+    WCK.Check(win, "Lock panel (no Shift+drag)", -92, function() return WCK.db.locked end,
       function(on) WCK.db.locked = on end),
-    WCK.Check(win, "Mark CC'd mobs on nameplates (open world)", -92, function() return WCK.db.plateMarker end,
+    WCK.Check(win, "Mark CC'd mobs on nameplates (open world)", -120, function() return WCK.db.plateMarker end,
       function(on) WCK.db.plateMarker = on; WCK.Refresh() end),
-    WCK.Check(win, "Proc alerts (Nightfall)", -120, function() return WCK.db.procAlerts end,
+    WCK.Check(win, "Proc alerts (Nightfall)", -148, function() return WCK.db.procAlerts end,
       function(on) WCK.db.procAlerts = on; WCK.Refresh() end),
-    WCK.Check(win, "Proc sound", -148, function() return WCK.db.procSound end,
+    WCK.Check(win, "Proc sound", -176, function() return WCK.db.procSound end,
       function(on) WCK.db.procSound = on end),
   }
-  local y = -184
+  local y = -212
   for _, section in ipairs(WCK.settingsSections) do y = section(win, y) end
   win:SetHeight(-y + 50) -- room for the sections plus the bottom button row
 

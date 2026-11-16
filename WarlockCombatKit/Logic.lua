@@ -157,6 +157,17 @@ function WCK.RuleSpells(rules)
   return out
 end
 
+-- rotation bar order: rule spells, then emergency spells that are known and not already there
+WCK.BAR_MAX = 12 -- 10 rules + Fear + Banish
+function WCK.BarSpells(rules, emergency, known)
+  local out, seen = {}, {}
+  for _, s in ipairs(WCK.RuleSpells(rules)) do seen[s] = true; out[#out + 1] = { spell = s, emergency = false } end
+  for _, s in ipairs(emergency) do
+    if known[s] and not seen[s] then seen[s] = true; out[#out + 1] = { spell = s, emergency = true } end
+  end
+  return out
+end
+
 -- mouseover cast slots: hostile mouseover, else the normal target
 WCK.SLOTS = 6
 function WCK.CastMacro(spell)

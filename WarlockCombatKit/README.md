@@ -48,7 +48,7 @@ Nightfall on Forever only shows a buff icon: no button glow, no screen overlay. 
 
 ## Rotation helper
 
-The core shows the first rule in your list that passes. It is **display only**: you press your own keys. A clickable core is not possible, because addons cannot change what a button casts during combat. The mouseover cast slots below are the closest thing.
+The core shows the first rule in your list that passes. It is **display only**: you press your own keys. The core itself can't be clicked (addons can't change a button's spell in combat). Use the rotation buttons below.
 
 A rule passes when you know the spell, it is off cooldown, and its condition holds:
 
@@ -66,6 +66,16 @@ A rule passes when you know the spell, it is off cooldown, and its condition hol
   - Shadow Bolt on proc;
   - Shadow Bolt.
 - Rules are saved per character.
+
+## Rotation buttons
+
+A bar of round buttons, one per spell in your rules (in rule order), then Fear and Banish after a gap (when you know them) for emergencies.
+
+- Click a button to cast its spell on your target.
+- The button for the spell the core suggests pulses purple.
+- Shift+drag the bar's edge to move it (out of combat).
+- A rule edit you make in combat updates the bar when combat ends.
+- Turn it off with "Show rotation buttons" in `/wck config`.
 
 ## Mouseover cast slots
 
@@ -85,7 +95,7 @@ A slot change you make in combat takes effect when combat ends. Slots are saved 
 ## Settings window
 
 `/wck config` or a left-click on the minimap button opens the settings window. It has:
-- **Toggles:** Show panel, Lock panel, Mark CC'd mobs on nameplates, Proc alerts, Proc sound.
+- **Toggles:** Show panel, Show rotation buttons, Lock panel, Mark CC'd mobs on nameplates, Proc alerts, Proc sound.
 - **Sections:** the Rotation rule editor and the Mouseover cast slots.
 - **Reset positions** button.
 

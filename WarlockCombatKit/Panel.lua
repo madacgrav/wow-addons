@@ -78,6 +78,7 @@ local function Round(owner, t)
   t:AddMaskTexture(m)
   return t
 end
+WCK.Round = Round
 
 -- round texture centred on the circle
 local function Disc(f, layer, sub, size)

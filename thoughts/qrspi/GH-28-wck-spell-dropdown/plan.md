@@ -189,12 +189,12 @@ eq(#WCK.RuleSpells(nil), 0, "nil rules")
 - [x] Deploy robocopy exits 0-7
 
 #### Manual
-- [ ] `/reload` on a warlock. No Lua errors.
-- [ ] `/wck config`: rule spell dropdown shows tab submenus. Wrack is under Affliction. No passives.
-- [ ] Slot dropdown shows "(none)" plus the same submenus.
-- [ ] The selected spell's name shows on the dropdown button. If it's blank, apply the `SetDefaultText` fallback from change 3.
-- [ ] Add a rule `Wrack / off cooldown` at the top. The panel core shows Wrack.
-- [ ] Existing rules (Corruption, Shadow Bolt) still drive the core in combat.
+- [x] `/reload` on a warlock. No Lua errors.
+- [x] `/wck config`: rule spell dropdown shows tab submenus. Wrack is under Affliction. No passives.
+- [x] Slot dropdown shows "(none)" plus the same submenus.
+- [x] The selected spell's name shows on the dropdown button. If it's blank, apply the `SetDefaultText` fallback from change 3.
+- [x] Add a rule `Wrack / off cooldown` at the top. The panel core shows Wrack.
+- [x] Existing rules (Corruption, Shadow Bolt) still drive the core in combat.
 
 ---
 
@@ -336,8 +336,8 @@ eq(#WCK.BarSpells({}, em, {}), 0, "nothing known")
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] Deploy robocopy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] Deploy robocopy exits 0-7
 
 #### Manual
 - [ ] `/reload`. The bar appears at CENTER 260,-60, showing rule spells, a gap, then Fear and Banish.

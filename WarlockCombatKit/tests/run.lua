@@ -92,4 +92,13 @@ local rs = WCK.RuleSpells({ { spell = "Corruption" }, { spell = "Shadow Bolt" },
 eq(#rs, 2, "distinct"); eq(rs[1], "Corruption", "order"); eq(rs[2], "Shadow Bolt", "order 2")
 eq(#WCK.RuleSpells(nil), 0, "nil rules")
 
+-- GH-28 Phase 2
+local em = { "Fear", "Banish" }
+local bs = WCK.BarSpells({ { spell = "Corruption" }, { spell = "Shadow Bolt" }, { spell = "Corruption" } }, em, { Fear = true, Banish = true })
+eq(#bs, 4, "rules + emergency"); eq(bs[1].spell, "Corruption", "rule order"); eq(bs[2].emergency, false, "rule flag")
+eq(bs[3].spell, "Fear", "fear after rules"); eq(bs[3].emergency, true, "emergency flag"); eq(bs[4].spell, "Banish", "banish last")
+bs = WCK.BarSpells({ { spell = "Fear" } }, em, { Fear = true })
+eq(#bs, 1, "fear not repeated, unknown banish skipped"); eq(bs[1].emergency, false, "fear keeps rule slot")
+eq(#WCK.BarSpells({}, em, {}), 0, "nothing known")
+
 print("all tests passed")
