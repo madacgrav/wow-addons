@@ -197,7 +197,7 @@ BC.On("WHO_LIST_UPDATE", function()
   if not whoTarget then return end
   local target = whoTarget
   whoTarget = nil
-  -- the who list can open the Friends window; close it again if we caused that
+
   if FriendsFrame and FriendsFrame:IsShown() and not friendsWasShown then HideUIPanel(FriendsFrame) end
   for i = 1, C_FriendList.GetNumWhoResults() do
     local w = C_FriendList.GetWhoInfo(i)

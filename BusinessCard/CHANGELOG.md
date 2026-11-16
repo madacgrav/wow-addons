@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.2
+- Ctrl-click /who closes the Who window once the result is read (unless you had it open already).
+
 ## 0.7.1
 - Ctrl-click a Seen row to run /who on that person: prints level, class and zone, and fills the zone column. Rows without a zone say so in the tooltip.
 
