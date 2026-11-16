@@ -320,7 +320,7 @@ end)
 
 ### Verification
 #### Automated
-- [ ] `lua BusinessCard/tests/run.lua` prints `all tests passed`
+- [x] `lua BusinessCard/tests/run.lua` prints `all tests passed`
 
 #### Manual
 - [ ] Deploy. Idle in Orgrimmar for 10 minutes, then `/bcard seen` lists advertisers with sensible categories.

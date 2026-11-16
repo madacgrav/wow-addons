@@ -15,7 +15,7 @@ events:SetScript("OnEvent", function(_, event, ...)
   for _, fn in ipairs(handlers[event]) do fn(...) end
 end)
 
-local DEFAULTS = { locked = false, frames = {}, lastProbe = {} }
+local DEFAULTS = { locked = false, frames = {}, lastProbe = {}, seen = {}, channels = BC.DEFAULT_CHANNELS, maxAgeDays = 7 }
 local CHAR_DEFAULTS = {}
 
 BC.On("ADDON_LOADED", function(name)
@@ -89,6 +89,42 @@ table.insert(BC.inits, function()
   end)
 end)
 
+-- ad log: seen[realm][name] = {cats={cat=at}, text, at, req, dest}
+function BC.Seen() local r = GetRealmName(); BC.db.seen[r] = BC.db.seen[r] or {}; return BC.db.seen[r] end
+
+BC.onSeen = {} -- hooks(name, result): P3 refresh, P5 card request
+local function OnAd(source, text, sender)
+  if not source or not BC.db.channels[source] or BC.Secret(text) or BC.Secret(sender) then return end
+  local name = Ambiguate(sender, "none")
+  if name == UnitName("player") then return end
+  local r = BC.Classify(text)
+  if not r then return end
+  BC.SeenAdd(BC.Seen(), name, r, text, time())
+  for _, fn in ipairs(BC.onSeen) do fn(name, r) end
+end
+
+table.insert(BC.inits, function()
+  BC.On("CHAT_MSG_CHANNEL", function(text, sender, _, _, _, _, _, _, base) OnAd(BC.ChannelKey(base), text, sender) end)
+  BC.On("CHAT_MSG_SAY", function(text, sender) OnAd("SAY", text, sender) end)
+  BC.On("CHAT_MSG_YELL", function(text, sender) OnAd("YELL", text, sender) end)
+  BC.On("CHAT_MSG_WHISPER", function(text, sender) OnAd("WHISPER", text, sender) end)
+  if not InCombatLockdown() then BC.SeenPrune(BC.Seen(), time(), BC.db.maxAgeDays * 86400, 500) end
+end)
+
+local function PrintSeen()
+  local seen, names, now = BC.Seen(), {}, time()
+  for name in pairs(seen) do names[#names + 1] = name end
+  table.sort(names, function(a, b) return seen[a].at > seen[b].at end)
+  if #names == 0 then return BC.Print("nobody seen yet") end
+  for i = 1, math.min(20, #names) do
+    local e, cats = seen[names[i]], {}
+    for _, c in ipairs(BC.CATS) do if e.cats[c] then cats[#cats + 1] = c end end
+    BC.Print(names[i] .. " [" .. table.concat(cats, ",") .. (e.req and ",LF" or "") .. "] "
+      .. math.floor((now - e.at) / 60) .. "m: " .. e.text)
+  end
+  BC.Print(#names .. " seen")
+end
+
 function BC.Ping(name)
   local r = C_ChatInfo.SendAddonMessage(BC.PREFIX, "ping", "WHISPER", name)
   BC.ProbeLine("ping " .. name, "result " .. tostring(r) .. " guild " .. tostring(IsInGuild()))
@@ -100,7 +136,8 @@ SlashCmdList.BUSINESSCARD = function(msg)
   cmd = cmd:lower()
   if cmd == "probe" then BC.Probe()
   elseif cmd == "ping" and arg ~= "" then BC.Ping(arg)
+  elseif cmd == "seen" then PrintSeen()
   elseif cmd == "lock" then BC.db.locked = not BC.db.locked; BC.Print(BC.db.locked and "locked" or "unlocked")
   elseif cmd == "reset" then wipe(BC.db.frames); BC.Print("positions reset - /reload to apply")
-  else BC.Print("/bcard probe | ping <name> | lock | reset") end
+  else BC.Print("/bcard seen | probe | ping <name> | lock | reset") end
 end

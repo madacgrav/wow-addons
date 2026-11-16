@@ -46,7 +46,14 @@ Client: 1.60.1 build 70938 (Forever live). The lines come from the `/bcard probe
   - **Fix:** the channel key is the text before ` - ` (`Trade`, `Trade (Services)`, `Trade (Local)`, `General`, `LookingForGroup`). This assumes `channelBaseName` for Services and TradeLocal follows the same pattern as Trade did in Run 1. To verify, watch `/bcard seen` sources in Phase 2.
 - Spells, professions and the recipe result match Run 1.
 
+## Run 3: ping (inconclusive)
+
+- `ping Fausto Chica: result 0 guild true`, sent from Matt-Locke (guilded warlock), with no `pong`.
+  - `0` only means the message was queued. The target doesn't run BusinessCard, and the name contains a space, so it was probably an invalid target.
+  - **Learned:** the client doesn't block addon WHISPER sends from this account (not trial, not veteran).
+- More `chan msg` lines (General and Trade, Orgrimmar, out of combat) were all `text ok sender ok guid ok`.
+
 ## Still pending
-- An in-combat probe in the open world.
-- `/bcard ping` to a stranger and to a guildmate. This gates Phase 5.
+- **Deferred:** a two-character ping. Both characters must run BusinessCard, be in different guilds and not be grouped. This gates the Phase 5 whisper-to-stranger path. Run it before Phase 5 manual testing. The Phase 5 code can be written either way, since the gate only removes one `onSeen` hook.
+- An in-combat probe in the open world. This doesn't block anything, because the secret guard skips secret ads.
 - A mage character.
