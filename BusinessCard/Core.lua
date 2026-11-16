@@ -98,7 +98,7 @@ local function OnAd(source, text, sender)
   local name = Ambiguate(sender, "none")
   if name == UnitName("player") then return end
   local r = BC.Classify(text)
-  if not r then return end
+  if not r or r.request then return end -- advertisers only; LF/WTB posts are dropped
   BC.SeenAdd(BC.Seen(), name, r, text, time())
   for _, fn in ipairs(BC.onSeen) do fn(name, r) end
 end
@@ -108,7 +108,9 @@ table.insert(BC.inits, function()
   BC.On("CHAT_MSG_SAY", function(text, sender) OnAd("SAY", text, sender) end)
   BC.On("CHAT_MSG_YELL", function(text, sender) OnAd("YELL", text, sender) end)
   BC.On("CHAT_MSG_WHISPER", function(text, sender) OnAd("WHISPER", text, sender) end)
-  if not InCombatLockdown() then BC.SeenPrune(BC.Seen(), time(), BC.db.maxAgeDays * 86400, 500) end
+  local seen = BC.Seen()
+  for name, e in pairs(seen) do if e.req then seen[name] = nil end end -- requests logged by 0.2.0
+  if not InCombatLockdown() then BC.SeenPrune(seen, time(), BC.db.maxAgeDays * 86400, 500) end
 end)
 
 local function PrintSeen()
@@ -119,7 +121,7 @@ local function PrintSeen()
   for i = 1, math.min(20, #names) do
     local e, cats = seen[names[i]], {}
     for _, c in ipairs(BC.CATS) do if e.cats[c] then cats[#cats + 1] = c end end
-    BC.Print(names[i] .. " [" .. table.concat(cats, ",") .. (e.req and ",LF" or "") .. "] "
+    BC.Print(names[i] .. " [" .. table.concat(cats, ",") .. "] "
       .. math.floor((now - e.at) / 60) .. "m: " .. e.text)
   end
   BC.Print(#names .. " seen")

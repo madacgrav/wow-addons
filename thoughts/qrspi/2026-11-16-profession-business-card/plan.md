@@ -20,6 +20,7 @@ Phase 1 is a probe gate; phases 2–6 each add one feature end to end.
 **Deviations from structure.md**
 - **Link classification (P2):** no `|H(%a+):(%d+)` ID extraction. Link payloads are stripped and the visible link text (`[Enchant Bracer - …]`, `[Tailoring]`) goes through the same keyword tokenizer. Same result, no item or profession lookups.
 - **Category filter (P3):** a dropdown (`WowStyle1DropdownTemplate`, as in `WarlockUtilityKit/Board.lua:90-94`) instead of TackleBox icon tabs. 12+ categories don't fit as tabs. Seen and My card are two top buttons.
+- **Requests dropped (user decision after P2 in-game test):** LF/WTB posts are never stored. `OnAd` returns when `r.request`, and the Requests checkbox, `showRequests` and the `SeenRows` request filter are removed. `Classify` still computes `request`.
 - **Cards from guildmates who never advertised (P5):** stored in `db.cards` and merged into Seen rows, with categories derived from their card. Without this, guild exchange would be invisible.
 
 ---
@@ -343,10 +344,10 @@ function BC.FormatAge(s)
 end
 
 -- filter = cat key or "all"; returns rows sorted newest first
-function BC.SeenRows(seen, cards, filter, showRequests, now)
+function BC.SeenRows(seen, cards, filter, now)
   local rows = {}
   for name, e in pairs(seen) do
-    if (showRequests or not e.req) and (filter == "all" or e.cats[filter]) then
+    if filter == "all" or e.cats[filter] then
       rows[#rows + 1] = { name = name, cats = e.cats, at = e.at, age = BC.FormatAge(now - e.at), text = e.text,
         dest = e.dest, card = cards and cards[name] }
     end
@@ -372,7 +373,6 @@ end
   - Size 420 × (110 + 20 × 24).
   - Two top buttons `Seen` / `My card` (`UIPanelButtonTemplate`), which set `BC.db.view`; then `BC.RefreshPanel()`.
   - Category dropdown (`WowStyle1DropdownTemplate`), with entries `All` + `BC.CATS` labels; sets `BC.db.filter`.
-  - A `Requests` checkbox (`UICheckButtonTemplate`) for `BC.db.showRequests`.
   - Row pool: `Button` frames 392×22 at a 24 px pitch, each with:
     - a status texture (8×8, hidden until Phase 5)
     - `row.name` FontString (left, 110 px)
@@ -387,11 +387,11 @@ end
   - A footer FontString: `"N shown / M seen"`.
 - `BC.RenderSeen(rows)`: fills the pool with `SetShown(v ~= nil)`, as in `TackleBox/Panel.lua:179-200`.
 - `BC.RefreshPanel()`: debounced 0.1 s (pattern from `TackleBox/Core.lua:42-50`); no-op if `win` is nil or hidden.
-  - Seen view: `BC.RenderSeen(BC.SeenRows(BC.Seen(), BC.Cards and BC.Cards(), BC.db.filter, BC.db.showRequests, time()))`.
+  - Seen view: `BC.RenderSeen(BC.SeenRows(BC.Seen(), BC.Cards and BC.Cards(), BC.db.filter, time()))`.
   - My card view: `BC.RenderMyCard()` (stub until Phase 4).
 - `BC.TogglePanel()`: Build on first use; `win:SetShown(not win:IsShown())`; refresh. Refuses in combat with `BC.Print("not in combat")`.
 - `table.insert(BC.onSeen, BC.RefreshPanel)`.
-- `DEFAULTS` gains `view = "seen"`, `filter = "all"`, `showRequests = false`.
+- `DEFAULTS` gains `view = "seen"`, `filter = "all"`.
 
 #### 3. Keybind + slash
 - **File**: `BusinessCard/Bindings.xml` — create
@@ -410,7 +410,6 @@ end
 - `FormatAge(30)`, `(125)`, `(7200)` and `(200000)` give `now`, `2m`, `2h` and `2d`.
 - `SeenRows`:
   - Filters by category.
-  - Hides `req` entries unless `showRequests`.
   - Sorts newest first.
 - `CatList` keeps `BC.CATS` order.
 
@@ -420,7 +419,7 @@ end
 
 #### Manual
 - [ ] `/bcard` and the keybind toggle the window. Esc closes it. Dragging moves it, and the position survives `/reload`. `/bcard lock` blocks dragging.
-- [ ] The category dropdown filters rows. The Requests checkbox shows LF/WTB posts.
+- [ ] The category dropdown filters rows.
 - [ ] Left-click opens `/w name`. Right-click removes the row. The tooltip shows the last ad text.
 
 ---
@@ -498,7 +497,7 @@ end
 
 #### 3. My card view
 **File**: `BusinessCard/Panel.lua` — modify
-- `BC.RenderMyCard()` reuses the row pool. Hide the category dropdown and the Requests checkbox in this view.
+- `BC.RenderMyCard()` reuses the row pool. Hide the category dropdown in this view.
 - Row 1 is global: `"Overall: Available/Busy"`. Clicking toggles `g` between a and b.
 - One row per profession: `PROF_NAMES[id] or name`, then `skill`, then the status label.
 - One row per service: `label or name`, then the status label.
@@ -649,7 +648,7 @@ table.insert(BC.inits, function()
     end
     if BC.OnComm then BC.OnComm(name, m, sender) end -- Phase 6 hook
   end)
-  table.insert(BC.onSeen, function(name, r) if not r.request then Ask(name) end end)
+  table.insert(BC.onSeen, Ask) -- onSeen only fires for advertisers (requests are dropped at intake)
   table.insert(BC.onStatus, BroadcastGuild)
   BroadcastGuild() -- login broadcast (10 s after login)
 end)
