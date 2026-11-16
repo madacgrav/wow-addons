@@ -56,14 +56,6 @@ function BC.Breathe(t) -- WCK Panel.lua:94-98
   return g
 end
 
-function BC.Flash(t) -- TackleBox CastBar.lua:31-33
-  local g = t:CreateAnimationGroup()
-  local a = g:CreateAnimation("Alpha"); a:SetFromAlpha(0); a:SetToAlpha(0.6); a:SetDuration(0.2); a:SetOrder(1)
-  local b = g:CreateAnimation("Alpha"); b:SetFromAlpha(0.6); b:SetToAlpha(0); b:SetDuration(0.6); b:SetOrder(2)
-  g:SetScript("OnFinished", function() t:SetAlpha(0) end)
-  return g
-end
-
 function BC.Pop(f) -- WCK Panel.lua:100-105
   if not f.pop then
     local g = f:CreateAnimationGroup()

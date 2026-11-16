@@ -46,10 +46,7 @@ local function BuildRow(row)
   row.built = true
   row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
   row.stripe = row:CreateTexture(nil, "BACKGROUND"); row.stripe:SetAllPoints(); row.stripe:SetColorTexture(1, 1, 1, 0.03)
-  local hl = row:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); BC.Fade(hl, "HORIZONTAL", T.goldBright, 0.18, 0)
-  row.glow = row:CreateTexture(nil, "OVERLAY"); row.glow:SetAllPoints(); BC.Fade(row.glow, "HORIZONTAL", T.goldBright, 0.5, 0)
-  row.glow:SetAlpha(0); row.flash = BC.Flash(row.glow)
-  row.dot = BC.Dot(row, 10); row.dot:SetPoint("LEFT", 6, 0)
+  local hl = row:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); BC.Fade(hl, "HORIZONTAL", T.goldBright, 0.18, 0)  row.dot = BC.Dot(row, 10); row.dot:SetPoint("LEFT", 6, 0)
   row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   row.name:SetPoint("LEFT", 22, 0); row.name:SetWidth(150); row.name:SetJustifyH("LEFT"); row.name:SetWordWrap(false)
   row.icons = {}
@@ -82,9 +79,13 @@ local function InitRow(row, v)
   local c = BC.StatusColor(BC.CardStatus(v.card, BC.db.filter))
   row.dot:SetShown(c ~= nil); if c then row.dot:SetVertexColor(c[1], c[2], c[3]) end
   row.badge:SetShown(v.card ~= nil)
-  -- recycled rows can carry a paused flash (paused animations keep their alpha): always reset first
-  row.flash:Stop(); row.glow:SetAlpha(0)
-  if flash[v.name] then flash[v.name] = nil; row.flash:Play() end -- once per new ad, even if scrolled
+  -- new ad: lock the hover highlight briefly (an alpha-animated overlay stuck visible on Forever)
+  row:UnlockHighlight()
+  if flash[v.name] then
+    flash[v.name] = nil; row:LockHighlight()
+    local key = row.key
+    C_Timer.After(0.8, function() if row.key == key then row:UnlockHighlight() end end)
+  end
 end
 
 local function Build()
