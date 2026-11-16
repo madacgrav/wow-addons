@@ -48,86 +48,31 @@ Notes:
 
 ---
 
-## Phase 2: Count shards by itemID
+## Phase 2: Scan the extra bag slot (revised)
+
+Revised after the Phase 1 probe (2026-11-16): the soul bag is container 5 (`Enum.BagIndex.ReagentBag = 5`, `NUM_TOTAL_EQUIPPED_BAG_SLOTS = 5`, `family=4`), and shard names come back fine (`5/1: id=6265 name=Soul Shard`). `ScanBags` stops at `NUM_BAG_SLOTS = 4`. The item-ID classifier is dropped.
 
 ### Changes
 
-#### 1. Pure classifier
-**File**: `WarlockUtilityKit/Logic.lua`
-**Action**: modify. Add after `WUK.ClassifyItem`:
+#### 1. ScanBags range
+**File**: `WarlockUtilityKit/Core.lua` line 32. **Action**: modify.
 
-```lua
-WUK.SHARD_ID = 6265
+Before: `for bag = 0, NUM_BAG_SLOTS or 4 do`
+After: `for bag = 0, NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4 do -- 5 = extra slot (soul bag on Forever)`
 
--- shards by itemID (name can be nil when uncached / field absent on this client); stones by name
-function WUK.ClassifySlot(itemID, name)
-  if itemID == WUK.SHARD_ID then return "shard" end
-  return WUK.ClassifyItem(name)
-end
-```
+#### 2. Version + changelog
+**File**: `WarlockUtilityKit/WarlockUtilityKit.toc`. `## Version: 0.3.1` -> `## Version: 0.3.2`.
+**File**: `WarlockUtilityKit/CHANGELOG.md`. Insert a 0.3.2 entry above `## [0.3.1]`: Fixed: shards in a soul bag in the extra (fifth) bag slot are counted. Added: `/wuk probe` bags section.
 
-#### 2. ScanBags uses ClassifySlot
-**File**: `WarlockUtilityKit/Core.lua`
-**Action**: modify line 35 in `WUK.ScanBags`.
-
-Before:
-```lua
-      local kind = info and WUK.ClassifyItem(info.itemName or C_Item.GetItemInfo(info.itemID))
-```
-After:
-```lua
-      local kind = info and WUK.ClassifySlot(info.itemID, info.itemName or (info.itemID and C_Item.GetItemInfo(info.itemID)))
-```
-
-#### 3. Probe filter uses ClassifySlot
-**File**: `WarlockUtilityKit/Core.lua`
-**Action**: modify the Phase 1 probe condition.
-
-Before:
-```lua
-      if info and (info.itemID == 6265 or info.itemName == nil) then
-```
-After:
-```lua
-      if info and (WUK.ClassifySlot(info.itemID, info.itemName) or info.itemName == nil) then
-```
-
-#### 4. Tests
-**File**: `WarlockUtilityKit/tests/run.lua`
-**Action**: modify. Add after the `ClassifyItem(nil)` case (line 16):
-
-```lua
-eq(WUK.ClassifySlot(6265, nil), "shard", "shard by id, nil name")
-eq(WUK.ClassifySlot(6265, "Soul Shard"), "shard", "shard by id")
-eq(WUK.ClassifySlot(5512, "Minor Healthstone"), "healthstone", "stone by name")
-eq(WUK.ClassifySlot(1234, nil), nil, "unknown id nil name")
-eq(WUK.ClassifySlot(nil, nil), nil, "nil slot")
-```
-
-#### 5. Version + changelog
-**File**: `WarlockUtilityKit/WarlockUtilityKit.toc`. **Action**: `## Version: 0.3.1` -> `## Version: 0.3.2`.
-
-**File**: `WarlockUtilityKit/CHANGELOG.md`. **Action**: insert above `## [0.3.1]`:
-
-```markdown
-## [0.3.2] — 2026-11-16
-
-### Fixed
-- **Soul shard bag count.** Shards are counted by item ID, so shards in a soul bag (Soul Pouch, Felcloth Bag, etc.) show on the shard core and summon checks even when the client has not returned the item name.
-
-### Added
-- **`/wuk probe` bags section.** Prints each bag's slots, free slots and bag family, plus shard slots with item ID and name, for debugging.
-```
+The `/wuk probe` bags section (-3..12) stays as is.
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed` (includes 5 new ClassifySlot cases)
-- [ ] `grep -n "ClassifySlot" WarlockUtilityKit/Core.lua` shows 2 hits (ScanBags and Probe)
-- [ ] Deploy with robocopy (exit code 0-7)
+- [x] `lua WarlockUtilityKit/tests/run.lua` prints `all tests passed`
+- [x] Deploy with robocopy (exit code 0-7)
 
 #### Manual
 - [ ] In game: `/reload` with N shards in the soul bag; the shard core shows N
-- [ ] Gain a shard (Drain Soul kill): the count goes up by 1. Summon a demon: the count goes down by 1
+- [ ] Gain a shard: count +1. Summon a demon: count -1
 - [ ] A summon queue row shows no red "no shard" when N >= 1
-- [ ] `/wuk probe` shows `counts.shard: N`
-- [ ] Healthstone/soulstone counts are unchanged from before
+- [ ] `/wuk probe` shows `counts.shard: N`, matching `GetItemCount(6265)`

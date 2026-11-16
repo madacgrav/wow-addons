@@ -2,6 +2,14 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockUtilityKit.toc`; each version is published as a `wuk-vX.Y.Z` GitHub release.
 
+## [0.3.2] — 2026-11-16
+
+### Fixed
+- **Soul shard bag count.** Shards in a soul bag equipped in the fifth (extra) bag slot are now counted. The bag scan stopped at bag 4 and never saw that slot.
+
+### Added
+- **`/wuk probe` bags section.** Prints bag constants, each container's slots, free slots and bag family, and the shard slots with item ID and name.
+
 ## [0.3.1] — 2026-10-22
 
 ### Fixed

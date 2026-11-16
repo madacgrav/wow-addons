@@ -50,3 +50,6 @@ Do NOT follow:
 - If stones in a soul bag (not allowed in Classic) or stones generally also miss due to nil names, they stay broken — out of scope; probe will expose it.
 - Soul Shard ID 6265 assumed identical on Forever (already used in tests, `tests/run.lua:53`).
 - `GetContainerNumFreeSlots` second return may differ on this client; probe prints raw value.
+
+## Revision (2026-11-16, after Phase 1 probe)
+In-game probe showed the soul bag is container 5 (the client's extra bag slot; `Enum.BagIndex.ReagentBag = 5`, `NUM_TOTAL_EQUIPPED_BAG_SLOTS = 5`, family 4). Shard names resolve fine. Root cause is the bag range, `0..NUM_BAG_SLOTS (4)` at `Core.lua:32`, not the name lookup. Decision 1 (itemID classification) and the classifier tests are dropped. New fix: scan `0..NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4`.

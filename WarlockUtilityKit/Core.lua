@@ -29,7 +29,7 @@ end)
 
 function WUK.ScanBags()
   local c = { shard = 0, healthstone = 0, soulstone = 0, spellstone = 0, firestone = 0, ids = {}, slots = {} }
-  for bag = 0, NUM_BAG_SLOTS or 4 do
+  for bag = 0, NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4 do -- 5 = extra slot (soul bag on Forever)
     for slot = 1, C_Container.GetContainerNumSlots(bag) do
       local info = C_Container.GetContainerItemInfo(bag, slot)
       local kind = info and WUK.ClassifyItem(info.itemName or C_Item.GetItemInfo(info.itemID))
