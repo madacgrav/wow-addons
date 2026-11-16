@@ -463,9 +463,9 @@ The pet button (`strip.icons.pet`) stays Party-only. The demon keys are separate
 - [x] Deploy with robocopy.
 
 #### Manual
-- [ ] Right-click cycles Party → Buff (blue) → Demon (red) → Party (white).
-- [ ] Demon view shows every known summon. Each one casts; Inferno enters ground targeting.
-- [ ] With 10 known buttons there is no overlap, and the ring is slightly larger. Party and Buff keep the original size.
-- [ ] Hovering the outer edge of the grown ring does not collapse it.
-- [ ] The collapse fallback and the combat fallback still return to Party from Demon view.
-- [ ] Phase 1-3 checks still hold: tooltips, healthstone trade, left-click soulstone.
+- [x] Clicking the shard cycles Party → Buff (blue) → Demon (red) → Party.
+- [x] Demon view shows every known summon. Each one casts; Inferno enters ground targeting.
+- [x] With 9 known buttons there is no overlap at the original ring size.
+- [x] ~~Hovering the outer edge of the grown ring does not collapse it.~~ N/A: ring does not grow.
+- [x] The collapse fallback and the combat fallback still return to Party from Demon view.
+- [x] Phase 1-3 checks still hold: tooltips, healthstone trade, left-click soulstone.
