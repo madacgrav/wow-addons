@@ -85,6 +85,7 @@ local function Build()
   win.footer = win:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
   win.footer:SetPoint("BOTTOMLEFT", 16, 10)
   win:SetScript("OnShow", function() BC.RefreshPanel() end)
+  win:Hide() -- new frames start shown; TogglePanel's first call must show, not hide
 end
 
 function BC.RenderSeen(rows, total)

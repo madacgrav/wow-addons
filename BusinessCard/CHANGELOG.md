@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.1
+- Fix: the first `/bcard` now opens the window (it took two).
+
 ## 0.3.0
 - Window (`/bcard` or keybind): Seen list with a category filter, newest first. Click to whisper, right-click to remove, tooltip shows the last ad. Movable and closes with Esc; `/bcard lock` stops dragging.
 

@@ -420,9 +420,9 @@ end
 - [x] `lua BusinessCard/tests/run.lua` prints `all tests passed`
 
 #### Manual
-- [ ] `/bcard` and the keybind toggle the window. Esc closes it. Dragging moves it, and the position survives `/reload`. `/bcard lock` blocks dragging.
-- [ ] The category dropdown filters rows.
-- [ ] Left-click opens `/w name`. Right-click removes the row. The tooltip shows the last ad text.
+- [x] `/bcard` and the keybind toggle the window. Esc closes it. Dragging moves it, and the position survives `/reload`. `/bcard lock` blocks dragging.
+- [x] The category dropdown filters rows.
+- [x] Left-click opens `/w name`. Right-click removes the row. The tooltip shows the last ad text.
 
 ---
 
