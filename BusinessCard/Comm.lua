@@ -2,19 +2,17 @@ local ADDON, BC = ...
 local queue, nextSend, failures = {}, 0, 0
 BC.commOff = false
 
--- ponytail: one shared queue with per-message pacing; per-target buckets if stranger requests pile up
+-- ponytail: one shared queue with per-message pacing; per-target buckets if guild broadcasts starve behind whispers
+-- Enum.SendAddonMessageResult: 0 ok, 3/8 throttled, 11 lockdown (encounter/instance), 12 target offline
 local function Flush()
   local m = queue[1]
   if not m or GetTime() < nextSend then return end
   local r = C_ChatInfo.SendAddonMessage(BC.PREFIX, m.msg, m.ch, m.to)
   if r == 0 or r == true then
     table.remove(queue, 1); failures = 0; nextSend = GetTime() + (m.ch == "WHISPER" and 1 or 0.5)
-  elseif r == 12 then table.remove(queue, 1) -- TargetOffline
-  elseif r == 3 or r == 8 then failures = failures + 1; nextSend = GetTime() + math.min(30, 2 ^ failures) -- throttles
-  else -- trial/veteran, lockdown, not in guild, ...
-    BC.commOff = true; wipe(queue)
-    BC.Print("card sharing unavailable (code " .. tostring(r) .. "); the ad log still works")
-  end
+  elseif r == 3 or r == 8 or r == 11 then -- transient: keep the message, back off
+    failures = failures + 1; nextSend = GetTime() + math.min(30, 2 ^ failures)
+  else table.remove(queue, 1) end -- offline, left guild, general error: drop this one message only
 end
 
 function BC.Send(msg, ch, to)
@@ -39,7 +37,21 @@ local function BroadcastGuild()
   C_Timer.After(10, function() pending = false; BC.Send(BC.EncodeCard(BC.MyCard()), "GUILD") end)
 end
 
+-- answer each sender's Q/RQ at most once per 30 s so one stranger cannot fill the queue
+local answered = {}
+local function MayAnswer(sender, kind)
+  local k, now = sender .. ":" .. kind, GetTime()
+  if answered[k] and now - answered[k] < 30 then return false end
+  answered[k] = now
+  return true
+end
+
 table.insert(BC.inits, function()
+  C_ChatInfo.RegisterAddonMessagePrefix(BC.PREFIX)
+  -- trial and veteran accounts cannot send addon messages; the ad log still works
+  if (IsTrialAccount and IsTrialAccount()) or (IsVeteranTrialAccount and IsVeteranTrialAccount()) then
+    BC.commOff = true; BC.Print("card sharing unavailable on trial accounts; the ad log still works")
+  end
   BC.SeenPrune(BC.Cards(), time(), BC.db.maxAgeDays * 86400, 500)
   C_Timer.NewTicker(0.25, Flush)
   BC.On("CHAT_MSG_ADDON", function(prefix, text, ch, sender)
@@ -48,7 +60,7 @@ table.insert(BC.inits, function()
     if name == UnitName("player") then return end
     local m = BC.Decode(text)
     if not m then return end
-    if m.kind == "Q" then BC.Send(BC.EncodeCard(BC.MyCard()), "WHISPER", sender)
+    if m.kind == "Q" then if MayAnswer(sender, "Q") then BC.Send(BC.EncodeCard(BC.MyCard()), "WHISPER", sender) end
     elseif m.kind == "C" then
       asked[name] = true
       local cards = BC.Cards()
@@ -71,6 +83,7 @@ function BC.RecipeList(name, prof) return lists[name .. ":" .. prof] end
 
 function BC.OnComm(name, m, sender)
   if m.kind == "RQ" then
+    if not MayAnswer(sender, "RQ" .. m.prof) then return end
     local chunks = BC.ChunkIDs(BC.char.recipes[m.prof] or {}, 200)
     if #chunks == 0 then return BC.Send(table.concat({ BC.PROTO, "RL", m.prof, 0, 0, "-" }, "|"), "WHISPER", sender) end
     for i, c in ipairs(chunks) do BC.Send(table.concat({ BC.PROTO, "RL", m.prof, i, #chunks, c }, "|"), "WHISPER", sender) end
