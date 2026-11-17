@@ -293,13 +293,13 @@ When the page loads with no hash, it must not scroll to `#addons`. Only call `sc
 - [x] `gh release list --limit 50 --json tagName,publishedAt` shows the newest per prefix as pp-v0.2.1, tb-v1.0.0, wck-v0.2.0, wuk-v0.5.0, bcard-v0.8.5
 
 #### Manual (browser pane, local server)
-- [ ] Each of the five tabs shows its card with the versions above, and Download hrefs use the `releases/download/<tag>/<Dir>-<ver>.zip` pattern
-- [ ] Load `http://localhost:8000/#WarlockUtilityKit`: the WUK tab is selected
-- [ ] In the WCK README, the "Warlock Utility Kit" link switches to the WUK tab; "CHANGELOG.md" links scroll to that tab's changelog
-- [ ] Arrow keys move between tabs when one is focused
-- [ ] Fallback: run `sessionStorage.clear(); window.fetch = (f => (u, ...a) => String(u).includes("api.github.com") ? Promise.reject() : f(u, ...a))(fetch); releasesPromise = undefined;` via `javascript_tool`, then open an unopened tab. It shows the `Releases` button and the README still renders.
-- [ ] `resize_window` mobile (375×812): `document.documentElement.scrollWidth <= innerWidth` is `true` via `javascript_tool`. Then reset to `desktop`.
-- [ ] No console errors
+- [x] Each of the five tabs shows its card with the versions above, and Download hrefs use the `releases/download/<tag>/<Dir>-<ver>.zip` pattern
+- [x] Load `http://localhost:8000/#WarlockUtilityKit`: the WUK tab is selected
+- [x] In the WCK README, the "Warlock Utility Kit" link switches to the WUK tab; "CHANGELOG.md" links scroll to that tab's changelog
+- [x] Arrow keys move between tabs when one is focused
+- [x] Fallback: run `sessionStorage.clear(); window.fetch = (f => (u, ...a) => String(u).includes("api.github.com") ? Promise.reject() : f(u, ...a))(fetch); releasesPromise = undefined;` via `javascript_tool`, then open an unopened tab. It shows the `Releases` button and the README still renders.
+- [x] `resize_window` mobile (375×812): `document.documentElement.scrollWidth <= innerWidth` is `true` via `javascript_tool`. Then reset to `desktop`.
+- [x] No console errors
 
 ---
 
@@ -379,13 +379,13 @@ Download an addon's zip from its latest release, then extract it so the addon fo
 
 ### Verification
 #### Automated
-- [ ] `grep -rn "_classic_beta_" README.md */README.md` prints nothing
-- [ ] `grep -c "^## \[[0-9.]*\] — 2026-11-16$" BusinessCard/CHANGELOG.md` prints `20` (strip `\r` first if CRLF: `tr -d '\r' < BusinessCard/CHANGELOG.md | grep -c ...`)
-- [ ] `grep -c "^## " BusinessCard/CHANGELOG.md` still prints `20`
-- [ ] `grep -n "^## Install\|^## Development" BusinessCard/README.md` shows both
-- [ ] `grep -c "docs/index.html" */README.md | grep -c ":1"` prints `5`
-- [ ] `grep -n "BusinessCard\|madacgrav.github.io" README.md` matches both
-- [ ] `git diff --stat` touches only the 7 docs files plus `docs/`, no `.lua`/`.toc`/`.yml`
+- [x] `grep -rn "_classic_beta_" README.md */README.md` prints nothing
+- [x] `grep -c "^## \[[0-9.]*\] — 2026-11-16$" BusinessCard/CHANGELOG.md` prints `20` (strip `\r` first if CRLF: `tr -d '\r' < BusinessCard/CHANGELOG.md | grep -c ...`)
+- [x] `grep -c "^## " BusinessCard/CHANGELOG.md` still prints `20`
+- [x] `grep -n "^## Install\|^## Development" BusinessCard/README.md` shows both
+- [x] `grep -c "docs/index.html" */README.md | grep -c ":1"` prints `5`
+- [x] `grep -n "BusinessCard\|madacgrav.github.io" README.md` matches both
+- [x] `git diff --stat` touches only the 7 docs files plus `docs/`, no `.lua`/`.toc`/`.yml`
 
 #### Manual
 - [ ] Optional: temporarily point `RAW` at `http://localhost:8000/../` by serving the repo root (`python -m http.server -d . 8001`) and setting `RAW = "http://localhost:8001/"` in devtools only, to preview the BusinessCard tab with the new changelog and Install section. Do not commit the change.
