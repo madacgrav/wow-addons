@@ -87,6 +87,10 @@ const RAW = `https://raw.githubusercontent.com/${REPO}/main/`;
 const GH = `https://github.com/${REPO}`;
 const ADDONS = [ // new addon? add one line: folder name + release tag prefix
   { dir: "ProfessionPlanner", prefix: "pp" },
+  { dir: "TackleBox", prefix: "tb" },
+  { dir: "WarlockCombatKit", prefix: "wck" },
+  { dir: "WarlockUtilityKit", prefix: "wuk" },
+  { dir: "BusinessCard", prefix: "bcard" },
 ];
 
 function parseToc(text) {
@@ -127,35 +131,84 @@ function latestFor(prefix, releases) {
 const stripH1 = md => md.replace(/^# .*\r?\n/, "");
 const el = (tag, attrs = {}, html = "") => Object.assign(document.createElement(tag), attrs, { innerHTML: html });
 
-async function renderAddon(addon, panel) {
-  const [toc, readme, log, releases] = await Promise.all([
-    getText(`${addon.dir}/${addon.dir}.toc`).then(parseToc),
-    getText(`${addon.dir}/README.md`),
-    getText(`${addon.dir}/CHANGELOG.md`),
-    fetchReleases(),
-  ]);
-  const rel = latestFor(addon.prefix, releases);
-  panel.append(el("div", { className: "card" }, `
-    <h2>${toc.Title || addon.dir}</h2>
-    <p>${toc.Notes || ""}</p>
-    <p class="meta">Version ${toc.Version || "?"} · Interface ${toc.Interface || "?"}</p>
-    <p class="links"><a class="dl" href="${rel.zipUrl}">Download v${rel.version}</a>
-    <a href="${rel.pageUrl}">Release notes</a> · <a href="${GH}/tree/main/${addon.dir}">Source</a></p>`));
-  panel.append(el("div", { className: "md" }, marked.parse(stripH1(readme))));
-  panel.append(el("div", { className: "md log", id: `${addon.dir}-changelog` },
-    "<h2>Changelog</h2>" + marked.parse(stripH1(log).replace(/^All notable changes.*\r?\n/m, ""))));
+const label = dir => dir.replace(/([a-z])([A-Z])/g, "$1 $2");
+const fail = path => `<p class="err">Couldn't load this part. <a href="${GH}/blob/main/${path}">View on GitHub</a>.</p>`;
+const safe = path => getText(path).catch(() => null);
+
+function fixLinks(root, dir) {
+  const base = `${GH}/blob/main/${dir}/`;
+  for (const a of root.querySelectorAll("a[href]")) {
+    const h = a.getAttribute("href");
+    if (/^(https?:|mailto:|#)/.test(h)) continue;
+    if (/^CHANGELOG\.md$/i.test(h)) { a.href = `#${dir}-changelog`; continue; }
+    const sib = h.match(/^\.\.\/(\w+)\/?$/);
+    if (sib && ADDONS.some(x => x.dir === sib[1])) { a.href = `#${sib[1]}`; continue; }
+    a.href = new URL(h, base).href; // resolves ../ against the blob path
+  }
 }
 
-// Phase 1: one tab, rendered immediately
-const tabs = document.getElementById("tabs"), panels = document.getElementById("panels");
-for (const a of ADDONS) {
-  const t = el("button", { role: "tab", id: `tab-${a.dir}` }, a.dir);
-  t.setAttribute("aria-selected", "true");
-  tabs.append(t);
-  const p = el("section", { role: "tabpanel", id: a.dir });
-  panels.append(p);
-  renderAddon(a, p);
+async function renderAddon(addon, panel) {
+  panel.innerHTML = '<p class="loading">Loading…</p>';
+  const tocPath = `${addon.dir}/${addon.dir}.toc`, readmePath = `${addon.dir}/README.md`, logPath = `${addon.dir}/CHANGELOG.md`;
+  const [tocText, readme, log, releases] = await Promise.all([safe(tocPath), safe(readmePath), safe(logPath), fetchReleases()]);
+  const toc = tocText ? parseToc(tocText) : {};
+  const rel = latestFor(addon.prefix, releases);
+  const dl = rel
+    ? `<a class="dl" href="${rel.zipUrl}">Download v${rel.version}</a> <a href="${rel.pageUrl}">Release notes</a> ·`
+    : `<a class="dl" href="${GH}/releases?q=${addon.prefix}-v">Releases</a>`;
+  panel.innerHTML = "";
+  panel.append(el("div", { className: "card" }, `
+    <h2>${toc.Title || label(addon.dir)}</h2>
+    <p>${toc.Notes || ""}</p>
+    <p class="meta">Version ${toc.Version || "?"} · Interface ${toc.Interface || "?"}</p>
+    <p class="links">${dl} <a href="${GH}/tree/main/${addon.dir}">Source</a></p>`));
+  const body = el("div", { className: "md" }, readme ? marked.parse(stripH1(readme)) : fail(readmePath));
+  const logEl = el("div", { className: "md log", id: `${addon.dir}-changelog` }, "<h2>Changelog</h2>" +
+    (log ? marked.parse(stripH1(log).replace(/^All notable changes.*\r?\n/m, "")) : fail(logPath)));
+  fixLinks(body, addon.dir); fixLinks(logEl, addon.dir);
+  panel.append(body, logEl);
 }
+
+const tabs = document.getElementById("tabs"), panels = document.getElementById("panels");
+const rendered = new Set();
+function selectTab(dir, focus) {
+  for (const a of ADDONS) {
+    const on = a.dir === dir;
+    const t = document.getElementById(`tab-${a.dir}`);
+    t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1;
+    document.getElementById(a.dir).hidden = !on;
+    if (on && focus) t.focus();
+  }
+  if (!rendered.has(dir)) { rendered.add(dir); renderAddon(ADDONS.find(a => a.dir === dir), document.getElementById(dir)); }
+}
+for (const a of ADDONS) {
+  const t = el("button", { role: "tab", id: `tab-${a.dir}` }, label(a.dir));
+  t.setAttribute("aria-controls", a.dir);
+  t.onclick = () => { history.replaceState(null, "", `#${a.dir}`); selectTab(a.dir); };
+  tabs.append(t);
+  const p = el("section", { role: "tabpanel", id: a.dir, hidden: true });
+  p.setAttribute("aria-labelledby", `tab-${a.dir}`);
+  panels.append(p);
+}
+tabs.addEventListener("keydown", e => {
+  const i = ADDONS.findIndex(a => document.getElementById(`tab-${a.dir}`) === document.activeElement);
+  if (i < 0 || !["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+  const n = ADDONS[(i + (e.key === "ArrowRight" ? 1 : ADDONS.length - 1)) % ADDONS.length];
+  history.replaceState(null, "", `#${n.dir}`); selectTab(n.dir, true);
+});
+function onHash() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  const dir = h.replace(/-changelog$/, "");
+  const known = ADDONS.some(a => a.dir === dir);
+  selectTab(known ? dir : ADDONS[0].dir);
+  if (!known) return;
+  if (h !== dir) { // changelog anchor: wait for the lazy render, then scroll
+    const wait = (n = 50) => { const t = document.getElementById(h); t ? t.scrollIntoView() : n && setTimeout(() => wait(n - 1), 100); };
+    wait();
+  } else document.getElementById("addons").scrollIntoView();
+}
+addEventListener("hashchange", onHash);
+onHash();
 </script>
 </body>
 </html>

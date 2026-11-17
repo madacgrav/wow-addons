@@ -172,12 +172,12 @@ Notes:
 - [x] `curl -sI https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js | head -1` shows `200`
 
 #### Manual
-- [ ] Serve with `python -m http.server -d docs 8000` (background) and open `http://localhost:8000/` in the browser pane
-- [ ] The intro and the install guide render, and the install steps show `_forever_\Interface\AddOns\`
-- [ ] The PP card shows "Profession Planner", "Version 0.2.1 · Interface 16001", and `Download v0.2.1`
-- [ ] The Download href is `https://github.com/madacgrav/wow-addons/releases/download/pp-v0.2.1/ProfessionPlanner-0.2.1.zip` (check with `find`/`read_page`)
-- [ ] README tables render as tables, and the changelog's first entry is `[0.2.1] — 2026-10-20`
-- [ ] `read_console_messages` with `onlyErrors` returns no errors
+- [x] Serve with `python -m http.server -d docs 8000` (background) and open `http://localhost:8000/` in the browser pane
+- [x] The intro and the install guide render, and the install steps show `_forever_\Interface\AddOns\`
+- [x] The PP card shows "Profession Planner", "Version 0.2.1 · Interface 16001", and `Download v0.2.1`
+- [x] The Download href is `https://github.com/madacgrav/wow-addons/releases/download/pp-v0.2.1/ProfessionPlanner-0.2.1.zip` (check with `find`/`read_page`)
+- [x] README tables render as tables, and the changelog's first entry is `[0.2.1] — 2026-10-20`
+- [x] `read_console_messages` with `onlyErrors` returns no errors
 
 ---
 
@@ -289,8 +289,8 @@ When the page loads with no hash, it must not scroll to `#addons`. Only call `sc
 
 ### Verification
 #### Automated
-- [ ] `grep -c 'prefix: "' docs/index.html` prints `5`
-- [ ] `gh release list --limit 50 --json tagName,publishedAt` shows the newest per prefix as pp-v0.2.1, tb-v1.0.0, wck-v0.2.0, wuk-v0.5.0, bcard-v0.8.5
+- [x] `grep -c 'prefix: "' docs/index.html` prints `5`
+- [x] `gh release list --limit 50 --json tagName,publishedAt` shows the newest per prefix as pp-v0.2.1, tb-v1.0.0, wck-v0.2.0, wuk-v0.5.0, bcard-v0.8.5
 
 #### Manual (browser pane, local server)
 - [ ] Each of the five tabs shows its card with the versions above, and Download hrefs use the `releases/download/<tag>/<Dir>-<ver>.zip` pattern
