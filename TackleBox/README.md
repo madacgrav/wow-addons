@@ -8,7 +8,7 @@ Fishing companion for WoW Forever. One sea-and-rope panel tracks your fishing sk
 ## Install
 
 1. Download `TackleBox-X.Y.Z.zip` from the repo's GitHub releases (tag `tb-vX.Y.Z`).
-2. Extract it so that the folder `TackleBox` sits in `_classic_beta_\Interface\AddOns\`.
+2. Extract it so that the folder `TackleBox` sits in `_forever_\Interface\AddOns\`.
 3. Restart the client.
 
 ## The panel
@@ -75,3 +75,5 @@ lua5.1 TackleBox/tests/run.lua
 ```
 
 CI runs the tests and publishes a release zip on every push to `main` that touches the addon. Bump `## Version` in the `.toc` to cut a new release. See [CHANGELOG.md](CHANGELOG.md).
+
+The [addon site](https://madacgrav.github.io/wow-addons/) reads this README and CHANGELOG live from `main`. A brand-new addon also needs a line in `ADDONS` in `docs/index.html`.

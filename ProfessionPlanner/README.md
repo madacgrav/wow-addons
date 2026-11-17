@@ -9,7 +9,7 @@ Leveling planner for WoW Forever. It docks next to the profession window. It tel
 ## Install
 
 1. Download `ProfessionPlanner-X.Y.Z.zip` from the repo's GitHub releases (tag `pp-vX.Y.Z`).
-2. Extract it so that the folder `ProfessionPlanner` sits in `_classic_beta_\Interface\AddOns\`.
+2. Extract it so that the folder `ProfessionPlanner` sits in `_forever_\Interface\AddOns\`.
 3. Restart the game or `/reload`.
 
 ## Opening the panel
@@ -113,3 +113,4 @@ The planner only knows what it has seen, so:
 
 - `Data.lua` is generated. Don't edit it by hand. Regenerate it with `tools/gen_seed.py` from Forever game data (wago.tools).
 - CI runs the tests and publishes a release zip on every push to `main` that touches the addon. Bump `## Version` in the `.toc` to cut a new release. See [CHANGELOG.md](CHANGELOG.md).
+- The [addon site](https://madacgrav.github.io/wow-addons/) reads this README and CHANGELOG live from `main`. A brand-new addon also needs a line in `ADDONS` in `docs/index.html`.

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WoW Forever Addons</title>
+<meta name="description" content="Addons for WoW Forever: install guide, commands and changelogs.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<style>
+  :root { --bg:#0f0b14; --panel:#1a1422; --line:#3a2d4a; --text:#e8e2ef; --muted:#a99bb8;
+          --accent:#d4a73a; --accent-ink:#1a1422; --link:#c9a2ff; --code:#251c30; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f7f4fa; --panel:#fff; --line:#ddd2e8; --text:#1f1828; --muted:#5f5370;
+            --accent:#8a5a00; --accent-ink:#fff; --link:#6b2fb3; --code:#f0eaf6; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  a { color:var(--link); }
+  h1 { font-size:2rem; margin:0 0 8px; color:var(--accent); letter-spacing:.01em; }
+  h2 { font-size:1.4rem; margin:32px 0 12px; }
+  h3 { font-size:1.1rem; margin:24px 0 8px; }
+  code { background:var(--code); padding:1px 5px; border-radius:4px; font-size:.9em; }
+  pre { background:var(--code); padding:12px; border-radius:8px; overflow-x:auto; }
+  pre code { padding:0; background:none; }
+  img, pre, table { max-width:100%; }
+  header p { color:var(--muted); max-width:70ch; }
+  #install ol { padding-left:1.4em; }
+  #install li { margin:6px 0; }
+  nav[role=tablist] { display:flex; gap:4px; overflow-x:auto; border-bottom:1px solid var(--line); margin-bottom:16px; }
+  nav[role=tablist] button { background:none; border:0; border-bottom:3px solid transparent; color:var(--muted);
+    font:inherit; font-weight:600; padding:10px 14px; cursor:pointer; white-space:nowrap; }
+  nav[role=tablist] button:hover { color:var(--text); }
+  nav[role=tablist] button[aria-selected=true] { color:var(--text); border-bottom-color:var(--accent); }
+  nav[role=tablist] button:focus-visible { outline:2px solid var(--link); outline-offset:-2px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 20px; }
+  .card h2 { margin:0 0 4px; }
+  .card p { margin:4px 0; }
+  .card .meta { color:var(--muted); font-size:.9rem; }
+  .card .links { margin-top:12px; display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; }
+  .dl { display:inline-block; background:var(--accent); color:var(--accent-ink); font-weight:700; text-decoration:none;
+    padding:8px 16px; border-radius:6px; }
+  .dl:hover { filter:brightness(1.1); }
+  .md table { display:block; overflow-x:auto; border-collapse:collapse; margin:12px 0; }
+  .md th, .md td { border:1px solid var(--line); padding:6px 10px; text-align:left; vertical-align:top; }
+  .md th { background:var(--panel); }
+  .log { border-top:1px solid var(--line); margin-top:32px; }
+  .log h2 { font-size:1.15rem; }
+  .err { color:var(--muted); font-style:italic; }
+  .loading { color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>WoW Forever Addons</h1>
+    <p>Small, focused addons for the <strong>WoW Forever</strong> client (Interface 16001). Each addon lives in its own
+       folder of the <a href="https://github.com/madacgrav/wow-addons">wow-addons</a> repo, has its own README and
+       changelog, and is released as a zip on GitHub every time its version changes.</p>
+  </header>
+
+  <section id="install">
+    <h2>Installing an addon</h2>
+    <ol>
+      <li>Pick an addon below and click <strong>Download</strong> to get its <code>.zip</code>.</li>
+      <li>Close the game, or plan to restart it.</li>
+      <li>Open your World of Warcraft folder (default <code>C:\Program Files (x86)\World of Warcraft\</code>) and go to
+          <code>_forever_\Interface\AddOns\</code>. Create the <code>AddOns</code> folder if it is missing.</li>
+      <li>Extract the zip there. The addon folder (for example <code>TackleBox</code>) must sit directly inside
+          <code>AddOns</code>, not inside another folder: <code>_forever_\Interface\AddOns\TackleBox\TackleBox.toc</code>.</li>
+      <li>Start the game. On character select, click <strong>AddOns</strong> and make sure the addon is ticked.</li>
+    </ol>
+    <p><strong>Updating:</strong> delete the old addon folder, extract the new zip the same way, then restart or
+       <code>/reload</code>. Your settings are kept (they live in <code>WTF\</code>, not the addon folder).
+       Addons with key bindings (Warlock Combat Kit, BusinessCard) need a full restart the first time.</p>
+    <p><strong>Removing:</strong> delete the addon folder from <code>AddOns</code>.</p>
+  </section>
+
+  <section id="addons">
+    <h2>Addons</h2>
+    <nav role="tablist" aria-label="Addons" id="tabs"></nav>
+    <div id="panels"></div>
+  </section>
+</main>
+<script>
+const REPO = "madacgrav/wow-addons";
+const RAW = `https://raw.githubusercontent.com/${REPO}/main/`;
+const GH = `https://github.com/${REPO}`;
+const ADDONS = [ // new addon? add one line: folder name + release tag prefix
+  { dir: "ProfessionPlanner", prefix: "pp" },
+  { dir: "TackleBox", prefix: "tb" },
+  { dir: "WarlockCombatKit", prefix: "wck" },
+  { dir: "WarlockUtilityKit", prefix: "wuk" },
+  { dir: "BusinessCard", prefix: "bcard" },
+];
+
+function parseToc(text) {
+  const out = {};
+  for (const m of text.matchAll(/^## (\w+): *(.*?)\s*$/gm)) out[m[1]] = m[2];
+  return out;
+}
+
+async function getText(path) {
+  const r = await fetch(RAW + path);
+  if (!r.ok) throw new Error(`${path}: ${r.status}`);
+  return r.text();
+}
+
+let releasesPromise;
+function fetchReleases() {
+  return releasesPromise ??= (async () => {
+    try { const c = sessionStorage.getItem("releases"); if (c) return JSON.parse(c); } catch {}
+    try {
+      const r = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=100`);
+      if (!r.ok) return [];
+      const list = await r.json();
+      try { sessionStorage.setItem("releases", JSON.stringify(list)); } catch {}
+      return list;
+    } catch { return []; }
+  })();
+}
+
+function latestFor(prefix, releases) {
+  const mine = releases.filter(r => r.tag_name.startsWith(prefix + "-v") && !r.draft);
+  if (!mine.length) return null;
+  const r = mine.reduce((a, b) => (a.published_at > b.published_at ? a : b));
+  const zip = r.assets.find(a => a.name.endsWith(".zip"));
+  return { tag: r.tag_name, version: r.tag_name.slice(prefix.length + 2),
+           zipUrl: zip ? zip.browser_download_url : r.html_url, pageUrl: r.html_url };
+}
+
+const stripH1 = md => md.replace(/^# .*\r?\n/, "");
+const el = (tag, attrs = {}, html = "") => Object.assign(document.createElement(tag), attrs, { innerHTML: html });
+
+const label = dir => dir.replace(/([a-z])([A-Z])/g, "$1 $2");
+const fail = path => `<p class="err">Couldn't load this part. <a href="${GH}/blob/main/${path}">View on GitHub</a>.</p>`;
+const safe = path => getText(path).catch(() => null);
+
+function fixLinks(root, dir) {
+  const base = `${GH}/blob/main/${dir}/`;
+  for (const a of root.querySelectorAll("a[href]")) {
+    const h = a.getAttribute("href");
+    if (/^(https?:|mailto:|#)/.test(h)) continue;
+    if (/^CHANGELOG\.md$/i.test(h)) { a.href = `#${dir}-changelog`; continue; }
+    const sib = h.match(/^\.\.\/(\w+)\/?$/);
+    if (sib && ADDONS.some(x => x.dir === sib[1])) { a.href = `#${sib[1]}`; continue; }
+    a.href = new URL(h, base).href; // resolves ../ against the blob path
+  }
+}
+
+async function renderAddon(addon, panel) {
+  panel.innerHTML = '<p class="loading">Loading…</p>';
+  const tocPath = `${addon.dir}/${addon.dir}.toc`, readmePath = `${addon.dir}/README.md`, logPath = `${addon.dir}/CHANGELOG.md`;
+  const [tocText, readme, log, releases] = await Promise.all([safe(tocPath), safe(readmePath), safe(logPath), fetchReleases()]);
+  const toc = tocText ? parseToc(tocText) : {};
+  const rel = latestFor(addon.prefix, releases);
+  const dl = rel
+    ? `<a class="dl" href="${rel.zipUrl}">Download v${rel.version}</a> <a href="${rel.pageUrl}">Release notes</a> ·`
+    : `<a class="dl" href="${GH}/releases?q=${addon.prefix}-v">Releases</a>`;
+  panel.innerHTML = "";
+  panel.append(el("div", { className: "card" }, `
+    <h2>${toc.Title || label(addon.dir)}</h2>
+    <p>${toc.Notes || ""}</p>
+    <p class="meta">Version ${toc.Version || "?"} · Interface ${toc.Interface || "?"}</p>
+    <p class="links">${dl} <a href="${GH}/tree/main/${addon.dir}">Source</a></p>`));
+  const body = el("div", { className: "md" }, readme ? marked.parse(stripH1(readme)) : fail(readmePath));
+  const logEl = el("div", { className: "md log", id: `${addon.dir}-changelog` }, "<h2>Changelog</h2>" +
+    (log ? marked.parse(stripH1(log).replace(/^All notable changes.*\r?\n/m, "")) : fail(logPath)));
+  fixLinks(body, addon.dir); fixLinks(logEl, addon.dir);
+  panel.append(body, logEl);
+}
+
+const tabs = document.getElementById("tabs"), panels = document.getElementById("panels");
+const rendered = new Set();
+function selectTab(dir, focus) {
+  for (const a of ADDONS) {
+    const on = a.dir === dir;
+    const t = document.getElementById(`tab-${a.dir}`);
+    t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1;
+    document.getElementById(a.dir).hidden = !on;
+    if (on && focus) t.focus();
+  }
+  if (!rendered.has(dir)) { rendered.add(dir); renderAddon(ADDONS.find(a => a.dir === dir), document.getElementById(dir)); }
+}
+for (const a of ADDONS) {
+  const t = el("button", { role: "tab", id: `tab-${a.dir}` }, label(a.dir));
+  t.setAttribute("aria-controls", a.dir);
+  t.onclick = () => { history.replaceState(null, "", `#${a.dir}`); selectTab(a.dir); };
+  tabs.append(t);
+  const p = el("section", { role: "tabpanel", id: a.dir, hidden: true });
+  p.setAttribute("aria-labelledby", `tab-${a.dir}`);
+  panels.append(p);
+}
+tabs.addEventListener("keydown", e => {
+  const i = ADDONS.findIndex(a => document.getElementById(`tab-${a.dir}`) === document.activeElement);
+  if (i < 0 || !["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+  const n = ADDONS[(i + (e.key === "ArrowRight" ? 1 : ADDONS.length - 1)) % ADDONS.length];
+  history.replaceState(null, "", `#${n.dir}`); selectTab(n.dir, true);
+});
+function onHash() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  const dir = h.replace(/-changelog$/, "");
+  const known = ADDONS.some(a => a.dir === dir);
+  selectTab(known ? dir : ADDONS[0].dir);
+  if (!known) return;
+  if (h !== dir) { // changelog anchor: wait for the lazy render, then scroll
+    const wait = (n = 50) => { const t = document.getElementById(h); t ? t.scrollIntoView() : n && setTimeout(() => wait(n - 1), 100); };
+    wait();
+  } else document.getElementById("addons").scrollIntoView();
+}
+addEventListener("hashchange", onHash);
+onHash();
+</script>
+</body>
+</html>
