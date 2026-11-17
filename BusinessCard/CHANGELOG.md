@@ -2,6 +2,13 @@
 
 All notable changes to this addon. Versions match `## Version` in `BusinessCard.toc`; each version is published as a `bcard-vX.Y.Z` GitHub release.
 
+## [0.8.6] — 2026-11-17
+- Card sharing no longer switches off for the whole session after one failed send. Throttle and lockdown errors wait and retry; other errors drop only that message. Trial accounts are detected up front.
+- Each player's card and recipe requests are answered at most once per 30 seconds, so one sender can't flood your outgoing queue.
+- Recipe names that hadn't loaded yet ("Recipe #1234") now fill in on their own.
+- Right-clicking a Seen row also removes guildmates who only sent a card.
+- Removed the `/bcard probe` and `/bcard ping` debug commands; their results are recorded.
+
 ## [0.8.5] — 2026-11-16
 - Card detail: hover a recipe to see its materials (icon, quantity and how many you have in bags and bank). Shift-click a recipe to link it in chat.
 

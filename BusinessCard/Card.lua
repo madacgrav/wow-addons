@@ -122,9 +122,13 @@ end
 local detail
 local names = {} -- names[key] = {{id, name}} sorted by name, resolved once per received list
 
+-- second return true = placeholder; spell data is requested so the next rebuild can resolve it
 local function RecipeName(id)
   local r = C_TradeSkillUI.GetRecipeInfo(id)
-  return (r and r.name) or (C_Spell.GetSpellName and C_Spell.GetSpellName(id)) or ("Recipe #" .. id)
+  local name = (r and r.name) or C_Spell.GetSpellName(id)
+  if name then return name end
+  C_Spell.RequestLoadSpellData(id)
+  return "Recipe #" .. id, true
 end
 
 -- hover: materials from the recipe schematic (works with no profession window open), with your bag+bank count
@@ -267,10 +271,15 @@ function BC.RefreshDetail()
   end
   detail.state:Hide(); detail.spin:Stop()
   local key = who .. ":" .. detail.prof
-  if not names[key] or #names[key] ~= #ids then
+  if not names[key] or #names[key] ~= #ids or names[key].pending then
     local n = {}
-    for i, id in ipairs(ids) do n[i] = { id = id, name = RecipeName(id) } end
-    table.sort(n, function(a, b) return a.name < b.name end); names[key] = n
+    for i, id in ipairs(ids) do
+      local name, placeholder = RecipeName(id)
+      n[i] = { id = id, name = name }; n.pending = n.pending or placeholder
+    end
+    table.sort(n, function(a, b) return a.name < b.name end)
+    n.tries = (names[key] and names[key].tries or 0) + 1; names[key] = n
+    if n.pending and n.tries < 5 then C_Timer.After(1, BC.RefreshDetail) else n.pending = nil end -- 5 x 1 s retries
   end
   local q, shown = (detail.search:GetText() or ""):lower(), {}
   for _, e in ipairs(names[key]) do if q == "" or e.name:lower():find(q, 1, true) then shown[#shown + 1] = e end end

@@ -26,8 +26,6 @@ WoW Forever addon (Interface 16001). It remembers who advertised professions, su
 - `/bcard seen`: prints the newest 20 advertisers.
 - Ctrl-click a Seen row: /who lookup that fills in their zone.
 - `/bcard busy` / `/bcard avail`: sets your overall status.
-- `/bcard probe`: prints client facts (channels, chat secrecy, spells, professions) and saves them to `BusinessCardDB.lastProbe`.
-- `/bcard ping <name>`: sends an addon whisper to another BusinessCard user and prints the result code. The other side replies `pong`.
 - `/bcard lock`: locks or unlocks frame dragging.
 - `/bcard reset`: resets frame positions.
 

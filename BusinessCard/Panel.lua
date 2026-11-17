@@ -13,7 +13,7 @@ end
 
 local function RowClick(self, btn)
   if not self.key then return end
-  if btn == "RightButton" then BC.Seen()[self.key] = nil; BC.RefreshPanel()
+  if btn == "RightButton" then BC.Seen()[self.key] = nil; BC.Cards()[self.key] = nil; BC.RefreshPanel()
   elseif IsShiftKeyDown() then BC.Ask(self.key, true); BC.ShowDetail(self.key)
   elseif IsControlKeyDown() then BC.Who(self.key)
   else Whisper(self.key) end
@@ -46,7 +46,8 @@ local function BuildRow(row)
   row.built = true
   row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
   row.stripe = row:CreateTexture(nil, "BACKGROUND"); row.stripe:SetAllPoints(); row.stripe:SetColorTexture(1, 1, 1, 0.03)
-  local hl = row:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); BC.Fade(hl, "HORIZONTAL", T.goldBright, 0.18, 0)  row.dot = BC.Dot(row, 10); row.dot:SetPoint("LEFT", 6, 0)
+  local hl = row:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); BC.Fade(hl, "HORIZONTAL", T.goldBright, 0.18, 0)
+  row.dot = BC.Dot(row, 10); row.dot:SetPoint("LEFT", 6, 0)
   row.name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   row.name:SetPoint("LEFT", 22, 0); row.name:SetWidth(150); row.name:SetJustifyH("LEFT"); row.name:SetWordWrap(false)
   row.icons = {}
