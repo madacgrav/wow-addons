@@ -388,7 +388,7 @@ Download an addon's zip from its latest release, then extract it so the addon fo
 - [x] `git diff --stat` touches only the 7 docs files plus `docs/`, no `.lua`/`.toc`/`.yml`
 
 #### Manual
-- [ ] Optional: temporarily point `RAW` at `http://localhost:8000/../` by serving the repo root (`python -m http.server -d . 8001`) and setting `RAW = "http://localhost:8001/"` in devtools only, to preview the BusinessCard tab with the new changelog and Install section. Do not commit the change.
+- [x] Optional: temporarily point `RAW` at `http://localhost:8000/../` by serving the repo root (`python -m http.server -d . 8001`) and setting `RAW = "http://localhost:8001/"` in devtools only, to preview the BusinessCard tab with the new changelog and Install section. Do not commit the change.
 
 ---
 
