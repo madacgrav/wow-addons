@@ -169,6 +169,8 @@ local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 240
   ```
 - Update the header comment on line 2 to say "tabs via WCK.settingsTabs".
 
+**Deviation found in-game**: `Panel.lua:10` already defines `WCK.MakeMovable(f, key, x, y, handles)` for the Shift+drag panel and bar, and it loads after `UI.lua`, so it overrode the copy. The copied helper is now `WCK.MakeDialogMovable(f, key, x, y)` (free drag, clamped, `db.frames[key]`). Settings calls `WCK.MakeDialogMovable(win, "settings", 0, 0)`.
+
 ### Verification
 #### Automated
 - [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`

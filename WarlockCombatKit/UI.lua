@@ -107,13 +107,11 @@ function WCK.Button(parent, label, width, onClick)
   return b
 end
 
--- free = dialog window: plain drag, ignores the lock, clamped on screen
-function WCK.MakeMovable(f, key, x, y, free)
-  f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton")
-  if free then f:SetClampedToScreen(true) end
-  f:SetScript("OnDragStart", function(self)
-    if free or (IsShiftKeyDown() and not WCK.db.locked and not InCombatLockdown()) then self:StartMoving() end
-  end)
+-- dialog window: plain drag (ignores the panel lock), clamped on screen, position saved in db.frames[key]
+-- (not MakeMovable: Panel.lua owns that name for the Shift+drag panel/bar)
+function WCK.MakeDialogMovable(f, key, x, y)
+  f:SetMovable(true); f:EnableMouse(true); f:RegisterForDrag("LeftButton"); f:SetClampedToScreen(true)
+  f:SetScript("OnDragStart", f.StartMoving)
   f:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     local p, _, rp, px, py = self:GetPoint()

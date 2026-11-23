@@ -191,7 +191,7 @@ local function Build()
   win = CreateFrame("Frame", "WCKSettings", UIParent, "BackdropTemplate")
   win:SetSize(460, 520); win:SetFrameStrata("DIALOG")
   WCK.Skin(win, "Warlock Combat Kit", { close = true })
-  WCK.MakeMovable(win, "settings", 0, 0, true)
+  WCK.MakeDialogMovable(win, "settings", 0, 0)
   tinsert(UISpecialFrames, "WCKSettings") -- Escape closes it
   win.syncs = {}
   local tabs, pages, n = {}, {}, #WCK.settingsTabs
