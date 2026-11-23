@@ -111,11 +111,11 @@ on = WCK.CooldownState({ isActive = true }); eq(on, true, "isOnGCD missing = rea
 - [x] `grep -n "WCK.next" WarlockCombatKit/Logic.lua` returns no hits in `ButtonLook`
 
 #### Manual (deploy with robocopy to `_forever_\Interface\AddOns\WarlockCombatKit`, then `/reload`)
-- [ ] No Lua errors (BugSack)
-- [ ] All bar buttons show in full colour out of combat
-- [ ] The suggested spell's button pulses purple, and the other buttons stay in colour
-- [ ] Cast Fear, Death Coil or Howl of Terror: that button greys
-- [ ] Spam Shadow Bolt: it never greys from the global cooldown
+- [x] No Lua errors (BugSack)
+- [x] All bar buttons show in full colour out of combat
+- [x] The suggested spell's button pulses purple, and the other buttons stay in colour
+- [x] Cast Fear, Death Coil or Howl of Terror: that button greys
+- [x] Spam Shadow Bolt: it never greys from the global cooldown
 
 ---
 
@@ -149,8 +149,8 @@ How the timer behaves:
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] Lint is clean for WarlockCombatKit
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] Lint is clean for WarlockCombatKit (no new warnings)
 
 #### Manual
 - [ ] Out of combat, with no target, cast Death Coil or Howl of Terror and don't touch anything: the button greys, then returns to colour within about 0.2 s of the cooldown ending

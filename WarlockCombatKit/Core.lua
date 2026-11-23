@@ -223,10 +223,17 @@ function WCK.BuildCooldowns(spells)
   return onCD, earliest
 end
 WCK.onCD, WCK.cdEnd = {}, nil
+local scheduledEnd -- end time of the one pending expiry timer
 table.insert(WCK.refreshers, function() -- after WCK.next, before Rotation.lua's highlight refresher
   local spells = {}
   for _, e in ipairs(WCK.BarSpells(WCK.char.rules, WCK.DATA.tail, WCK.spellSet, WCK.DATA.core)) do spells[#spells + 1] = e.spell end
   WCK.onCD, WCK.cdEnd = WCK.BuildCooldowns(spells)
+  -- SPELL_UPDATE_COOLDOWN on expiry is unverified on Forever: redraw once at the earliest readable end
+  local now, e = GetTime(), WCK.cdEnd
+  if e and e > now and (not scheduledEnd or e < scheduledEnd) then
+    scheduledEnd = e
+    C_Timer.After(e - now + 0.05, function() scheduledEnd = nil; WCK.Refresh() end)
+  end
 end)
 WCK.On("SPELL_UPDATE_COOLDOWN", WCK.Refresh)
 WCK.On("PLAYER_TARGET_CHANGED", WCK.Refresh)
