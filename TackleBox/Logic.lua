@@ -225,3 +225,65 @@ function TB.NormalizeKey(s)
   s = s:match("^%s*(.-)%s*$"):upper()
   return s ~= "" and s or nil
 end
+
+function TB.PoolByKey(pools, key) for _, p in ipairs(pools) do if p.key == key then return p end end end
+function TB.PoolKey(name, pools) for _, p in ipairs(pools) do if p.name == name then return p.key end end end
+
+-- spot rows for zones whose band holds the base skill; current zone first even when out of band
+function TB.SpotsRows(spots, zones, pools, skill, current)
+  if not skill then return {} end
+  local rows, seen = {}, {}
+  local function add(name)
+    local s = spots[name]
+    if not s or seen[name] then return end
+    seen[name] = true
+    local pnames, icon = {}, nil
+    for _, k in ipairs(s.pools) do
+      local p = TB.PoolByKey(pools, k)
+      if p then pnames[#pnames + 1] = p.name; icon = icon or p.icon end
+    end
+    local sub = table.concat(s.notable, ", ")
+    if #pnames > 0 then sub = sub .. " - " .. table.concat(pnames, ", ") end
+    rows[#rows + 1] = { text = name .. (name == current and " [here]" or ""), sub = sub, icon = icon or "Interface\\Icons\\INV_Misc_Fish_02", zone = name }
+  end
+  add(current)
+  for _, z in ipairs(zones) do
+    if skill.level >= z.band and skill.level < z.max then for _, n in ipairs(z.names) do add(n) end end
+  end
+  return rows
+end
+
+local function Yards(ax, ay, bx, by, w, h) return math.sqrt(((ax - bx) * w) ^ 2 + ((ay - by) * h) ^ 2) end
+
+-- facing: GetPlayerFacing radians, 0 = north, counter-clockwise; zone y grows south, x grows east
+function TB.OffsetPos(x, y, facing, yards, w, h)
+  return x - math.sin(facing) * yards / w, y - math.cos(facing) * yards / h
+end
+
+-- same type within radius yards: average into it; else append. ponytail: linear scan, fine for hundreds per map
+function TB.MergePool(list, x, y, t, now, radius, w, h)
+  for _, p in ipairs(list) do
+    if p.t == t and Yards(p.x, p.y, x, y, w, h) <= radius then
+      p.x, p.y = (p.x * p.n + x) / (p.n + 1), (p.y * p.n + y) / (p.n + 1)
+      p.n, p.last = p.n + 1, now
+      return list, false
+    end
+  end
+  list[#list + 1] = { x = x, y = y, t = t, n = 1, last = now }
+  return list, true
+end
+
+function TB.NearestPools(list, px, py, w, h, max)
+  local out = {}
+  for _, p in ipairs(list) do out[#out + 1] = { pool = p, yd = Yards(p.x, p.y, px, py, w, h) } end
+  table.sort(out, function(a, b) return a.yd < b.yd end)
+  for i = #out, (max or 10) + 1, -1 do out[i] = nil end
+  return out
+end
+
+-- once per key per cooldown seconds; records the alert time when it says yes
+function TB.ShouldAlert(last, key, now, cooldown)
+  if last[key] and now - last[key] < cooldown then return false end
+  last[key] = now
+  return true
+end

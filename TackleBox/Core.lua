@@ -14,7 +14,10 @@ events:SetScript("OnEvent", function(_, event, ...)
   for _, fn in ipairs(handlers[event]) do fn(...) end
 end)
 
-local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 200, tab = "where", flash = true, expanded = false }
+-- version 2: pools/pins/detect added; nothing to convert from v1, MergeDefaults fills them. Bump + migrate here on schema change.
+-- pools[uiMapID] = { {x, y, t = poolKey, n, last} }, x/y are 0-1 zone coordinates
+local DEFAULTS = { version = 2, locked = false, shown = true, frames = {}, minimapAngle = 200, tab = "where", flash = true, expanded = false,
+  pools = {}, pins = { map = true, minimap = true }, detect = true }
 local CHAR_DEFAULTS = { catches = {} }
 
 TB.On("ADDON_LOADED", function(name)
@@ -90,8 +93,19 @@ function TB.CountItems(ids)
 end
 
 -- probe snapshots: always on so /tb probe can report the last cast and loot
-TB.trace = {} -- last 12 {t, event, detail}; the probe reads the event order
-local function Trace(ev, d) table.insert(TB.trace, { GetTime(), ev, d }); if #TB.trace > 12 then table.remove(TB.trace, 1) end end
+TB.trace = {} -- last 20 {t, event, detail}; the probe reads the event order
+local function Trace(ev, d) table.insert(TB.trace, { GetTime(), ev, d }); if #TB.trace > 20 then table.remove(TB.trace, 1) end end
+-- probe run 6: does a fishing pool become the soft-interact target, and is its name readable?
+local function SoftName()
+  local ok, n = pcall(function()
+    if UnitExists("softinteract") then return (UnitIsGameObject("softinteract") and "obj " or "unit ") .. tostring(UnitName("softinteract")) end
+  end)
+  if not ok then return "ERR" end
+  if TB.Secret(n) then return "SECRET" end
+  return n or "none"
+end
+TB.On("PLAYER_SOFT_INTERACT_CHANGED", function(_, new) Trace("SOFT", (TB.Secret(new) and "SECRET" or tostring(new)) .. " " .. SoftName()) end)
+TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit) if unit == "player" then Trace("SOFT@CAST", SoftName()) end end)
 TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit, _, spellID)
   if unit ~= "player" then return end
   local _, _, _, st, et = UnitChannelInfo("player")
@@ -118,7 +132,91 @@ TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
 end)
 -- cast bar + got-away: a fishing cast that ends with no fishing loot within 1s counts as a miss
 TB.session = { misses = 0 }
+TB.Trace = Trace
 local function IsFishing(spellID) return spellID and not TB.Secret(spellID) and TB.DATA.fishingSpells[spellID] end
+
+-- pool learning: name at cast time, position = player + offset along facing, saved on confirmed fishing loot
+TB.HBD = LibStub("HereBeDragons-2.0")
+TB.POOL_OFFSET, TB.POOL_MERGE, TB.HOVER_SECONDS = 15, 15, 60 -- yards, yards, seconds; tune if one pool splits or two merge
+
+-- probe 6B: pools never become softinteract; the name only shows in the hover tooltip. Remember the last
+-- hovered pool so a cast within HOVER_SECONDS of hovering still learns it (one-key casters rarely hover at cast time).
+TB.lastHover = nil -- { name, t }
+
+-- detector: chat line + flash when a pool is hovered or soft-targeted; once per pool per minute, never in combat
+TB.alerts = {}
+local function Alert(name)
+  if not TB.active or not TB.db.detect or InCombatLockdown() then return end
+  if TB.ShouldAlert(TB.alerts, name, GetTime(), 60) then
+    TB.Print(name .. " nearby")
+    if TB.db.flash then TB.Flash() end
+  end
+end
+table.insert(TB.inits, function()
+  GameTooltip:HookScript("OnShow", function()
+    local t = GameTooltipTextLeft1:GetText()
+    if t and not TB.Secret(t) and TB.PoolKey(t, TB.DATA.pools) then TB.lastHover = { name = t, t = GetTime() }; Alert(t) end
+  end)
+end)
+-- probe 6B saw no pool as softinteract; kept so the alert fires if a later build makes pools soft-targetable
+TB.On("PLAYER_SOFT_INTERACT_CHANGED", function()
+  local ok, n = pcall(function() if UnitExists("softinteract") and UnitIsGameObject("softinteract") then return UnitName("softinteract") end end)
+  if ok and n and not TB.Secret(n) and TB.PoolKey(n, TB.DATA.pools) then Alert(n) end
+end)
+
+-- pool under soft-interact, else the tooltip, else a recent hover; nil when secret or not a known pool
+function TB.ReadPoolTarget()
+  local ok, n = pcall(function() if UnitExists("softinteract") and UnitIsGameObject("softinteract") then return UnitName("softinteract") end end)
+  if ok and n and not TB.Secret(n) and TB.PoolKey(n, TB.DATA.pools) then return n end
+  if GameTooltip:IsShown() then
+    local t = GameTooltipTextLeft1:GetText()
+    if t and not TB.Secret(t) and TB.PoolKey(t, TB.DATA.pools) then return t end
+  end
+  if TB.lastHover and GetTime() - TB.lastHover.t < TB.HOVER_SECONDS then return TB.lastHover.name end
+end
+
+function TB.PlayerPos()
+  local x, y, map = TB.HBD:GetPlayerZonePosition()
+  if not x or TB.Secret(x) or not map then return end
+  return x, y, map
+end
+
+TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit, _, spellID)
+  if unit ~= "player" then return end
+  if not IsFishing(spellID) then TB.castPool = nil return end
+  local name = TB.ReadPoolTarget()
+  local x, y, map = TB.PlayerPos()
+  TB.castPool = name and x and { key = TB.PoolKey(name, TB.DATA.pools), x = x, y = y, map = map, facing = GetPlayerFacing() } or nil
+  local raw = GameTooltip:IsShown() and GameTooltipTextLeft1:GetText()
+  local hv = TB.lastHover and string.format("%s %.0fs", TB.lastHover.name, GetTime() - TB.lastHover.t) or "none"
+  Trace("POOL@CAST", tostring(name) .. " | tt " .. (TB.Secret(raw) and "SECRET" or tostring(raw)) .. " | hover " .. hv
+    .. " | pos " .. (x and string.format("%.3f,%.3f m%s", x, y, tostring(map)) or "nil"))
+end)
+
+function TB.LearnPool()
+  local c = TB.castPool
+  TB.castPool = nil
+  if not c then Trace("LEARN", "no castPool") return end
+  if not c.facing or TB.Secret(c.facing) then Trace("LEARN", "no facing") return end
+  local w, h = TB.HBD:GetZoneSize(c.map)
+  if not w or w == 0 then Trace("LEARN", "no zone size m" .. tostring(c.map)) return end
+  local x, y = TB.OffsetPos(c.x, c.y, c.facing, TB.POOL_OFFSET, w, h)
+  TB.db.pools[c.map] = TB.db.pools[c.map] or {}
+  local _, isNew = TB.MergePool(TB.db.pools[c.map], x, y, c.key, time(), TB.POOL_MERGE, w, h)
+  Trace("LEARN", c.key .. (isNew and " new" or " merged"))
+  if isNew then TB.Print("learned " .. TB.PoolByKey(TB.DATA.pools, c.key).name) end
+  if TB.Pins then TB.Pins.Refresh() end
+end
+
+function TB.Waypoint(map, x, y)
+  if not C_Map.CanSetUserWaypointOnMap(map) then return TB.Print("can't set a waypoint on this map") end
+  C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(map, x, y))
+  C_SuperTrack.SetSuperTrackedUserWaypoint(true)
+end
+-- nearby distances go stale as you walk; refresh only while the Spots tab is on screen
+table.insert(TB.inits, function()
+  C_Timer.NewTicker(2, function() if TB.db.shown and TB.db.expanded and TB.db.tab == "spots" then TB.Refresh() end end)
+end)
 TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit, _, spellID)
   if unit ~= "player" or not IsFishing(spellID) then return end
   local _, _, _, st, et = UnitChannelInfo("player")
@@ -148,6 +246,7 @@ TB.On("LOOT_READY", function()
   if IsFishingLoot then isFL = IsFishingLoot() and true or false end
   if not TB.IsFishingCatch(isFL, TB.lastChannel, GetTime(), TB.DATA.fishingSpells) then return end
   looted = true
+  TB.LearnPool() -- only confirmed fishing loot learns a pool
   TB.lastLootT = GetTime()
   local sub = GetSubZoneText()
   local zone = GetRealZoneText() .. ((sub and sub ~= "") and (" - " .. sub) or "")
@@ -196,6 +295,26 @@ function TB.Probe()
   end
   P("IsFishingLoot", type(IsFishingLoot))
   P("zone", tostring(GetRealZoneText()) .. " / " .. tostring(GetSubZoneText()))
+  Try("softinteract", function()
+    P("softinteract", tostring(UnitExists("softinteract")) .. " obj " .. tostring(UnitIsGameObject("softinteract"))
+      .. " name " .. S(UnitName("softinteract")) .. " guid " .. S(UnitGUID("softinteract")))
+  end)
+  Try("tooltip", function() P("tooltip", tostring(GameTooltip:IsShown()) .. " " .. S(GameTooltipTextLeft1:GetText())) end)
+  Try("cvar", function() P("SoftTargetInteract", tostring(C_CVar.GetCVar("SoftTargetInteract"))) end)
+  Try("map", function()
+    local m = C_Map.GetBestMapForUnit("player")
+    local pos = m and C_Map.GetPlayerMapPosition(m, "player")
+    P("map", tostring(m) .. " pos " .. (pos and (S(pos.x) .. "," .. S(pos.y)) or "nil") .. " facing " .. S(GetPlayerFacing()))
+  end)
+  Try("pools", function()
+    local x, y, m = TB.PlayerPos()
+    local w, h; if m then w, h = TB.HBD:GetZoneSize(m) end
+    local n = 0
+    for _, l in pairs(TB.db.pools) do n = n + #l end
+    P("pools", "HBD pos " .. tostring(x) .. "," .. tostring(y) .. " m" .. tostring(m) .. " size " .. tostring(w) .. "x" .. tostring(h)
+      .. " saved " .. n .. " hover " .. (TB.lastHover and TB.lastHover.name or "none"))
+  end)
+  P("map hooks", "AddDataProvider " .. type(WorldMapFrame and WorldMapFrame.AddDataProvider) .. " mixin " .. type(MapCanvasDataProviderMixin))
 
   Try("auras", function()
     local first
@@ -250,6 +369,11 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "reset" then wipe(TB.db.frames); TB.Print("positions reset; /reload to apply")
   elseif cmd == "probe" then TB.Probe()
   elseif cmd == "flash" then TB.db.flash = not TB.db.flash; TB.Print("flash " .. (TB.db.flash and "on" or "off"))
+  elseif cmd == "detect" then TB.db.detect = not TB.db.detect; TB.Print("pool alerts " .. (TB.db.detect and "on" or "off"))
+  elseif cmd == "pins" then
+    local which = (msg or ""):lower():match("^%s*%S+%s+(%S+)")
+    if which ~= "map" and which ~= "minimap" then TB.Print("usage: /tb pins map||minimap")
+    else TB.db.pins[which] = not TB.db.pins[which]; TB.Pins.Refresh(); TB.Print(which .. " pins " .. (TB.db.pins[which] and "on" or "off")) end
   elseif cmd == "bind" then
     local key = TB.NormalizeKey((msg or ""):match("^%s*%S+%s+(.-)%s*$"))
     if not key then TB.Print("usage: /tb bind <KEY>, for example /tb bind F")
@@ -262,5 +386,5 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "unbind" then
     if InCombatLockdown() then TB.Print("can't change the cast key in combat")
     else TB.db.castKey = nil; TB.BindCast(); TB.Print("cast key cleared") end
-  else TB.Print("/tb show||hide||lock||reset||probe||flash||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
+  else TB.Print("/tb show||hide||lock||reset||probe||flash||pins map||minimap||detect||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
 end

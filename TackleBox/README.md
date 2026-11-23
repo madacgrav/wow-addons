@@ -1,6 +1,6 @@
 # TackleBox
 
-Fishing companion for WoW Forever. One sea-and-rope panel tracks your fishing skill, tells you where to fish, follows the Artisan quest fish, logs every catch, watches camp buffs and water-walking, and docks a click-to-use fishing bar on its side. Every action needs your click or key press: TackleBox never casts on its own and never reacts to a bite.
+Fishing companion for WoW Forever. One sea-and-rope panel tracks your fishing skill, tells you where to fish and which pools to look for, remembers the pools you fish and pins them on your map, follows the Artisan quest fish, logs every catch, watches camp buffs and water-walking, and docks a click-to-use fishing bar on its side. Every action needs your click or key press: TackleBox never casts on its own and never reacts to a bite.
 
 - Client: WoW Forever (Interface 16001)
 - Language: English client. Zones are matched by their enUS names.
@@ -15,7 +15,7 @@ Fishing companion for WoW Forever. One sea-and-rope panel tracks your fishing sk
 
 The header shows your fishing skill as a water-filled bar (`Fishing level/max (+modifier)`), the session's "got away" count, and a zone line: your current zone's skill range and its *here* (green), *outgrown* (grey) or *too low* (red) flag, plus the lure it needs. Zones with no fishing data say so. Shift-drag the panel to move it; the position is saved. The close button, `/tb hide` or the minimap button hides it.
 
-The plus/minus button next to the zone line shows or hides the tabs; the choice is remembered. Five tabs sit under the header. Each shows how many rows it holds, and the last tab you picked is remembered. A tab shows up to 10 rows at a time and scrolls for the rest.
+The plus/minus button next to the zone line shows or hides the tabs; the choice is remembered. Six icon tabs sit under the header (hover one for its name). Each shows how many rows it holds, and the last tab you picked is remembered. A tab shows up to 10 rows at a time and scrolls for the rest.
 
 | Tab | Shows |
 |---|---|
@@ -24,6 +24,16 @@ The plus/minus button next to the zone line shows or hides the tabs; the choice 
 | Camp | Fishing Rack (Uncommon catches, Fishing 140) and Fishing Hut (Rare catches, Fishing 300): time left when active, otherwise the skill you still need |
 | Water | Whether you are water-walking, or which item on the fishing bar will do it |
 | Catch | Every fish you have caught on this character, grouped Uncommon / Rare / Unique / Other by the best quality seen. Hover a fish for the zones where you caught it most |
+| Spots | **Nearby pools** you have learned on this map, nearest first (click one for a waypoint), then the **best spots** for your skill: notable catches and the pool types in each zone, your current zone first |
+
+## Pools
+
+TackleBox learns pools as you fish them. The game only shows a pool's name in its mouse-over tooltip, so:
+
+1. Hover the pool (its tooltip shows), then cast at it within 60 seconds. One-key cast works too.
+2. When the catch lands, the spot is saved for all your characters: your position plus 15 yards in the direction you face. Chat says `learned <pool>` the first time.
+
+Learned pools appear under Nearby pools on the Spots tab and as pins on the world map and minimap (hover a pin for the name and count). `/tb pins map` and `/tb pins minimap` hide or show them. Hovering a pool also prints `<pool> nearby` and flashes (once per pool per minute, never in combat); `/tb detect` turns that off. Pools are spawn points, so a learned spot may be empty until the pool respawns.
 
 ## Fishing bar
 
@@ -69,7 +79,9 @@ Limits:
 | `/tb show` / `/tb hide` | Show or hide the panel |
 | `/tb lock` | Lock or unlock frame dragging |
 | `/tb reset` | Forget saved positions (applies after `/reload`) |
-| `/tb flash` | Turn the got-away flash on or off |
+| `/tb flash` | Turn the got-away flash on or off (also used by pool alerts) |
+| `/tb pins map` / `/tb pins minimap` | Hide or show learned-pool pins |
+| `/tb detect` | Turn pool alerts on or off |
 | `/tb probe` | Dump fishing facts to chat and `TackleBoxDB.lastProbe` |
 | `/tb bind <key>` | Use that key to cast and reel in (see One-key cast) |
 | `/tb unbind` | Remove the cast key |
@@ -80,10 +92,15 @@ Limits:
 
 ## Notes
 
-- Item, spell and skill-requirement IDs in `Data.lua` come from in-game probes and the client's own data tables for build 1.60.1.70450. Zone bands and lure bonuses come from Forever fishing guides.
+- Item, spell and skill-requirement IDs in `Data.lua` come from in-game probes and the client's own data tables for build 1.60.1.70450. Zone bands come from the Gfinity Forever fishing guide (Oct 2026); lure bonuses from Forever fishing guides.
+- Pool types and each zone's notable catches come from warcraft.wiki.gg and WarcraftTavern (Classic data); where pools spawn in Forever is not verified.
 - The Rack and Hut buff IDs ("Uncommon Fishing", "Rare Fishing") have not yet been confirmed at a real camp.
 - Forever has no separate Uncommon/Rare fish items; a better catch is the same fish at a higher loot quality, which is what the Catch tab records.
 - There is no bite alert: the game gives addons no bite event.
+
+## Libraries
+
+TackleBox embeds [HereBeDragons](https://github.com/Nevcairiel/HereBeDragons) 2.18 by Nevcairiel (BSD) for map coordinates and pins, plus LibStub (public domain) and CallbackHandler-1.0 (Ace3 licence). Their licence texts are in `Libs/`.
 
 ## Development
 

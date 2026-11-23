@@ -1,6 +1,9 @@
 local ADDON, TB = ...
--- TOP = header + zone line + tab strip height above the first row; HEAD = collapsed panel height
-local WIDTH, ROW_W, TOP, TAB_H, HEAD = 320, 296, 146, 34, 100
+-- HEAD = collapsed panel height; the tab strip starts at -HEAD; TOP = first row's y
+local WIDTH, ROW_W, PAD, TAB_H, HEAD = 320, 296, 12, 34, 100
+local TOP = HEAD + TAB_H + PAD               -- 146
+local PITCH, ROW_H = 26, 24                  -- row spacing and height
+local SKILL_Y, ZONE_Y = -58, -86             -- skill bar top; zone line centre
 local VISIBLE, LIST_W = 10, ROW_W - 20 -- rows shown before scrolling; 20px gutter keeps the scroll bar inside the edge
 local panel
 
@@ -8,6 +11,8 @@ local panel
 TB.THEME = {
   sea = { 0.02, 0.09, 0.14, 0.94 }, shallows = { 0.08, 0.32, 0.45 }, rope = { 0.72, 0.58, 0.36 },
   sand = { 0.95, 0.85, 0.6 }, foam = { 0.75, 0.9, 1 }, line = { 0.15, 0.55, 0.8 },
+  muted = { 0.6, 0.6, 0.6 }, -- inactive labels, empty text
+  hi = 0.10,                 -- hover alpha for rows and tabs
 }
 local T = TB.THEME
 local QUIPS = { "Tight lines!", "Patience is the best bait.", "The big one's still out there.",
@@ -53,6 +58,12 @@ local function Fade(tex, r, g, b, aTop, aBottom)
   tex:SetGradient("VERTICAL", CreateColor(r, g, b, aBottom), CreateColor(r, g, b, aTop))
 end
 
+-- display font with fallback (pattern: BusinessCard/Skin.lua:96-97)
+function TB.TitleFont(fs, size)
+  if not fs:SetFont("Fonts\\MORPHEUS.ttf", size or 18, "") then fs:SetFontObject("GameFontNormalLarge") end
+  fs:SetShadowOffset(1, -1)
+end
+
 local function Build()
   panel = CreateFrame("Frame", "TBPanel", UIParent, "BackdropTemplate")
   panel:SetWidth(WIDTH); panel:SetFrameStrata("MEDIUM")
@@ -63,9 +74,13 @@ local function Build()
   local glow = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
   glow:SetPoint("BOTTOMLEFT", 4, 4); glow:SetPoint("BOTTOMRIGHT", -4, 4); glow:SetHeight(90)
   Fade(glow, T.shallows[1], T.shallows[2], T.shallows[3], 0, 0.35)
+  -- matching shallows band behind the header
+  local band = panel:CreateTexture(nil, "BACKGROUND", nil, 1)
+  band:SetPoint("TOPLEFT", 4, -4); band:SetPoint("TOPRIGHT", -4, -4); band:SetHeight(-SKILL_Y - 4)
+  Fade(band, T.shallows[1], T.shallows[2], T.shallows[3], 0.35, 0)
 
   local close = CreateFrame("Button", nil, panel, "UIPanelCloseButton")
-  close:SetPoint("TOPRIGHT", 2, 2)
+  close:SetPoint("TOPRIGHT", -4, -4) -- same inset as BusinessCard/Panel.lua:108
   close:HookScript("OnClick", function() TB.db.shown = false; TB.Refresh() end)
 
   -- round fishing portrait: the minimap-button layout (31px frame, 20px icon, 53px border at TOPLEFT) scaled x2
@@ -81,6 +96,7 @@ local function Build()
 
   panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
   panel.title:SetPoint("TOPLEFT", 62, -14); panel.title:SetText("TackleBox")
+  TB.TitleFont(panel.title)
   panel.title:SetTextColor(T.sand[1], T.sand[2], T.sand[3])
   panel.quip = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
   panel.quip:SetPoint("TOPLEFT", panel.title, "BOTTOMLEFT", 0, -3)
@@ -89,7 +105,7 @@ local function Build()
 
   -- skill as a water-filled bar
   local sk = CreateFrame("StatusBar", nil, panel)
-  sk:SetHeight(14); sk:SetPoint("TOPLEFT", 12, -58) -- right edge set below, against the got-away counter
+  sk:SetHeight(14); sk:SetPoint("TOPLEFT", PAD, SKILL_Y) -- right edge set below, against the got-away counter
   sk:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar"); sk:SetStatusBarColor(T.line[1], T.line[2], T.line[3])
   local skbg = sk:CreateTexture(nil, "BACKGROUND"); skbg:SetAllPoints(); skbg:SetColorTexture(0, 0, 0, 0.55)
   sk.text = sk:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); sk.text:SetPoint("CENTER")
@@ -97,14 +113,14 @@ local function Build()
 
   -- got-away counter pinned to the right edge; the skill bar takes whatever width is left
   panel.misses = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  panel.misses:SetPoint("RIGHT", panel, "TOPRIGHT", -12, -65); panel.misses:SetJustifyH("RIGHT")
+  panel.misses:SetPoint("RIGHT", panel, "TOPRIGHT", -PAD, SKILL_Y - 7); panel.misses:SetJustifyH("RIGHT")
   local fish = panel:CreateTexture(nil, "ARTWORK")
   fish:SetSize(16, 16); fish:SetPoint("RIGHT", panel.misses, "LEFT", -4, 0); fish:SetTexture("Interface\\Icons\\INV_Misc_Fish_02")
   sk:SetPoint("RIGHT", fish, "LEFT", -8, 0)
 
   -- expand/collapse the tabs; state in TB.db.expanded
   local ex = CreateFrame("Button", nil, panel)
-  ex:SetSize(16, 16); ex:SetPoint("RIGHT", panel, "TOPRIGHT", -12, -86)
+  ex:SetSize(16, 16); ex:SetPoint("RIGHT", panel, "TOPRIGHT", -PAD, ZONE_Y)
   ex:SetScript("OnClick", function() TB.db.expanded = not TB.db.expanded; TB.Refresh() end)
   ex:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(TB.db.expanded and "Hide tabs" or "Show tabs", T.sand[1], T.sand[2], T.sand[3]); GameTooltip:Show()
@@ -113,7 +129,7 @@ local function Build()
   panel.expand = ex
   -- current zone's fishing status, always shown
   panel.zone = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  panel.zone:SetPoint("LEFT", panel, "TOPLEFT", 12, -86); panel.zone:SetPoint("RIGHT", ex, "LEFT", -4, 0)
+  panel.zone:SetPoint("LEFT", panel, "TOPLEFT", PAD, ZONE_Y); panel.zone:SetPoint("RIGHT", ex, "LEFT", -4, 0)
   panel.zone:SetJustifyH("LEFT"); panel.zone:SetWordWrap(false)
 
   local rule = panel:CreateTexture(nil, "ARTWORK")
@@ -127,18 +143,28 @@ local function Build()
   -- rows scroll inside a box at most VISIBLE rows tall; rows are made lazily by GetRow
   panel.rows = {}
   panel.scroll = CreateFrame("ScrollFrame", "TBPanelScroll", panel, "UIPanelScrollFrameTemplate")
-  panel.scroll:SetPoint("TOPLEFT", 12, -TOP); panel.scroll:SetSize(LIST_W, 3 * 26)
+  panel.scroll:SetPoint("TOPLEFT", PAD, -TOP); panel.scroll:SetSize(LIST_W, 3 * PITCH)
   panel.content = CreateFrame("Frame", nil, panel.scroll)
-  panel.content:SetSize(LIST_W, 26)
+  panel.content:SetSize(LIST_W, PITCH)
   panel.scroll:SetScrollChild(panel.content)
   panel:HookScript("OnShow", function(self) self.quip:SetText(QUIPS[math.random(#QUIPS)]) end)
+
+  -- empty tab: the tab's icon and placeholder text centred in the list area
+  panel.emptyIcon = panel:CreateTexture(nil, "ARTWORK")
+  panel.emptyIcon:SetSize(32, 32); panel.emptyIcon:SetPoint("TOP", panel.scroll, "TOP", 0, -6)
+  panel.emptyIcon:SetDesaturated(true); panel.emptyIcon:SetAlpha(0.5); panel.emptyIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+  panel.emptyText = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  panel.emptyText:SetPoint("TOP", panel.emptyIcon, "BOTTOM", 0, -4); panel.emptyText:SetWidth(LIST_W - 20)
+  panel.emptyText:SetTextColor(T.muted[1], T.muted[2], T.muted[3])
 end
 
 local function GetRow(i)
   if panel.rows[i] then return panel.rows[i] end
   local row = CreateFrame("Frame", nil, panel.content)
-  row:SetSize(LIST_W, 24); row:SetPoint("TOPLEFT", 0, -(i - 1) * 26)
+  row:SetSize(LIST_W, ROW_H); row:SetPoint("TOPLEFT", 0, -(i - 1) * PITCH)
   row.band = row:CreateTexture(nil, "BACKGROUND"); row.band:SetAllPoints()
+  row.frame = row:CreateTexture(nil, "BORDER"); row.frame:SetSize(22, 22); row.frame:SetPoint("LEFT", 1, 0) -- 1px rope edge
+  row.frame:SetColorTexture(T.rope[1], T.rope[2], T.rope[3], 0.6)
   row.icon = row:CreateTexture(nil, "ARTWORK"); row.icon:SetSize(20, 20); row.icon:SetPoint("LEFT", 2, 0)
   row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93) -- trim the icon border
   row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -151,14 +177,23 @@ local function GetRow(i)
   row.bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
   local bbg = row.bar:CreateTexture(nil, "BACKGROUND"); bbg:SetAllPoints(); bbg:SetColorTexture(0, 0, 0, 0.6)
   row:EnableMouse(true)
-  row.hl = row:CreateTexture(nil, "HIGHLIGHT"); row.hl:SetAllPoints(); row.hl:SetColorTexture(T.foam[1], T.foam[2], T.foam[3], 0.08)
+  row.hl = row:CreateTexture(nil, "HIGHLIGHT"); row.hl:SetAllPoints(); row.hl:SetColorTexture(T.foam[1], T.foam[2], T.foam[3], T.hi)
   row:SetScript("OnEnter", function(self)
+    if not self.itemID and self.full then -- spot rows: the sub line is often cut off
+      GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:AddLine(self.full, 1, 1, 1, true); GameTooltip:Show()
+      return
+    end
+    if not self.itemID and self.hint then -- nearby pool rows
+      GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:AddLine(self.hint, 1, 1, 1); GameTooltip:Show()
+      return
+    end
     if not self.itemID then return end
     GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:SetItemByID(self.itemID)
     if self.onTooltip then self.onTooltip(GameTooltip) end
     GameTooltip:Show()
   end)
   row:SetScript("OnLeave", GameTooltip_Hide)
+  row:SetScript("OnMouseUp", function(self, b) if b == "LeftButton" and self.onClick then self.onClick() end end)
   panel.rows[i] = row
   return row
 end
@@ -166,15 +201,18 @@ end
 local function MakeTab(i, n)
   local w = (ROW_W - (n - 1) * 4) / n
   local t = CreateFrame("Button", nil, panel)
-  t:SetSize(w, TAB_H - 4); t:SetPoint("TOPLEFT", 12 + (i - 1) * (w + 4), -100)
+  t:SetSize(w, TAB_H - 4); t:SetPoint("TOPLEFT", PAD + (i - 1) * (w + 4), -HEAD)
   t.bg = t:CreateTexture(nil, "BACKGROUND"); t.bg:SetAllPoints()
   t.icon = t:CreateTexture(nil, "ARTWORK"); t.icon:SetSize(16, 16); t.icon:SetPoint("TOP", 0, -3)
   t.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
   t.label = t:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); t.label:SetPoint("BOTTOM", 0, 2)
+  if n >= 6 then -- too narrow for labels: bigger centred icon, title in the tooltip
+    t.label:Hide(); t.icon:SetSize(18, 18); t.icon:ClearAllPoints(); t.icon:SetPoint("CENTER", 0, 1)
+  end
   t.badge = t:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"); t.badge:SetPoint("TOPRIGHT", -3, -2)
   t.under = t:CreateTexture(nil, "OVERLAY"); t.under:SetHeight(2)
   t.under:SetPoint("BOTTOMLEFT"); t.under:SetPoint("BOTTOMRIGHT"); t.under:SetColorTexture(T.rope[1], T.rope[2], T.rope[3], 1)
-  local hl = t:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetColorTexture(T.foam[1], T.foam[2], T.foam[3], 0.12)
+  local hl = t:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints(); hl:SetColorTexture(T.foam[1], T.foam[2], T.foam[3], T.hi)
   t:SetScript("OnClick", function(self) TB.db.tab = self.key; TB.Refresh() end)
   t:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(self.title, T.sand[1], T.sand[2], T.sand[3]); GameTooltip:Show()
@@ -192,7 +230,7 @@ local function RenderTabs(tabs, active)
     t.key, t.title = s.key, s.title
     t.icon:SetTexture(s.icon); t.icon:SetDesaturated(not on); t.icon:SetAlpha(on and 1 or 0.6)
     t.label:SetText(s.tab)
-    if on then t.label:SetTextColor(T.sand[1], T.sand[2], T.sand[3]) else t.label:SetTextColor(0.6, 0.6, 0.6) end
+    if on then t.label:SetTextColor(T.sand[1], T.sand[2], T.sand[3]) else t.label:SetTextColor(T.muted[1], T.muted[2], T.muted[3]) end
     t.badge:SetText(s.count > 0 and s.count or "")
     Fade(t.bg, T.shallows[1], T.shallows[2], T.shallows[3], on and 0.75 or 0.3, on and 0.35 or 0.1)
     t.under:SetShown(on)
@@ -227,14 +265,15 @@ function TB.RenderPanel(rows, skill, misses, tabs, active, zone)
     local row = v and GetRow(i) or panel.rows[i]
     row:SetShown(v ~= nil)
     if v then
-      row.icon:SetShown(not v.empty)
+      local plain = v.empty or v.header -- header rows: sand text, no icon, no stripe
+      row.icon:SetShown(not plain); row.frame:SetShown(not plain)
       row.icon:SetTexture(v.icon or 134400)
       row.text:SetText(v.text)
-      local c = v.color or (v.empty and { 0.6, 0.6, 0.6 }) or { 1, 1, 1 }
+      local c = v.color or (v.empty and T.muted) or (v.header and T.sand) or { 1, 1, 1 }
       row.text:SetTextColor(c[1], c[2], c[3])
       row.sub:SetText(v.sub or "")
-      stripe = not stripe
-      row.band:SetColorTexture(1, 1, 1, stripe and 0.03 or 0)
+      if not v.header then stripe = not stripe end
+      row.band:SetColorTexture(1, 1, 1, (stripe and not v.header) and 0.03 or 0)
       row.bar:SetShown(v.progress ~= nil)
       if v.progress then
         row.bar:SetValue(v.progress)
@@ -242,15 +281,25 @@ function TB.RenderPanel(rows, skill, misses, tabs, active, zone)
         row.bar:SetStatusBarColor(done and 0.25 or T.line[1], done and 0.75 or T.line[2], done and 0.25 or T.line[3])
       end
       row.itemID, row.onTooltip = v.itemID, v.onTooltip
+      row.full = v.zone and v.sub or nil
+      row.onClick, row.hint = v.onClick, v.hint
     end
   end
+  local empty = n == 1 and rows[1].empty
+  local activeTab
+  for _, s in ipairs(tabs) do if s.key == active then activeTab = s end end
+  panel.emptyIcon:SetShown(exp and empty); panel.emptyText:SetShown(exp and empty)
+  if empty then
+    panel.emptyIcon:SetTexture(activeTab and activeTab.icon); panel.emptyText:SetText(rows[1].text)
+    panel.rows[1]:Hide()
+  end
   local vis = math.min(math.max(n, 3), VISIBLE) -- keep a little water under short tabs
-  panel.content:SetHeight(math.max(n, 1) * 26)
-  panel.scroll:SetHeight(vis * 26)
+  panel.content:SetHeight(math.max(n, 1) * PITCH)
+  panel.scroll:SetHeight(vis * PITCH)
   if panel.scroll.ScrollBar then panel.scroll.ScrollBar:SetShown(n > VISIBLE) end
   if active ~= panel.lastTab then panel.scroll:SetVerticalScroll(0); panel.lastTab = active end
   panel.scroll:SetShown(exp)
-  panel:SetHeight(exp and (TOP + 10 + vis * 26) or HEAD)
+  panel:SetHeight(exp and (TOP + 10 + vis * PITCH) or HEAD)
   panel:Show()
 end
 
@@ -314,17 +363,39 @@ table.insert(TB.sections, { key = "catch", title = "Collection", tab = "Catch", 
   end
   return rows
 end })
+table.insert(TB.sections, { key = "spots", title = "Best spots", tab = "Spots", empty = "No spot data for your skill yet.", icon = "Interface\\Icons\\INV_Misc_Spyglass_01", build = function()
+  -- learned pools on this map first (nearest first, click sets a waypoint), then the best zones for your skill
+  local rows = {}
+  local x, y, map = TB.PlayerPos()
+  local list, w, h = map and TB.db.pools[map], nil, nil
+  if map then w, h = TB.HBD:GetZoneSize(map) end
+  if not map then rows[#rows + 1] = { header = true, text = "No map position here" }
+  elseif list and #list > 0 and w and w > 0 then
+    rows[#rows + 1] = { header = true, text = "Nearby pools" }
+    for _, n in ipairs(TB.NearestPools(list, x, y, w, h, 10)) do
+      local p, info = n.pool, TB.PoolByKey(TB.DATA.pools, n.pool.t)
+      rows[#rows + 1] = { text = info and info.name or n.pool.t, sub = math.floor(n.yd) .. " yd - seen " .. p.n .. "x",
+        icon = info and info.icon, hint = "Click: set waypoint", onClick = function() TB.Waypoint(map, p.x, p.y) end }
+    end
+  end
+  local spots = TB.SpotsRows(TB.DATA.spots, TB.DATA.zones, TB.DATA.pools, TB.skill, GetRealZoneText())
+  if #rows > 0 and #spots > 0 then rows[#rows + 1] = { header = true, text = "Best spots" } end
+  for _, r in ipairs(spots) do rows[#rows + 1] = r end
+  return rows
+end })
 table.insert(TB.refreshers, function()
   if not TB.db.shown then if panel then panel:Hide() end return end
   -- every tab builds so the badges stay current; the sections are small
   local secs = {}
   for _, s in ipairs(TB.sections) do
-    local rows = s.build()
-    secs[#secs + 1] = { key = s.key, title = s.title, tab = s.tab, icon = s.icon, empty = s.empty, rows = rows, count = #rows }
+    local rows, count = s.build(), 0
+    for _, r in ipairs(rows) do if not r.header then count = count + 1 end end -- badges skip section headers
+    -- a tab holding only headers (e.g. "No map position here") still counts as empty for the badge, not for the list
+    secs[#secs + 1] = { key = s.key, title = s.title, tab = s.tab, icon = s.icon, empty = s.empty, rows = rows, count = count }
   end
   local rows, active = TB.TabRows(secs, TB.db.tab)
   local zone = TB.ZoneStatus(TB.DATA.zones, TB.DATA.lures, TB.skill, GetRealZoneText())
-  if zone then zone.color = FLAG_COLORS[zone.flag] or (zone.flag == nil and { 0.6, 0.6, 0.6 }) end
+  if zone then zone.color = FLAG_COLORS[zone.flag] or (zone.flag == nil and T.muted) end
   TB.RenderPanel(rows, TB.skill, TB.session.misses, secs, active, zone)
 end)
 

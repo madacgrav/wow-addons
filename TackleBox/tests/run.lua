@@ -36,7 +36,7 @@ eq(w[1].sub, "skill 225-300, needs Bright Baubles", "lure note")
 w = TB.WhereRows(Z, L, { level = 230, modifier = 75 }, "Nowhere"); eq(w[1].sub, "skill 225-300", "lure satisfied")
 w = TB.WhereRows(Z, L, { level = 40, modifier = 0 }, "Redridge Mountains"); eq(w[#w].flag, "too low", "too low")
 eq(#TB.WhereRows(Z, L, nil, "x"), 0, "no skill")
-eq(#TB.WhereRows(TB.DATA.zones, TB.DATA.lures, { level = 2, modifier = 25 }, "Orgrimmar"), 7, "real data: 6 starting zones + Orgrimmar")
+eq(#TB.WhereRows(TB.DATA.zones, TB.DATA.lures, { level = 2, modifier = 25 }, "Orgrimmar"), 13, "real data: 13 starter zones incl. Orgrimmar")
 
 -- Phase 3
 local S = { [7620] = true }
@@ -89,10 +89,10 @@ eq(TB.PickLure(LL, {}, false, 300), nil, "no lures")
 
 -- Zone line
 local ZD, LD = TB.DATA.zones, TB.DATA.lures
-local zs = TB.ZoneStatus(ZD, LD, { level = 100, modifier = 0 }, "Orgrimmar")
-eq(zs.text, "Orgrimmar: skill 75-150 [here]", "zone here"); eq(zs.flag, "here", "zone here flag")
-eq(TB.ZoneStatus(ZD, LD, { level = 160, modifier = 0 }, "Orgrimmar").flag, "outgrown", "zone outgrown")
-eq(TB.ZoneStatus(ZD, LD, { level = 30, modifier = 0 }, "Redridge Mountains").flag, "too low", "zone too low (cast 55)")
+local zs = TB.ZoneStatus(ZD, LD, { level = 30, modifier = 0 }, "Orgrimmar")
+eq(zs.text, "Orgrimmar: skill 1-55 [here]", "zone here"); eq(zs.flag, "here", "zone here flag")
+eq(TB.ZoneStatus(ZD, LD, { level = 60, modifier = 0 }, "Orgrimmar").flag, "outgrown", "zone outgrown")
+eq(TB.ZoneStatus(Z, L, { level = 30, modifier = 0 }, "Redridge Mountains").flag, "too low", "zone too low (cast 55)")
 eq(TB.ZoneStatus(ZD, LD, { level = 230, modifier = 0 }, "Felwood").text:find("needs", 1, true) ~= nil, true, "zone lure need")
 zs = TB.ZoneStatus(ZD, LD, { level = 100, modifier = 0 }, "Moonglade")
 eq(zs.text, "Moonglade: no fishing data", "zone unknown"); eq(zs.flag, nil, "zone unknown flag")
@@ -112,5 +112,36 @@ eq(TB.WeaponsMacro(nil, { bag = 2, slot = 1 }), nil, "macro no mh")
 -- Cast key
 eq(TB.NormalizeKey(" f "), "F", "key trim+upper"); eq(TB.NormalizeKey("shift-f"), "SHIFT-F", "key modifier")
 eq(TB.NormalizeKey(""), nil, "key empty"); eq(TB.NormalizeKey(nil), nil, "key nil")
+
+-- Spots
+local SP = { A = { notable = { "Eel" }, pools = { "p1" } }, B = { notable = { "Cod" }, pools = {} }, C = { notable = { "Ray" }, pools = {} } }
+local SZ = { { band = 1, max = 50, names = { "A", "B" } }, { band = 50, max = 100, names = { "C" } } }
+local SPools = { { key = "p1", name = "Eel Swarm", icon = "i" } }
+local sr = TB.SpotsRows(SP, SZ, SPools, { level = 10 }, "C")
+eq(sr[1].text, "C [here]", "current zone first"); eq(#sr, 3, "band zones + current")
+eq(sr[2].sub, "Eel - Eel Swarm", "notable + pool names"); eq(sr[2].icon, "i", "pool icon")
+eq(#TB.SpotsRows(SP, SZ, SPools, nil, "A"), 0, "no skill")
+eq(#TB.SpotsRows(SP, SZ, SPools, { level = 10 }, "Nowhere"), 2, "unknown current zone skipped")
+eq(TB.PoolKey("Eel Swarm", SPools), "p1", "pool key"); eq(TB.PoolKey("x", SPools), nil, "no pool key")
+eq(TB.PoolKey("School of Deviate Fish", TB.DATA.pools), "deviate", "probe 6B tooltip name matches")
+for name, s in pairs(TB.DATA.spots) do for _, pk in ipairs(s.pools) do assert(TB.PoolByKey(TB.DATA.pools, pk), name .. " pool " .. pk) end end
+
+-- Pools
+local function r3(n) return math.floor(n * 1000 + 0.5) end
+local ox, oy = TB.OffsetPos(0.5, 0.5, 0, 10, 1000, 1000); eq(r3(ox), 500, "north keeps x"); eq(r3(oy), 490, "north moves up")
+ox, oy = TB.OffsetPos(0.5, 0.5, math.pi / 2, 10, 1000, 1000); eq(r3(ox), 490, "west moves left"); eq(r3(oy), 500, "west keeps y")
+local pl = {}
+local _, new = TB.MergePool(pl, 0.5, 0.5, "eel", 1, 15, 1000, 1000); eq(new, true, "first pool new")
+_, new = TB.MergePool(pl, 0.505, 0.5, "eel", 2, 15, 1000, 1000); eq(new, false, "5 yd merges"); eq(pl[1].n, 2, "count bumped"); eq(pl[1].last, 2, "last updated")
+eq(r3(pl[1].x * 10), 5025, "position averaged")
+_, new = TB.MergePool(pl, 0.505, 0.5, "oily", 3, 15, 1000, 1000); eq(new, true, "other type separate")
+_, new = TB.MergePool(pl, 0.6, 0.5, "eel", 4, 15, 1000, 1000); eq(new, true, "100 yd separate")
+local near = TB.NearestPools(pl, 0.6, 0.5, 1000, 1000, 2); eq(#near, 2, "max respected"); eq(near[1].pool.x, 0.6, "nearest first")
+eq(#TB.NearestPools({}, 0, 0, 1, 1), 0, "no pools")
+
+-- Detector
+local al = {}
+eq(TB.ShouldAlert(al, "p", 0, 60), true, "first alert"); eq(TB.ShouldAlert(al, "p", 30, 60), false, "cooldown")
+eq(TB.ShouldAlert(al, "q", 30, 60), true, "other pool"); eq(TB.ShouldAlert(al, "p", 61, 60), true, "after cooldown")
 
 print("all tests passed")
