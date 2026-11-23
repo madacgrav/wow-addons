@@ -109,4 +109,8 @@ eq(TB.WeaponsMacro({ bag = 0, slot = 3 }), "/equipslot 16 0 3", "macro mh only")
 eq(TB.WeaponsMacro({ bag = 0, slot = 3 }, { bag = 2, slot = 1 }), "/equipslot 16 0 3\n/equipslot 17 2 1", "macro mh+oh")
 eq(TB.WeaponsMacro(nil, { bag = 2, slot = 1 }), nil, "macro no mh")
 
+-- Cast key
+eq(TB.NormalizeKey(" f "), "F", "key trim+upper"); eq(TB.NormalizeKey("shift-f"), "SHIFT-F", "key modifier")
+eq(TB.NormalizeKey(""), nil, "key empty"); eq(TB.NormalizeKey(nil), nil, "key nil")
+
 print("all tests passed")

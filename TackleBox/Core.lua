@@ -56,6 +56,9 @@ TB.On("PLAYER_LOGIN", function()
 end)
 TB.On("SKILL_LINES_CHANGED", TB.Refresh)
 TB.On("PLAYER_REGEN_ENABLED", TB.Refresh)
+-- channel ended in combat: the key is still INTERACTTARGET; put it back once combat drops
+TB.On("PLAYER_REGEN_ENABLED", function() if TB.reeling and not UnitChannelInfo("player") then TB.ReelMode(false) end end)
+TB.On("PLAYER_LOGOUT", function() if TB.db then TB.RestoreCVars() end end) -- SVs save after logout fires, so the backup clears
 TB.On("BAG_UPDATE_DELAYED", TB.Refresh)
 TB.On("BANKFRAME_OPENED", TB.Refresh)
 TB.On("PLAYERBANKSLOTS_CHANGED", TB.Refresh)
@@ -121,10 +124,12 @@ TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit, _, spellID)
   local _, _, _, st, et = UnitChannelInfo("player")
   if not st or TB.Secret(st) or TB.Secret(et) then st = GetTime() * 1000; et = st + TB.DATA.castSeconds * 1000 end
   TB.StartCastBar(st, et)
+  TB.ReelMode(true)
 end)
 TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
   if unit ~= "player" or not (TB.lastChannel and IsFishing(TB.lastChannel.spellID)) then return end
   TB.StopCastBar()
+  TB.ReelMode(false)
   local stopT = GetTime()
   C_Timer.After(1, function()
     if TB.IsMiss(stopT, TB.lastLootT) then
@@ -167,6 +172,8 @@ function TB.Probe()
   local ver, build = GetBuildInfo()
   P("build", tostring(ver) .. " " .. tostring(build) .. " project " .. tostring(WOW_PROJECT_ID))
   P("combat", InCombatLockdown())
+  P("override bindings", TB.HasBindAPI())
+  P("cast key", TB.db.castKey)
 
   Try("professions", function()
     local p = { GetProfessions() }
@@ -243,5 +250,17 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "reset" then wipe(TB.db.frames); TB.Print("positions reset; /reload to apply")
   elseif cmd == "probe" then TB.Probe()
   elseif cmd == "flash" then TB.db.flash = not TB.db.flash; TB.Print("flash " .. (TB.db.flash and "on" or "off"))
-  else TB.Print("/tb show||hide||lock||reset||probe||flash") end -- || prints one pipe; a bare |h starts a chat link escape
+  elseif cmd == "bind" then
+    local key = TB.NormalizeKey((msg or ""):match("^%s*%S+%s+(.-)%s*$"))
+    if not key then TB.Print("usage: /tb bind <KEY>, for example /tb bind F")
+    elseif InCombatLockdown() then TB.Print("can't change the cast key in combat")
+    elseif not TB.HasBindAPI() then TB.Print("one-key cast is unavailable on your client")
+    else
+      TB.db.castKey = key; TB.BindCast()
+      TB.Print("cast key: " .. key .. ". If reeling in does nothing, turn on Enable Interact Key in the game's options.")
+    end
+  elseif cmd == "unbind" then
+    if InCombatLockdown() then TB.Print("can't change the cast key in combat")
+    else TB.db.castKey = nil; TB.BindCast(); TB.Print("cast key cleared") end
+  else TB.Print("/tb show||hide||lock||reset||probe||flash||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
 end

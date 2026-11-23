@@ -218,3 +218,10 @@ function TB.WeaponsMacro(mh, oh)
   if oh then m = m .. "\n/equipslot 17 " .. oh.bag .. " " .. oh.slot end
   return m
 end
+
+-- "/tb bind f" -> "F"; modifiers keep their case-folded form ("shift-f" -> "SHIFT-F"); empty -> nil
+function TB.NormalizeKey(s)
+  if type(s) ~= "string" then return nil end
+  s = s:match("^%s*(.-)%s*$"):upper()
+  return s ~= "" and s or nil
+end

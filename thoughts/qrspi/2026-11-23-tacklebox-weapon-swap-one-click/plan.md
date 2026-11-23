@@ -343,12 +343,12 @@ table.insert(TB.refreshers, function()
 - [x] Deployed with robocopy.
 
 #### Manual
-- [ ] Main hand and off hand equipped, then click the pole button. The pole is on, the top slot shows the main-hand icon, and the tooltip shows the item plus "Equip your weapons".
-- [ ] Click it. Both weapons come back, and the slot shows the pole again.
-- [ ] Repeat with a two-hander. It comes back, and no off-hand line is involved.
-- [ ] With the pole on, `/reload`. The weapons button is still there (the snapshot persisted in `TackleBoxCharDB`).
-- [ ] Put the main-hand weapon in the bank with the pole on. The button greys out with "<name> not in bags" in red.
-- [ ] Two identical weapons in bags: the exact equipped copy (same link) comes back.
+- [x] Main hand and off hand equipped, then click the pole button. The pole is on, the top slot shows the main-hand icon, and the tooltip shows the item plus "Equip your weapons".
+- [x] Click it. Both weapons come back, and the slot shows the pole again.
+- [x] Repeat with a two-hander. It comes back, and no off-hand line is involved.
+- [x] With the pole on, `/reload`. The weapons button is still there (the snapshot persisted in `TackleBoxCharDB`).
+- [x] Put the main-hand weapon in the bank with the pole on. The button greys out with "<name> not in bags" in red.
+- [x] Two identical weapons in bags: the exact equipped copy (same link) comes back.
 
 ---
 
@@ -489,10 +489,10 @@ TB.On("PLAYER_LOGOUT", function() if TB.db then TB.RestoreCVars() end end) -- SV
 
 ### Verification
 #### Automated
-- [ ] `lua TackleBox/tests/run.lua` prints `all tests passed`, including the 4 key tests.
-- [ ] `lint.sh TackleBox` shows no warnings beyond the baseline of 29. There are no W113 warnings for the three binding names, because `.luacheckrc` is picked up.
-- [ ] Never-emit check: `grep -nE "(^|[^.:A-Za-z0-9_])(EquipItemByName|PickupContainerItem)\b" TackleBox/*.lua` prints nothing.
-- [ ] Deployed with robocopy.
+- [x] `lua TackleBox/tests/run.lua` prints `all tests passed`, including the 4 key tests.
+- [x] `lint.sh TackleBox` shows no warnings beyond the baseline of 29. There are no W113 warnings for the three binding names, because `.luacheckrc` is picked up.
+- [x] Never-emit check: `grep -nE "(^|[^.:A-Za-z0-9_])(EquipItemByName|PickupContainerItem)\b" TackleBox/*.lua` prints nothing.
+- [x] Deployed with robocopy.
 
 #### Manual
 - [ ] `/tb probe` prints `override bindings: true`. If it is false, stop: one-key cast is unavailable, and Phases 1-3 still ship.
