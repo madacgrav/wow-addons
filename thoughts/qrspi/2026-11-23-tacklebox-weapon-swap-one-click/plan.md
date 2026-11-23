@@ -495,10 +495,10 @@ TB.On("PLAYER_LOGOUT", function() if TB.db then TB.RestoreCVars() end end) -- SV
 - [x] Deployed with robocopy.
 
 #### Manual
-- [ ] `/tb probe` prints `override bindings: true`. If it is false, stop: one-key cast is unavailable, and Phases 1-3 still ship.
-- [ ] `/tb bind F` with the panel closed. F casts, F during the channel reels in the bobber and loots, and F casts again. Do it 5 times.
-- [ ] Confirm no double cast (one press gives one cast). If it double-fires, set `caster:RegisterForClicks("AnyDown")` and re-test.
-- [ ] During a channel, `/dump C_CVar.GetCVar("SoftTargetInteract")` gives `3`. After the channel it shows your original value again.
+- [x] `/tb probe` prints `override bindings: true`. If it is false, stop: one-key cast is unavailable, and Phases 1-3 still ship.
+- [x] `/tb bind F` with the panel closed. F casts, F during the channel reels in the bobber and loots, and F casts again. Do it 5 times.
+- [x] Confirm no double cast (one press gives one cast). If it double-fires, set `caster:RegisterForClicks("AnyDown")` and re-test.
+- [x] During a channel, `/dump C_CVar.GetCVar("SoftTargetInteract")` gives `3`. After the channel it shows your original value again.
 - [ ] `/reload` mid-channel. After login the CVars are back to the originals and F casts.
 - [ ] Get attacked, then cast in combat. No Lua errors or blocked-action messages. After combat F casts again.
 - [ ] `/tb unbind`, then F does its normal job again.
@@ -524,11 +524,11 @@ TB.On("PLAYER_LOGOUT", function() if TB.db then TB.RestoreCVars() end end) -- SV
 
 ### Verification
 #### Automated
-- [ ] `lua TackleBox/tests/run.lua` prints `all tests passed`.
-- [ ] `lint.sh TackleBox` shows no warnings beyond the baseline of 29.
-- [ ] `grep -n "Version: 1.1.0" TackleBox/TackleBox.toc` matches, and `grep -n "1.1.0" TackleBox/CHANGELOG.md` matches.
-- [ ] Deployed with robocopy.
+- [x] `lua TackleBox/tests/run.lua` prints `all tests passed`.
+- [x] `lint.sh TackleBox` shows no warnings beyond the baseline of 29.
+- [x] `grep -n "Version: 1.1.0" TackleBox/TackleBox.toc` matches, and `grep -n "1.1.0" TackleBox/CHANGELOG.md` matches.
+- [x] Deployed with robocopy.
 
 #### Manual
-- [ ] The `/tb` help output lists exactly the commands the README documents.
+- [x] The `/tb` help output lists exactly the commands the README documents.
 - [ ] The README renders on GitHub (headings and code blocks intact).
