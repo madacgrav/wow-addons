@@ -137,13 +137,13 @@ TB.On("BAG_UPDATE_COOLDOWN", function() Trace("BAG_CD") end)
 - [x] Tests pass
 
 #### Manual
-- [ ] Deployed; `/reload` clean
-- [ ] `/tb camp` away from any campfire, with Fish Bowl + Basic Campfire Kit in bags
-- [ ] `/tb camp test`: click **kit** (places campfire? cursor?), then `/tb camp` while standing at the fire
-- [ ] Click **bowl**, wait 1 min seated, `/tb camp` (buff IDs, cooldowns)
-- [ ] With Bowl reagents (Raw Brilliant Smallfish + Empty Vial) and spare Bowl count noted: click **macro**, **spell**, **api**, **window** one at a time, `/tb camp` after each (Bowl count change + trace)
-- [ ] Results and conclusions recorded in probe-results.md Run 7
-- [ ] **Gate:** kit and bowl placement work from the secure item buttons. If not, stop and revisit the design.
+- [x] Deployed; `/reload` clean
+- [x] `/tb camp` away from any campfire, with Fish Bowl + Basic Campfire Kit in bags
+- [x] `/tb camp test`: click **kit** (places campfire? cursor?), then `/tb camp` while standing at the fire
+- [x] Click **bowl**, wait 1 min seated, `/tb camp` (buff IDs, cooldowns)
+- [x] With Bowl reagents (Raw Brilliant Smallfish + Empty Vial) and spare Bowl count noted: click **macro**, **spell**, **api**, **window** one at a time, `/tb camp` after each (Bowl count change + trace)
+- [x] Results and conclusions recorded in probe-results.md Run 7
+- [x] **Gate:** kit and bowl placement work from the secure item buttons. If not, stop and revisit the design.
 
 ---
 
