@@ -166,3 +166,9 @@ Steps: face a pool and run `/tb probe`; mouse over it and run `/tb probe`; cast 
 - Camp items unaffected by the kit cooldown: Fish Bowl / Rack / Hut still 0/0/1.
 - Kit use spells: Journeyman Campfire Kit 279961 -> 1307252, Expert Campfire Kit 279974 -> 1307237 (now cached).
 - Trace: `CAST_OK 1307227` with `BAG_UPDATE_COOLDOWN` around it.
+
+### 7D: Fish Bowl placed at the campfire, craft buttons
+- First bowl click: `UI_ERR You cannot place a feature that close to a creature or object.` Second try: `CAST_OK 1307245`, Fish Bowl consumed (x6 -> x5). Placement = ground-target cursor, like the kit.
+- Shared camp cooldown: after the Bowl, `C_Container.GetItemCooldown` = start 1092461.161, duration 3600 on Fish Bowl, Fishing Rack and Fishing Hut (even unowned). `C_Spell.GetSpellCooldown` on place spells 1307247/1307246 = same 3600. Kits keep their separate 300 s cooldown. Cooldown source: item cooldown.
+- Auras after placing (not seated a full minute): only `1283391 Campfire Nearby`. No Fish Bowl buff observed; the 1 h camp cooldown starting at placement stands in for "camp active".
+- Craft: `api` button -> `pcall(C_TradeSkillUI.CraftRecipe, 1229745)` returned true (no error) but no CAST_OK/CRAFTED trace was captured (no Empty Vial in bags). `window` button -> `OpenTradeSkill(356)` returned true, true. macro / spell results pending.
