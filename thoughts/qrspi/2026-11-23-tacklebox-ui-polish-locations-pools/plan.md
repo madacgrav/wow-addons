@@ -516,8 +516,8 @@ local near = TB.NearestPools(pl, 0.6, 0.5, 1000, 1000, 2); eq(#near, 2, "max res
 
 #### Manual
 - [x] Deployed
-- [ ] `/reload` with no errors; libs load (`/dump LibStub("HereBeDragons-2.0").GetPlayerZonePosition ~= nil`)
-- [ ] Fish a pool: chat `learned <pool>`; Spots tab shows "Nearby pools" with distance
+- [x] `/reload` with no errors; libs load (`/dump LibStub("HereBeDragons-2.0").GetPlayerZonePosition ~= nil`)
+- [x] Fish a pool: chat `learned <pool>`; Spots tab shows "Nearby pools" with distance
 - [ ] Fish the same pool again: no new line, `seen 2x`
 - [ ] Click a nearby row: waypoint appears and is super-tracked
 - [ ] `/reload`: pool still listed (`/dump TackleBoxDB.version` = 2)
