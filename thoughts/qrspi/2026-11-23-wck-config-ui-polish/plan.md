@@ -180,13 +180,13 @@ local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 240
 - [x] Robocopy deploy exits 0-7
 
 #### Manual (in-game, Forever)
-- [ ] `/wck config`, a minimap left-click and a right-click on the Life Tap core each toggle the window
-- [ ] Purple and fel skin with a shard icon and close button; the look matches WUK settings
-- [ ] Four tabs switch pages. The active tab has a fel underline and green text, and keeps them after mouse-out
-- [ ] Every page fits 460x520, including Alt clicks with a full bar
-- [ ] Each checkbox, rule edit, slot pick and alt pick still works and persists across `/reload`
-- [ ] Drag the window, then `/reload`: position is kept. Last tab is kept. Reset positions + `/reload` recentres it
-- [ ] Escape closes the window. Dropdown menus draw above it. No Lua errors (BugSack)
+- [x] `/wck config`, a minimap left-click and a right-click on the Life Tap core each toggle the window
+- [x] Purple and fel skin with a shard icon and close button; the look matches WUK settings
+- [x] Four tabs switch pages. The active tab has a fel underline and green text, and keeps them after mouse-out
+- [x] Every page fits 460x520, including Alt clicks with a full bar
+- [x] Each checkbox, rule edit, slot pick and alt pick still works and persists across `/reload`
+- [x] Drag the window, then `/reload`: position is kept. Last tab is kept. Reset positions + `/reload` recentres it
+- [x] Escape closes the window. Dropdown menus draw above it. No Lua errors (BugSack)
 
 ---
 
@@ -279,11 +279,11 @@ end
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`, including the new RowButtons asserts
-- [ ] `luac -p WarlockCombatKit/*.lua` is silent
-- [ ] `grep -c UIPanelButtonTemplate WarlockCombatKit/Settings.lua` prints `0`
-- [ ] `luacheck WarlockCombatKit --globals WCK` shows no new warnings
-- [ ] Robocopy deploy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`, including the new RowButtons asserts
+- [x] `luac -p WarlockCombatKit/*.lua` is silent
+- [x] `grep -c UIPanelButtonTemplate WarlockCombatKit/Settings.lua` prints `0`
+- [x] `luacheck WarlockCombatKit --globals WCK` shows no new warnings
+- [x] Robocopy deploy exits 0-7
 
 #### Manual
 - [ ] Each rule row shows the icon of its spell, and the icon updates when you pick a different spell

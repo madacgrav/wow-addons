@@ -137,3 +137,37 @@ function WCK.Tip(b, title, line)
     if line then GameTooltip:AddLine(line, 1, 1, 1, true) end
   end)
 end
+
+-- built-in art; set an entry to nil to fall back to the glyph if it renders blank/green on Forever
+local ICONS = {
+  up = "Interface\\Buttons\\Arrow-Up-Up", down = "Interface\\Buttons\\Arrow-Down-Up",
+  remove = "Interface\\Buttons\\UI-GroupLoot-Pass-Up",
+}
+local GLYPH = { up = "^", down = "v", remove = "x" }
+
+function WCK.SpellIcon(name)
+  if not (name and C_Spell and C_Spell.GetSpellTexture) then return nil end
+  local ok, tex = pcall(C_Spell.GetSpellTexture, name)
+  return ok and tex or nil
+end
+
+-- kind = "up" | "down" | "remove"; dims when disabled
+function WCK.IconButton(parent, kind, size, title, line, onClick)
+  local b
+  if ICONS[kind] then
+    b = CreateFrame("Button", nil, parent)
+    b:SetSize(size, size)
+    b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints(); b.icon:SetTexture(ICONS[kind])
+    local hl = b:CreateTexture(nil, "HIGHLIGHT"); hl:SetAllPoints()
+    hl:SetColorTexture(unpack(WCK.THEME.accent)); hl:SetAlpha(0.25)
+    b:SetScript("OnClick", onClick)
+    b:SetScript("OnEnable", function(self) self.icon:SetDesaturated(false); self:SetAlpha(1) end)
+    b:SetScript("OnDisable", function(self) self.icon:SetDesaturated(true); self:SetAlpha(0.35) end)
+  else
+    b = WCK.Button(parent, GLYPH[kind], size, onClick); b:SetHeight(size)
+    b:SetScript("OnEnable", function(self) self:SetAlpha(1) end)
+    b:SetScript("OnDisable", function(self) self:SetAlpha(0.35) end)
+  end
+  WCK.Tip(b, title, line)
+  return b
+end

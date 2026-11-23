@@ -62,14 +62,16 @@ table.insert(WCK.settingsTabs, { title = "Rotation", hint = "First matching rule
   for i = 1, MAX_RULES do
     local r = CreateFrame("Frame", nil, page); r:SetSize(428, 24); r:SetPoint("TOPLEFT", 14, y - (i - 1) * ROW)
     r.num = r:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall"); r.num:SetPoint("LEFT", 0, 0); r.num:SetText(i .. ".")
+    r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 14, 0)
+    r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     r.spell = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
-    r.spell:SetWidth(120); r.spell:SetPoint("LEFT", 14, 0)
+    r.spell:SetWidth(120); r.spell:SetPoint("LEFT", 38, 0)
     r.spell:SetupMenu(function(_, root)
       SpellMenu(root, function(name) return WCK.char.rules[i] and WCK.char.rules[i].spell == name end,
         function(name) WCK.char.rules[i].spell = name; Changed() end)
     end)
     r.cond = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
-    r.cond:SetWidth(110); r.cond:SetPoint("LEFT", r.spell, "RIGHT", 4, 0)
+    r.cond:SetWidth(150); r.cond:SetPoint("LEFT", r.spell, "RIGHT", 4, 0)
     r.cond:SetupMenu(function(_, root)
       for _, c in ipairs(WCK.DATA.conds) do
         if c ~= "usable" or WCK.USABLE_OK then
@@ -83,20 +85,18 @@ table.insert(WCK.settingsTabs, { title = "Rotation", hint = "First matching rule
     local function SetN(self) if WCK.char.rules[i] then WCK.char.rules[i].n = tonumber(self:GetText()) or 0; WCK.Refresh() end end
     r.n:SetScript("OnEnterPressed", function(self) SetN(self); self:ClearFocus() end)
     r.n:SetScript("OnEditFocusLost", SetN)
-    local function Btn(label, x, fn)
-      local b = CreateFrame("Button", nil, r, "UIPanelButtonTemplate")
-      b:SetSize(20, 20); b:SetPoint("RIGHT", x, 0); b:SetText(label); b:SetScript("OnClick", fn)
-    end
-    Btn("x", 0, function() table.remove(WCK.char.rules, i); Changed() end)
-    Btn("v", -22, function() WCK.MoveRule(WCK.char.rules, i, 1); Changed() end)
-    Btn("^", -44, function() WCK.MoveRule(WCK.char.rules, i, -1); Changed() end)
+    r.sfx = r:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall"); r.sfx:SetPoint("LEFT", r.n, "RIGHT", 2, 0); r.sfx:SetText("s")
+    r.del  = WCK.IconButton(r, "remove", 18, "Remove rule", nil, function() table.remove(WCK.char.rules, i); Changed() end)
+    r.down = WCK.IconButton(r, "down", 18, "Move down", "Lower priority", function() WCK.MoveRule(WCK.char.rules, i, 1); Changed() end)
+    r.up   = WCK.IconButton(r, "up", 18, "Move up", "Higher priority", function() WCK.MoveRule(WCK.char.rules, i, -1); Changed() end)
+    r.del:SetPoint("RIGHT", 0, 0); r.down:SetPoint("RIGHT", -20, 0); r.up:SetPoint("RIGHT", -40, 0)
     rows[i] = r
   end
   local by = y - MAX_RULES * ROW - 4
   local add = WCK.Button(page, "Add rule", 100, function()
     table.insert(WCK.char.rules, { spell = "Shadow Bolt", cond = "ready" }); Changed() end)
   add:SetPoint("TOPLEFT", 16, by)
-  local def = WCK.Button(page, "Defaults", 100, function()
+  local def = WCK.Button(page, "Restore defaults", 120, function()
     WCK.char.rules = WCK.CopyRules(WCK.DATA.defaultRules); Changed() end)
   def:SetPoint("LEFT", add, "RIGHT", 8, 0)
 
@@ -108,6 +108,9 @@ table.insert(WCK.settingsTabs, { title = "Rotation", hint = "First matching rule
       if rule then
         r.spell:GenerateMenu(); r.cond:GenerateMenu()
         r.n:SetShown(rule.cond == "notRecent"); r.n:SetText(tostring(rule.n or 0))
+        r.icon:SetTexture(WCK.SpellIcon(rule.spell) or "Interface\\Icons\\INV_Misc_QuestionMark")
+        local rb = WCK.RowButtons(i, #rules); r.up:SetEnabled(rb.up); r.down:SetEnabled(rb.down)
+        r.sfx:SetShown(rule.cond == "notRecent")
       end
     end
     add:SetEnabled(#rules < MAX_RULES)

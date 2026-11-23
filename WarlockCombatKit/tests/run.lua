@@ -162,4 +162,10 @@ eq(both.macrotext2, WCK.CastMacro("Fear"), "both: right"); eq(both["shift-macrot
 local so = WCK.AltAttrs("Corruption", { shift = "Banish" })
 eq(so.macrotext2, nil, "shift only: no right"); eq(so["shift-macrotext1"], WCK.CastMacro("Banish"), "shift only")
 
+-- settings rule row buttons
+local rb = WCK.RowButtons(1, 3); eq(rb.up, false, "first: no up"); eq(rb.down, true, "first: down")
+rb = WCK.RowButtons(2, 3); eq(rb.up, true, "mid: up"); eq(rb.down, true, "mid: down")
+rb = WCK.RowButtons(3, 3); eq(rb.up, true, "last: up"); eq(rb.down, false, "last: no down")
+rb = WCK.RowButtons(1, 1); eq(rb.up, false, "single: no up"); eq(rb.down, false, "single: no down")
+
 print("all tests passed")
