@@ -199,3 +199,22 @@ function TB.PickLure(lures, counts, lureActive, skill)
   if best then return best.id, true end
   if locked then return locked.id, false, locked.req end
 end
+
+-- bag entry for a remembered weapon: exact link first (same enchant/suffix), then any copy by id
+function TB.FindWeapon(items, want)
+  if not want then return nil end
+  local byId
+  for _, it in ipairs(items) do
+    if want.link and it.link == want.link then return it end
+    if not byId and it.id == want.id then byId = it end
+  end
+  return byId
+end
+
+-- /equipslot by bag+slot avoids picking the wrong copy of a duplicate item
+function TB.WeaponsMacro(mh, oh)
+  if not mh then return nil end
+  local m = "/equipslot 16 " .. mh.bag .. " " .. mh.slot
+  if oh then m = m .. "\n/equipslot 17 " .. oh.bag .. " " .. oh.slot end
+  return m
+end

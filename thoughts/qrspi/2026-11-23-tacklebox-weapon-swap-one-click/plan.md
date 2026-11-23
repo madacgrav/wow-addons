@@ -237,11 +237,11 @@ Rows no longer need `exp` in `SetShown`, because hiding `panel.scroll` hides the
 - [x] Deployed with robocopy.
 
 #### Manual
-- [ ] `/reload`: no errors. The Catch tab with more than 10 entries shows 10 rows, and the wheel scrolls to the last entry (count matches the badge).
-- [ ] Row tooltips (item plus top zones) still show while scrolled.
-- [ ] Short tabs (Camp, Water) show no scroll bar and keep at least 3 rows of space.
-- [ ] Scroll down on Catch, switch to Where, then back. Each tab switch opens at the top.
-- [ ] Collapse hides the scroll area, and the panel shrinks to the header.
+- [x] `/reload`: no errors. The Catch tab with more than 10 entries shows 10 rows, and the wheel scrolls to the last entry (count matches the badge).
+- [x] Row tooltips (item plus top zones) still show while scrolled.
+- [x] Short tabs (Camp, Water) show no scroll bar and keep at least 3 rows of space.
+- [x] Scroll down on Catch, switch to Where, then back. Each tab switch opens at the top.
+- [x] Collapse hides the scroll area, and the panel shrinks to the header.
 
 ---
 
@@ -338,9 +338,9 @@ table.insert(TB.refreshers, function()
 
 ### Verification
 #### Automated
-- [ ] `lua TackleBox/tests/run.lua` prints `all tests passed`, including the 7 weapon tests.
-- [ ] `lint.sh TackleBox` shows no warnings beyond the baseline of 29.
-- [ ] Deployed with robocopy.
+- [x] `lua TackleBox/tests/run.lua` prints `all tests passed`, including the 7 weapon tests.
+- [x] `lint.sh TackleBox` shows no warnings beyond the baseline of 29.
+- [x] Deployed with robocopy.
 
 #### Manual
 - [ ] Main hand and off hand equipped, then click the pole button. The pole is on, the top slot shows the main-hand icon, and the tooltip shows the item plus "Equip your weapons".

@@ -99,4 +99,14 @@ eq(zs.text, "Moonglade: no fishing data", "zone unknown"); eq(zs.flag, nil, "zon
 eq(TB.ZoneStatus(ZD, LD, nil, "Orgrimmar"), nil, "zone no skill")
 eq(TB.ZoneStatus(ZD, LD, { level = 100 }, ""), nil, "zone empty name")
 
+-- Weapons
+local bag = { { id = 5, link = "L5a", bag = 0, slot = 3 }, { id = 5, link = "L5b", bag = 1, slot = 2 }, { id = 9, link = "L9", bag = 2, slot = 1 } }
+eq(TB.FindWeapon(bag, { id = 5, link = "L5b" }).slot, 2, "weapon exact link")
+eq(TB.FindWeapon(bag, { id = 5, link = "Lx" }).slot, 3, "weapon id fallback")
+eq(TB.FindWeapon(bag, { id = 7 }), nil, "weapon missing")
+eq(TB.FindWeapon(bag, nil), nil, "weapon none remembered")
+eq(TB.WeaponsMacro({ bag = 0, slot = 3 }), "/equipslot 16 0 3", "macro mh only")
+eq(TB.WeaponsMacro({ bag = 0, slot = 3 }, { bag = 2, slot = 1 }), "/equipslot 16 0 3\n/equipslot 17 2 1", "macro mh+oh")
+eq(TB.WeaponsMacro(nil, { bag = 2, slot = 1 }), nil, "macro no mh")
+
 print("all tests passed")

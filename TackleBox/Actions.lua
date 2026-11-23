@@ -26,8 +26,9 @@ local function MakeButton(key)
   ag:Play()
   b:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-    if self.itemID then GameTooltip:SetItemByID(self.itemID) else GameTooltip:AddLine(TIPS[key], T.sand[1], T.sand[2], T.sand[3]) end
-    if self.need then GameTooltip:AddLine(self.need, 1, 0.3, 0.3) else GameTooltip:AddLine(TIPS[key], 1, 1, 1) end
+    local tip = self.tip or TIPS[key]
+    if self.itemID then GameTooltip:SetItemByID(self.itemID) else GameTooltip:AddLine(tip, T.sand[1], T.sand[2], T.sand[3]) end
+    if self.need then GameTooltip:AddLine(self.need, 1, 0.3, 0.3) else GameTooltip:AddLine(tip, 1, 1, 1) end
     GameTooltip:Show()
   end)
   b:SetScript("OnLeave", GameTooltip_Hide)
@@ -53,7 +54,7 @@ local function Apply()
       if a.usable == false then
         b:SetAttribute("type", nil) -- greyed out: visible, does nothing
       elseif key == "pole" then
-        b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", "/equip item:" .. a.item)
+        b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", a.macro or ("/equip item:" .. a.item))
       elseif key == "lure" then
         -- use the lure, then put it on the main-hand slot (16 = the equipped pole)
         b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", "/use item:" .. a.item .. "\n/use 16")
@@ -63,6 +64,7 @@ local function Apply()
         b:SetAttribute("type", "spell"); b:SetAttribute("spell", a.spell)
       end
       b.itemID, b.need = a.item, a.need
+      b.tip = a.weapons and "Equip your weapons" or nil
       b.icon:SetTexture(a.item and C_Item.GetItemIconByID(a.item) or a.icon)
       b.icon:SetDesaturated(a.usable == false); b.icon:SetAlpha(a.usable == false and 0.5 or 1)
       b.count:SetText(a.item and key ~= "pole" and C_Item.GetItemCount(a.item) or "")
@@ -83,7 +85,7 @@ local function BagItems()
       local id = C_Container.GetContainerItemID(bag, slot)
       if id then
         local _, _, _, _, _, classID, subID = C_Item.GetItemInfoInstant(id)
-        items[#items + 1] = { id = id, classID = classID, subID = subID }
+        items[#items + 1] = { id = id, classID = classID, subID = subID, bag = bag, slot = slot, link = C_Container.GetContainerItemLink(bag, slot) }
       end
     end
   end
@@ -97,12 +99,26 @@ local function PoleEquipped()
   return classID == 2 and subID == 20
 end
 
+local function SlotItem(s)
+  local id = GetInventoryItemID("player", s)
+  return id and { id = id, link = GetInventoryItemLink("player", s) } or nil
+end
+
 table.insert(TB.refreshers, function()
-  local A, poleOn = {}, PoleEquipped()
+  local A, poleOn, items = {}, PoleEquipped(), BagItems()
   if not poleOn then
-    local pole = TB.PickPole(BagItems())
+    -- any non-pole main hand is the set to come back to; an empty hand keeps the old snapshot
+    if GetInventoryItemID("player", 16) then TB.char.weapons = { mh = SlotItem(16), oh = SlotItem(17) } end
+    local pole = TB.PickPole(items)
     if pole then A.pole = { item = pole } end
   else
+    local w = TB.char.weapons
+    if w and w.mh then
+      local mh, oh = TB.FindWeapon(items, w.mh), w.oh and TB.FindWeapon(items, w.oh)
+      local missing = (not mh and w.mh) or (w.oh and not oh and w.oh) or nil
+      A.pole = { item = w.mh.id, weapons = true, macro = TB.WeaponsMacro(mh, oh), usable = not missing,
+        need = missing and ((TB.ItemName(missing.id)) .. " not in bags") or nil }
+    end
     local counts = {}
     for _, l in ipairs(TB.DATA.lures) do counts[l.id] = C_Item.GetItemCount(l.id) end
     -- 1st return of GetWeaponEnchantInfo: the main hand already has a temp enchant (a lure)
