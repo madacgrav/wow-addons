@@ -286,12 +286,12 @@ end
 - [x] Robocopy deploy exits 0-7
 
 #### Manual
-- [ ] Each rule row shows the icon of its spell, and the icon updates when you pick a different spell
-- [ ] Up is greyed out on row 1, down is greyed out on the last row, and a single rule has both greyed out
-- [ ] Up, down and remove reorder and delete correctly. Their tooltips read "Move up", "Move down" and "Remove rule"
-- [ ] The arrow and remove art renders. If it is blank or green, set that `ICONS` entry to nil, redeploy, and check the glyph fallback
-- [ ] The N box and "s" appear only for "not cast on target in N s", and that label is not cut off with "…"
-- [ ] "Restore defaults" restores the six starter rules
+- [x] Each rule row shows the icon of its spell, and the icon updates when you pick a different spell
+- [x] Up is greyed out on row 1, down is greyed out on the last row, and a single rule has both greyed out
+- [x] Up, down and remove reorder and delete correctly. Their tooltips read "Move up", "Move down" and "Remove rule"
+- [x] The arrow and remove art renders. If it is blank or green, set that `ICONS` entry to nil, redeploy, and check the glyph fallback
+- [x] The N box and "s" appear only for "not cast on target in N s", and that label is not cut off with "…"
+- [x] "Restore defaults" restores the six starter rules
 
 ---
 
@@ -342,10 +342,10 @@ In the Rotation build:
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] `luac -p WarlockCombatKit/*.lua` is silent
-- [ ] `luacheck WarlockCombatKit --globals WCK` shows no new warnings
-- [ ] Robocopy deploy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] `luac -p WarlockCombatKit/*.lua` is silent
+- [x] `luacheck WarlockCombatKit --globals WCK` shows no new warnings
+- [x] Robocopy deploy exits 0-7
 
 #### Manual
 - [ ] Every checkbox, dropdown, icon button and the Reset button shows a tooltip, and dropdown hover highlight still works

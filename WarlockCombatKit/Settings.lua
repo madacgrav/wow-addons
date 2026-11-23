@@ -36,23 +36,25 @@ table.insert(WCK.settingsTabs, { title = "General", hint = "Panel, nameplate and
   end
   Group("DISPLAY")
   Add("Show panel", function() return WCK.db.shown end,
-    function(on) WCK.db.shown = on; WCK.Refresh() end)
+    function(on) WCK.db.shown = on; WCK.Refresh() end, "Summoning-circle panel with your enemy bands.")
   Add("Show rotation buttons", function() return WCK.db.showBar end,
     function(on) WCK.db.showBar = on; WCK.Refresh()
-      if InCombatLockdown() then WCK.Print("rotation bar change applies after combat") end end)
+      if InCombatLockdown() then WCK.Print("rotation bar change applies after combat") end end,
+    "Spell buttons docked right of the panel. Applies after combat.")
   Add("Lock panel (no Shift+drag)", function() return WCK.db.locked end,
-    function(on) WCK.db.locked = on end)
+    function(on) WCK.db.locked = on end, "Stops Shift+drag moving the panel and bar.")
   y = y - 8; Group("NAMEPLATES")
   Add("Mark CC'd mobs on nameplates (open world)", function() return WCK.db.plateMarker end,
-    function(on) WCK.db.plateMarker = on; WCK.Refresh() end)
+    function(on) WCK.db.plateMarker = on; WCK.Refresh() end, "Fear icon above the nameplate of each mob you CC'd. Open world only.")
   y = y - 8; Group("ALERTS")
   Add("Proc alerts (Nightfall)", function() return WCK.db.procAlerts end,
-    function(on) WCK.db.procAlerts = on; WCK.Refresh() end)
+    function(on) WCK.db.procAlerts = on; WCK.Refresh() end, "Flash when Nightfall makes Shadow Bolt instant.")
   Add("Proc sound", function() return WCK.db.procSound end,
-    function(on) WCK.db.procSound = on end)
+    function(on) WCK.db.procSound = on end, "Play a sound with the proc alert.")
   local reset = WCK.Button(page, "Reset positions", 130, function()
     wipe(WCK.db.frames); WCK.Print("positions reset - /reload to apply") end)
   reset:SetPoint("BOTTOMLEFT", 16, 16)
+  WCK.Tip(reset, "Reset positions", "Recentre panel, bar and this window. /reload to apply.")
 end })
 
 table.insert(WCK.settingsTabs, { title = "Rotation", hint = "First matching rule lights the core button.", build = function(page, win)
@@ -90,6 +92,9 @@ table.insert(WCK.settingsTabs, { title = "Rotation", hint = "First matching rule
     r.down = WCK.IconButton(r, "down", 18, "Move down", "Lower priority", function() WCK.MoveRule(WCK.char.rules, i, 1); Changed() end)
     r.up   = WCK.IconButton(r, "up", 18, "Move up", "Higher priority", function() WCK.MoveRule(WCK.char.rules, i, -1); Changed() end)
     r.del:SetPoint("RIGHT", 0, 0); r.down:SetPoint("RIGHT", -20, 0); r.up:SetPoint("RIGHT", -40, 0)
+    WCK.Tip(r.spell, "Spell", "Cast when this rule's condition is met.")
+    WCK.Tip(r.cond, "Condition")
+    WCK.Tip(r.n, "Seconds", "Rule fires when you have not cast it on the target this long.")
     rows[i] = r
   end
   local by = y - MAX_RULES * ROW - 4
@@ -126,10 +131,13 @@ table.insert(WCK.settingsTabs, { title = "Cast slots", hint = "Bind keys: Esc > 
     local r = CreateFrame("Frame", nil, page); r:SetSize(428, 24); r:SetPoint("TOPLEFT", 14, y - (i - 1) * ROW)
     r.key = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.key:SetPoint("LEFT", 4, 0)
     r.key:SetWidth(110); r.key:SetJustifyH("LEFT")
+    r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 124, 0)
+    r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     r.spell = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
-    r.spell:SetWidth(170); r.spell:SetPoint("LEFT", 120, 0)
+    r.spell:SetWidth(200); r.spell:SetPoint("LEFT", 148, 0)
+    WCK.Tip(r.spell, "Slot " .. i, "Casts on the hostile mob under your mouse, else your target.")
     local function Set(name)
-      WCK.char.slots[i] = name; WCK.Refresh()
+      WCK.char.slots[i] = name; win:Sync(); WCK.Refresh()
       if InCombatLockdown() then WCK.Print("slot change applies after combat") end
     end
     r.spell:SetupMenu(function(_, root)
@@ -140,7 +148,11 @@ table.insert(WCK.settingsTabs, { title = "Cast slots", hint = "Bind keys: Esc > 
   end
   table.insert(win.syncs, { Sync = function()
     for i, r in ipairs(rows) do
-      r.key:SetText("Slot " .. i .. " [" .. (GetBindingKey("CLICK WCKCast" .. i .. ":LeftButton") or "unbound") .. "]")
+      local key = GetBindingKey("CLICK WCKCast" .. i .. ":LeftButton")
+      r.key:SetText("Slot " .. i .. "  " .. (key and ("|cffffffff" .. key .. "|r") or "|cff808080unbound|r"))
+      local s = WCK.char.slots[i]
+      r.icon:SetShown(s ~= nil)
+      if s then r.icon:SetTexture(WCK.SpellIcon(s) or "Interface\\Icons\\INV_Misc_QuestionMark") end
       r.spell:GenerateMenu()
     end
   end })
@@ -149,9 +161,8 @@ end })
 -- Alt clicks: a situational spell per bar spell; keyed by spell name so it follows rule reorders
 table.insert(WCK.settingsTabs, { title = "Alt clicks", hint = "Extra spells on the rotation bar buttons.", build = function(page, win)
   local y = -22
-  for _, c in ipairs({ { 134, "Right-click" }, { 248, "Shift+click" } }) do
-    local t = page:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall"); t:SetPoint("TOPLEFT", c[1] + 14, y - 2); t:SetText(c[2])
-  end
+  WCK.Header(page, "RIGHT-CLICK", 14 + 148, y - 2)
+  WCK.Header(page, "SHIFT+CLICK", 14 + 148 + 134, y - 2)
   local rows = {}
   local function Set(spell, key, name)
     local a = WCK.char.alts[spell] or {}
@@ -171,12 +182,16 @@ table.insert(WCK.settingsTabs, { title = "Alt clicks", hint = "Extra spells on t
   end
   for i = 1, WCK.BAR_MAX do
     local r = CreateFrame("Frame", nil, page); r:SetSize(428, 24); r:SetPoint("TOPLEFT", 14, y - 18 - (i - 1) * ROW)
-    r.label = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.label:SetPoint("LEFT", 4, 0)
-    r.label:SetWidth(110); r.label:SetJustifyH("LEFT")
+    r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(20, 20); r.icon:SetPoint("LEFT", 4, 0)
+    r.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    r.label = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.label:SetPoint("LEFT", 28, 0)
+    r.label:SetWidth(112); r.label:SetJustifyH("LEFT")
     r.right = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
-    r.right:SetWidth(110); r.right:SetPoint("LEFT", 120, 0); AltMenu(r.right, "right")
+    r.right:SetWidth(130); r.right:SetPoint("LEFT", 148, 0); AltMenu(r.right, "right")
     r.shift = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
-    r.shift:SetWidth(110); r.shift:SetPoint("LEFT", r.right, "RIGHT", 4, 0); AltMenu(r.shift, "shift")
+    r.shift:SetWidth(130); r.shift:SetPoint("LEFT", r.right, "RIGHT", 4, 0); AltMenu(r.shift, "shift")
+    WCK.Tip(r.right, "Right-click", "Spell cast when you right-click this bar button.")
+    WCK.Tip(r.shift, "Shift+click", "Spell cast when you Shift+click this bar button.")
     rows[i] = r
   end
   table.insert(win.syncs, { Sync = function()
@@ -185,7 +200,10 @@ table.insert(WCK.settingsTabs, { title = "Alt clicks", hint = "Extra spells on t
       local e = list[i]
       r.spell = e and e.spell
       r:SetShown(e ~= nil)
-      if e then r.label:SetText(e.spell); r.right:GenerateMenu(); r.shift:GenerateMenu() end
+      if e then
+        r.label:SetText(e.spell); r.right:GenerateMenu(); r.shift:GenerateMenu()
+        r.icon:SetTexture(WCK.SpellIcon(e.spell) or "Interface\\Icons\\INV_Misc_QuestionMark")
+      end
     end
   end })
 end })
