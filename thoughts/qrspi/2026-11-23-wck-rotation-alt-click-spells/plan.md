@@ -264,5 +264,5 @@ If Phase 2 found that a Shift+drag starting on a button casts, add: "Start Shift
 - [x] robocopy deploy exits 0-7
 
 #### Manual
-- [ ] The AddOns list in-game shows Warlock Combat Kit 0.3.0
-- [ ] The README text matches the behaviour seen in Phases 1-2
+- [x] The AddOns list in-game shows Warlock Combat Kit 0.3.0
+- [x] The README text matches the behaviour seen in Phases 1-2
