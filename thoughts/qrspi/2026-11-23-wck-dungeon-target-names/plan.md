@@ -89,9 +89,9 @@ end
 - [x] robocopy deploy exits 0-7
 
 #### Manual
-- [ ] Open world: cast Corruption on a mob, then `/wck probe`. Expect a `secrets ...` line and a `trace ... KEY target guid:Creature-... lbl=<name>` line.
-- [ ] Dungeon, in combat with 2+ mobs dotted: `/wck probe`. The user pastes the output and it is recorded in `probe-results.md`.
-- [ ] **GATE decision**, written into `probe-results.md` as a conclusion line:
+- [ ] (not run; covered by the Phase 2 open-world check) Open world: cast Corruption on a mob, then `/wck probe`. Expect a `secrets ...` line and a `trace ... KEY target guid:Creature-... lbl=<name>` line.
+- [x] Dungeon, in combat with 2+ mobs dotted: `/wck probe`. The user pastes the output and it is recorded in `probe-results.md`.
+- [x] **GATE decision** (Run 13: identity and SENT target SECRET, no DROP: skip SENT-name step, continue), written into `probe-results.md` as a conclusion line:
   - KEY lines show `guid:` or `name:` keys in the dungeon: theory wrong. Stop and re-run research.
   - DROP lines appear for every cast: castGUID or spellID is secret. Stop and re-run design.
   - SENT `tgt=SECRET`: skip Phase 2's SENT-name step. The secret-label part of Phase 2 still applies.
