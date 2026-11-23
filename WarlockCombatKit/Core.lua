@@ -22,7 +22,7 @@ end)
 
 local DEFAULTS = { locked = false, shown = true, frames = {}, minimapAngle = 240, plateMarker = false,
   procAlerts = true, procSound = true, showBar = true }
-local CHAR_DEFAULTS = { slots = {} }
+local CHAR_DEFAULTS = { slots = {}, alts = {} }
 
 WCK.On("ADDON_LOADED", function(name)
   if name ~= ADDON then return end

@@ -30,7 +30,7 @@ table.insert(WCK.settingsSections, function(win, y)
   local head = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   head:SetPoint("TOPLEFT", 20, y); head:SetText("Rotation (first matching rule shows in the panel core)")
   local rows = {}
-  local function Changed() win:SyncRules(); WCK.Refresh() end
+  local function Changed() win:Sync(); WCK.Refresh() end -- all syncs: the alt-click rows follow the bar spells
   for i = 1, MAX_RULES do
     local r = CreateFrame("Frame", nil, win); r:SetSize(348, 24); r:SetPoint("TOPLEFT", 14, y - 18 - (i - 1) * 26)
     r.num = r:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall"); r.num:SetPoint("LEFT", 0, 0); r.num:SetText(i .. ".")
@@ -118,6 +118,47 @@ table.insert(WCK.settingsSections, function(win, y)
     end
   end })
   return y - 34 - WCK.SLOTS * 26 - 8
+end)
+
+-- Alt clicks: a situational spell per bar spell; keyed by spell name so it follows rule reorders
+table.insert(WCK.settingsSections, function(win, y)
+  local head = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  head:SetPoint("TOPLEFT", 20, y); head:SetText("Alt clicks (right-click casts instead)")
+  local rows = {}
+  local function Set(spell, key, name)
+    local a = WCK.char.alts[spell] or {}
+    a[key] = name
+    WCK.char.alts[spell] = next(a) and a or nil
+    WCK.Refresh()
+    if InCombatLockdown() then WCK.Print("alt click change applies after combat") end
+  end
+  local function AltMenu(dd, key)
+    dd:SetupMenu(function(_, root)
+      local spell = dd:GetParent().spell
+      if not spell then return end
+      local function cur() local a = WCK.char.alts[spell]; return a and a[key] end
+      root:CreateRadio("(none)", function() return cur() == nil end, function() Set(spell, key, nil) end)
+      SpellMenu(root, function(name) return cur() == name end, function(name) Set(spell, key, name) end)
+    end)
+  end
+  for i = 1, WCK.BAR_MAX do
+    local r = CreateFrame("Frame", nil, win); r:SetSize(348, 24); r:SetPoint("TOPLEFT", 14, y - 18 - (i - 1) * 26)
+    r.label = r:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); r.label:SetPoint("LEFT", 4, 0)
+    r.label:SetWidth(110); r.label:SetJustifyH("LEFT")
+    r.right = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
+    r.right:SetWidth(110); r.right:SetPoint("LEFT", 120, 0); AltMenu(r.right, "right")
+    rows[i] = r
+  end
+  table.insert(win.syncs, { Sync = function()
+    local list = WCK.BarSpells(WCK.char.rules, WCK.DATA.tail, WCK.spellSet, WCK.DATA.core)
+    for i, r in ipairs(rows) do
+      local e = list[i]
+      r.spell = e and e.spell
+      r:SetShown(e ~= nil)
+      if e then r.label:SetText(e.spell); r.right:GenerateMenu() end
+    end
+  end })
+  return y - 18 - WCK.BAR_MAX * 26 - 8
 end)
 
 local function Build()
