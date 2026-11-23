@@ -93,8 +93,8 @@ function TB.CountItems(ids)
 end
 
 -- probe snapshots: always on so /tb probe can report the last cast and loot
-TB.trace = {} -- last 12 {t, event, detail}; the probe reads the event order
-local function Trace(ev, d) table.insert(TB.trace, { GetTime(), ev, d }); if #TB.trace > 12 then table.remove(TB.trace, 1) end end
+TB.trace = {} -- last 20 {t, event, detail}; the probe reads the event order
+local function Trace(ev, d) table.insert(TB.trace, { GetTime(), ev, d }); if #TB.trace > 20 then table.remove(TB.trace, 1) end end
 -- probe run 6: does a fishing pool become the soft-interact target, and is its name readable?
 local function SoftName()
   local ok, n = pcall(function()
@@ -132,6 +132,7 @@ TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
 end)
 -- cast bar + got-away: a fishing cast that ends with no fishing loot within 1s counts as a miss
 TB.session = { misses = 0 }
+TB.Trace = Trace
 local function IsFishing(spellID) return spellID and not TB.Secret(spellID) and TB.DATA.fishingSpells[spellID] end
 
 -- pool learning: name at cast time, position = player + offset along facing, saved on confirmed fishing loot
@@ -171,17 +172,23 @@ TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit, _, spellID)
   local name = TB.ReadPoolTarget()
   local x, y, map = TB.PlayerPos()
   TB.castPool = name and x and { key = TB.PoolKey(name, TB.DATA.pools), x = x, y = y, map = map, facing = GetPlayerFacing() } or nil
+  local raw = GameTooltip:IsShown() and GameTooltipTextLeft1:GetText()
+  local hv = TB.lastHover and string.format("%s %.0fs", TB.lastHover.name, GetTime() - TB.lastHover.t) or "none"
+  Trace("POOL@CAST", tostring(name) .. " | tt " .. (TB.Secret(raw) and "SECRET" or tostring(raw)) .. " | hover " .. hv
+    .. " | pos " .. (x and string.format("%.3f,%.3f m%s", x, y, tostring(map)) or "nil"))
 end)
 
 function TB.LearnPool()
   local c = TB.castPool
   TB.castPool = nil
-  if not c or not c.facing or TB.Secret(c.facing) then return end
+  if not c then Trace("LEARN", "no castPool") return end
+  if not c.facing or TB.Secret(c.facing) then Trace("LEARN", "no facing") return end
   local w, h = TB.HBD:GetZoneSize(c.map)
-  if not w or w == 0 then return end
+  if not w or w == 0 then Trace("LEARN", "no zone size m" .. tostring(c.map)) return end
   local x, y = TB.OffsetPos(c.x, c.y, c.facing, TB.POOL_OFFSET, w, h)
   TB.db.pools[c.map] = TB.db.pools[c.map] or {}
   local _, isNew = TB.MergePool(TB.db.pools[c.map], x, y, c.key, time(), TB.POOL_MERGE, w, h)
+  Trace("LEARN", c.key .. (isNew and " new" or " merged"))
   if isNew then TB.Print("learned " .. TB.PoolByKey(TB.DATA.pools, c.key).name) end
   if TB.Pins then TB.Pins.Refresh() end
 end
@@ -283,6 +290,14 @@ function TB.Probe()
     local m = C_Map.GetBestMapForUnit("player")
     local pos = m and C_Map.GetPlayerMapPosition(m, "player")
     P("map", tostring(m) .. " pos " .. (pos and (S(pos.x) .. "," .. S(pos.y)) or "nil") .. " facing " .. S(GetPlayerFacing()))
+  end)
+  Try("pools", function()
+    local x, y, m = TB.PlayerPos()
+    local w, h; if m then w, h = TB.HBD:GetZoneSize(m) end
+    local n = 0
+    for _, l in pairs(TB.db.pools) do n = n + #l end
+    P("pools", "HBD pos " .. tostring(x) .. "," .. tostring(y) .. " m" .. tostring(m) .. " size " .. tostring(w) .. "x" .. tostring(h)
+      .. " saved " .. n .. " hover " .. (TB.lastHover and TB.lastHover.name or "none"))
   end)
   P("map hooks", "AddDataProvider " .. type(WorldMapFrame and WorldMapFrame.AddDataProvider) .. " mixin " .. type(MapCanvasDataProviderMixin))
 
