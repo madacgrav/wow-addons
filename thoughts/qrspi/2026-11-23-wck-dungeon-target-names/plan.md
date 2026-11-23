@@ -89,7 +89,7 @@ end
 - [x] robocopy deploy exits 0-7
 
 #### Manual
-- [ ] (not run; covered by the Phase 2 open-world check) Open world: cast Corruption on a mob, then `/wck probe`. Expect a `secrets ...` line and a `trace ... KEY target guid:Creature-... lbl=<name>` line.
+- [x] (covered by the Phase 2/4 open-world checks) Open world: cast Corruption on a mob, then `/wck probe`. Expect a `secrets ...` line and a `trace ... KEY target guid:Creature-... lbl=<name>` line.
 - [x] Dungeon, in combat with 2+ mobs dotted: `/wck probe`. The user pastes the output and it is recorded in `probe-results.md`.
 - [x] **GATE decision** (Run 13: identity and SENT target SECRET, no DROP: skip SENT-name step, continue), written into `probe-results.md` as a conclusion line:
   - KEY lines show `guid:` or `name:` keys in the dungeon: theory wrong. Stop and re-run research.
@@ -208,7 +208,7 @@ WCK.ClearAll(map)
 
 #### Manual
 - [ ] (n/a: SENT-name step skipped) Dungeon: dot two differently named mobs. Expect two rows with their names. `/wck probe` shows `row name:<Mob>` lines or `secretName`.
-- [ ] Open world: dot two mobs. Expect `guid:` rows and the same look as before.
+- [x] Open world: dot two mobs. Expect `guid:` rows and the same look as before.
 
 ---
 
@@ -302,8 +302,8 @@ WCK.ClearAll(map)
 
 #### Manual
 - [x] Dungeon: tab between 3 mobs, putting Corruption on each. Expect 3 rows (named, or "Enemy N"); `/wck probe` lists the matching `row slot:N` or `row name:` lines.
-- [ ] Seduction from the succubus on a different mob than your target. Expect a "Pet target" row (or the mob's name).
-- [ ] Open world: unchanged.
+- [x] Seduction from the succubus on a different mob than your target. Expect a "Pet target" row (or the mob's name).
+- [x] Open world: unchanged.
 
 ---
 
@@ -371,5 +371,5 @@ Adjust the wording to match what the Phase 1 probe actually found. For example, 
 - [x] robocopy deploy exits 0-7
 
 #### Manual
-- [ ] Dungeon: dot 3 mobs and kill the target. Its row disappears within about 0.5s and the others stay. `/wck probe` trace shows `CLR_TARGET slot:N rows=1` (or `name:` / `guid:`).
-- [ ] Open world: killing a dotted target clears its row (`CLR_TARGET Creature-... rows=1`), as before.
+- [x] Dungeon: dot 3 mobs and kill the target. Its row disappears within about 0.5s and the others stay. `/wck probe` trace shows `CLR_TARGET slot:N rows=1` (or `name:` / `guid:`).
+- [x] Open world: killing a dotted target clears its row (`CLR_TARGET Creature-... rows=1`), as before.
