@@ -1,0 +1,13 @@
+# Research Questions
+
+## Context
+Focus on `WarlockCombatKit/` (especially `Settings.lua`, `Core.lua`, `Rotation.lua`, and its SavedVariables defaults) and on the UI code of the sibling addons: `WarlockUtilityKit/UI.lua` + `Settings.lua`, `BusinessCard/Skin.lua` + `Panel.lua` + `Card.lua`, `TackleBox/Panel.lua`, `ProfessionPlanner/Panel.lua`. No Ace3 or shared libraries exist; all UIs are hand-rolled `CreateFrame`. Prior UI work is recorded in `thoughts/qrspi/2026-11-16-business-card-ui-redesign/`, `2026-11-16-wuk-board-summon-ui/`, and `2026-11-17-businesscard-ace3-ui-review/`.
+
+## Questions
+1. How is the WarlockCombatKit settings window built end to end: frame template, size, every section and control it creates, how controls are positioned (offsets/anchors), how each control reads and writes `WarlockCombatKitDB` / `WarlockCombatKitCharDB`, and how rows are rebuilt or refreshed after edits (add/remove/default/reset)?
+2. Which settings and data does WCK expose through that window versus slash commands or other entry points (minimap button, rotation-bar right-click, `/wck config`), and what defaults and validation logic in `Core.lua`/`Logic.lua`/`Data.lua` back those settings?
+3. What styling and layout helpers exist in `BusinessCard/Skin.lua` and `WarlockUtilityKit/UI.lua` (backdrops, colors, fonts, section headers, buttons, tooltips, spacing constants, scroll frames, tabs), what API do they expose, and how are they consumed by those addons' panels?
+4. How do the panels in BusinessCard, TackleBox, ProfessionPlanner and WarlockUtilityKit organize content (tabs, sections, scroll areas, grouping, headers, help text/tooltips), handle window chrome (dragging, position persistence, ESC close via `UISpecialFrames`, close buttons), and lay out controls (fixed offsets vs. anchored chains vs. layout helpers)?
+5. What do the existing qrspi docs for the BusinessCard UI redesign, the WUK board/summon UI, and the BusinessCard Ace3 UI review record about the UI problems found, the patterns chosen, and how those changes were verified (tests in `tests/run.lua`, mock harness, manual in-game checks)?
+6. Which Blizzard UI templates and widgets available on the WoW Forever client (Interface 16xxx) are used anywhere in the repo or documented in the wow-forever-addon skill's API index — e.g. `WowStyle1DropdownTemplate`, `BasicFrameTemplateWithInset`, `ScrollFrame`/`ScrollBox`, tab templates, `SettingsPanel`/`Settings.RegisterCanvasLayoutCategory` — and what constraints or gotchas are noted for them?
+7. How does `WarlockCombatKit/tests/run.lua` and the offline mock WoW API harness exercise WCK's UI code today, and what frame/widget APIs does the mock support?
