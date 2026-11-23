@@ -185,6 +185,18 @@ trace: +10.12 SENT/SUCCEEDED 6217 tgt=Nak; REGEN_DISABLED; UNIT_ADDED nameplate1
 - `ctx ... combat true`; `castTime Shadow Bolt: 3000`; `aura 17941: nil`.
 - **Confirmed:** castTime is not forced to 0 in combat. **Shadow Bolt castTime 0 means Nightfall is up.** It is non-secret in combat.
 
+## Run 13 — dungeon (party), in combat, two pulls, Corruption / Bane of Agony on 2 mobs (2026-11-23, build 71037)
+- `ctx: 1.60.1 71037 instance true party combat true`.
+- `unit target: guid SECRET name SECRET mark nil dead false hostile true isTarget true`.
+- `unit pettarget: guid SECRET name SECRET ... isTarget SECRET`. **`UnitIsUnit("pettarget","target")` is secret.**
+- `secrets identity: true` (open world, Orgrimmar, out of combat: `false`). `secrets compare: can true secret false` (checked against a nameplate1 that did not exist). `secrets restricted: true` **everywhere**, including Orgrimmar, so it does not indicate a dungeon.
+- Spells: range `true` (readable), cooldown `start SECRET`, castTime Shadow Bolt 3000.
+- No nameplate units listed (enemy nameplates off), and `plate: nil`.
+- Trace: `SENT 11671 tgt=SECRET guid=Cast-3-...`, then `KEY target target lbl=nil`, then `SUCCEEDED player 11671` with the same castGUID. Same for both 11712 casts on the second pull. **No `DROP`**: spellID and castGUID are readable.
+- `row target: nil guid nil Corruption@5s`. All casts land on the single `"target"` row.
+- Pet `SUCCEEDED` spellIDs (11778, 11784, 7870) are readable.
+- **Gate (dungeon-target-names Phase 1):** theory confirmed. Enemy GUID, name and SENT target are all secret in dungeon combat; castGUID and spellID are not. Skip the SENT-name key step; keep the secret-label pass-through and the slot fallback. The pet target always falls to the "pet" slot, because the comparison is secret.
+
 ## Phase 2 check — death clearing (realm 6783)
 - **Nameplates off:** with enemy nameplates hidden, no `NAME_PLATE_*` events fire at all. Rows then clear mid-fight only through the dead-target check (corpse still targeted), or at combat end.
 - **Nameplates on:** the trace showed `UNIT_REMOVED nameplate1 …5B24A194FC dead=true` immediately followed by `CLR_PLATE …5B24A194FC rows=1`, mid-combat, with two same-named Razormane Warfrenzy mobs. Clearing by GUID on a nameplate death works.
@@ -194,14 +206,14 @@ trace: +10.12 SENT/SUCCEEDED 6217 tgt=Nak; REGEN_DISABLED; UNIT_ADDED nameplate1
 - [x] After a Nightfall proc (Runs 7-12): no overlay event; castTime signal works.
 - [x] After a succubus Seduction: pet `SUCCEEDED` (Run 3).
 - [x] A raid-marked mob, in combat (Run 6): **SECRET when set**.
-- [ ] Dungeon, in combat: unit identity, SENT target, plate texture.
+- [x] Dungeon, in combat (Run 13): unit identity **SECRET**, SENT target **SECRET**, plate not tested (nameplates off).
 - [ ] Battleground, in combat: same as the dungeon run.
 
 ## Conclusions (filled as runs land)
-1. SENT `target` non-secret in combat: **yes (world)**; dungeon and BG pending.
+1. SENT `target` non-secret in combat: **yes (world)**; **SECRET (dungeon, Run 13)**; BG pending.
 2. `castGUID` non-secret, and SENT matches SUCCEEDED: **yes (world)**.
 3. Nightfall: **no overlay event and no button glow** (buff icon only). **Signal: `C_Spell.GetSpellInfo("Shadow Bolt").castTime == 0`** (3000 normally, 0 with the proc; non-secret in combat). `GetPlayerAuraBySpellID(17941)` returns nil (no error).
-4. Enemy GUID, name and dead state in combat: **non-secret (world)**. Mark: **SECRET when set**, nil when unset. Dungeon and BG: pending.
+4. Enemy GUID, name and dead state in combat: **non-secret (world)**. Mark: **SECRET when set**, nil when unset. **Dungeon: GUID and name SECRET in combat (Run 13)**; dead state readable. BG pending.
 5. `IsSpellUsable` and `IsSpellInRange` in combat: **non-secret (world)**, so `WCK.USABLE_OK` can be true.
 6. `C_AssistedCombat`: **unavailable for warlocks**. Drop the fallback toggle, or keep it hidden.
 7. CLEU: **unavailable** (registering it triggers the blocked-action prompt).

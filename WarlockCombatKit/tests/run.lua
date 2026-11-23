@@ -40,6 +40,31 @@ eq(#v, 2, "two rows"); eq(v[1].key, "guid:G1", "newest row first"); eq(v[1].icon
 WCK.CastLanded(map, "guid:G9", "Imp", "G9", "Fear", 111); eq(WCK.ClearGUID(map, "G9"), 1, "cleared one"); eq(map.rows["guid:G9"], nil, "clear by guid")
 eq(WCK.ClearGUID(map, "nope"), 0, "no match clears none")
 WCK.ClearAll(map); eq(next(map.rows), nil, "clear all")
+-- dungeon: secret names ride along wrapped, never compared
+local sec = { "opaque" }
+WCK.CastSent(map, "s1", "Corruption", "target", nil, nil, 200, sec); WCK.CastSucceeded(map, "s1", 201)
+eq(map.rows.target.secret, sec, "secret name lands")
+WCK.CastLanded(map, "target", nil, nil, "Fear", 202); eq(map.rows.target.secret, sec, "nil recast keeps secret name")
+eq(WCK.RowsView(map, 203, WCK.DATA.tracked)[1].secret, sec, "view carries secret name")
+WCK.ClearAll(map)
+-- target slots
+eq((WCK.EnemyKey(nil, nil, 3)), "slot:3", "slot when all secret")
+eq(select(2, WCK.EnemyKey(nil, nil, 3)), nil, "slot leaves label to the panel")
+eq((WCK.EnemyKey(nil, nil, nil)), "target", "no slot keeps old fallback")
+eq((WCK.EnemyKey(nil, "Boar", 3)), "name:Boar", "name beats slot")
+eq((WCK.EnemyKey("G1", nil, 3)), "guid:G1", "guid beats slot")
+eq(WCK.FallbackLabel("slot:3"), "Enemy 3", "slot label"); eq(WCK.FallbackLabel("slot:pet"), "Pet target", "pet label")
+eq(WCK.FallbackLabel("target"), "Target", "target label"); eq(WCK.FallbackLabel("guid:G1"), "?", "unknown label")
+WCK.CastLanded(map, "slot:3", nil, nil, "Corruption", 300)
+WCK.CastLanded(map, "slot:3", nil, nil, "Curse of Agony", 301)
+WCK.CastLanded(map, "slot:4", nil, nil, "Corruption", 302)
+eq(#WCK.RowsView(map, 303, WCK.DATA.tracked), 2, "one row per slot")
+WCK.ClearAll(map)
+-- clear a dead target's row by key
+WCK.CastLanded(map, "slot:5", nil, nil, "Corruption", 400); WCK.CastLanded(map, "slot:6", nil, nil, "Corruption", 401)
+eq(WCK.ClearRow(map, "slot:5"), 1, "clear row by key"); eq(map.rows["slot:5"], nil, "row gone")
+eq(map.rows["slot:6"] ~= nil, true, "other row kept"); eq(WCK.ClearRow(map, "slot:5"), 0, "nothing left to clear")
+WCK.ClearAll(map)
 
 -- Phase 3
 eq(WCK.RowHasCC({ icons = { { kind = "cc", age = 5, stale = 20 } } }), true, "fresh fear")

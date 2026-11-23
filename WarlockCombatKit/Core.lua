@@ -1,6 +1,7 @@
 local ADDON, WCK = ...
 
 WCK.inits, WCK.refreshers = {}, {}
+WCK.targetSlot = 1 -- bumped per target switch; keys rows when the game hides enemy identity
 
 function WCK.Secret(v) return issecretvalue ~= nil and issecretvalue(v) end
 function WCK.Print(msg) print("|cff9482c9WCK|r " .. msg) end
@@ -116,14 +117,17 @@ function WCK.SpellName(spellID)
   return info and info.name
 end
 
--- key, label, guid, marked; marks are secret in combat once set, so only "is there one" is known
-function WCK.Identify(unit)
+-- key, label, guid, marked, secret; marks are secret in combat once set, so only "is there one" is known
+-- secret = { rawName } when the name is secret (dungeon combat): only ever handed to SetText, never compared
+function WCK.Identify(unit, slot)
   local okG, guid = pcall(UnitGUID, unit)
-  local okN, name = pcall(UnitName, unit)
+  local okN, raw = pcall(UnitName, unit)
   local okM, m = pcall(GetRaidTargetIndex, unit)
-  guid, name = okG and NonSecret(guid) or nil, okN and NonSecret(name) or nil
-  local key, label = WCK.EnemyKey(guid, name)
-  return key, label, guid, okM and (WCK.Secret(m) or m ~= nil) or false
+  local secret = okN and WCK.Secret(raw) and { raw } or nil
+  guid = okG and NonSecret(guid) or nil
+  local name = okN and NonSecret(raw) or nil
+  local key, label = WCK.EnemyKey(guid, name, slot)
+  return key, label, guid, okM and (WCK.Secret(m) or m ~= nil) or false, secret
 end
 
 -- procs: Nightfall on Forever has no overlay event or button glow (probe runs 7-12), but it makes
@@ -192,7 +196,7 @@ function WCK.BuildRuleState(now)
     end
   end
   if UnitExists("target") then
-    local key, _, _, marked = WCK.Identify("target")
+    local key, _, _, marked = WCK.Identify("target", WCK.targetSlot)
     s.marked = marked
     local row = WCK.map.rows[key]
     if row then for spell, t in pairs(row.casts) do s.lastOnTarget[spell] = now - t end end
@@ -254,20 +258,29 @@ table.insert(WCK.inits, function()
   WCK.On("UNIT_SPELLCAST_SENT", function(unit, target, castGUID, spellID)
     if unit ~= "player" then return end
     local spell = WCK.SpellName(spellID)
-    if not spell or not WCK.DATA.tracked[spell] or WCK.Secret(castGUID) then return end
+    -- trace casts lost to secrecy so a dungeon run shows whether SENT itself is blind
+    if WCK.Secret(spellID) or (spell and WCK.DATA.tracked[spell] and WCK.Secret(castGUID)) then
+      WCK.Trace("DROP", "spell=" .. S(spellID) .. " guid=" .. S(castGUID)); return
+    end
+    if not spell or not WCK.DATA.tracked[spell] then return end
     local names = {}
     for _, u in ipairs({ "mouseover", "target", "focus" }) do names[u] = NonSecret(UnitName(u)) end
     local u = WCK.PickUnit(NonSecret(target), names)
-    local key, label, guid = WCK.Identify(u)
-    WCK.CastSent(WCK.map, castGUID, spell, key, label or NonSecret(target), guid, GetTime())
+    local key, label, guid, _, secret = WCK.Identify(u, u == "target" and WCK.targetSlot or nil)
+    label = label or NonSecret(target)
+    WCK.Trace("KEY", u .. " " .. key .. " lbl=" .. S(label) .. (secret and " secret" or ""))
+    WCK.CastSent(WCK.map, castGUID, spell, key, label, guid, GetTime(), secret)
   end)
   WCK.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, castGUID, spellID)
     if unit == "player" and not WCK.Secret(castGUID) then WCK.CastSucceeded(WCK.map, castGUID, GetTime()); WCK.Refresh()
     elseif unit == "pet" then -- Seduction: pet casts have no SENT; key on the pet's target
       local spell = WCK.SpellName(spellID)
       if spell and WCK.DATA.tracked[spell] then
-        local key, label, guid = WCK.Identify("pettarget")
-        WCK.CastLanded(WCK.map, key, label, guid, spell, GetTime()); WCK.Refresh()
+        -- probe run 13: the pet/target comparison is secret in dungeons, so this usually lands on "pet"
+        local okS, same = pcall(UnitIsUnit, "pettarget", "target")
+        local slot = (okS and not WCK.Secret(same) and same == true) and WCK.targetSlot or "pet"
+        local key, label, guid, _, secret = WCK.Identify("pettarget", slot)
+        WCK.CastLanded(WCK.map, key, label, guid, spell, GetTime(), secret); WCK.Refresh()
       end
     end
   end)
@@ -279,14 +292,18 @@ table.insert(WCK.inits, function()
     local guid = NonSecret(UnitGUID(unit))
     if guid and WCK.IsDead(unit) then WCK.Trace("CLR_PLATE", guid .. " rows=" .. WCK.ClearGUID(WCK.map, guid)); WCK.Refresh() end
   end)
-  WCK.On("PLAYER_REGEN_ENABLED", function() WCK.ClearAll(WCK.map) end) -- Refresh is debounced 0.1s, so this clear lands before the redraw
+  WCK.On("PLAYER_TARGET_CHANGED", function() WCK.targetSlot = WCK.targetSlot + 1 end)
+  -- Refresh is debounced 0.1s, so this clear lands before the redraw
+  WCK.On("PLAYER_REGEN_ENABLED", function() WCK.ClearAll(WCK.map); WCK.targetSlot = 1 end)
   local lastDeadTarget -- trace each dead target once, matched or not
   C_Timer.NewTicker(0.5, function()
     if next(WCK.map.rows) == nil then return end
     if WCK.IsDead("target") then
-      local _, _, guid = WCK.Identify("target")
-      local n = guid and WCK.ClearGUID(WCK.map, guid) or 0
-      if guid ~= lastDeadTarget then lastDeadTarget = guid; WCK.Trace("CLR_TARGET", tostring(guid) .. " rows=" .. n) end
+      -- dungeons hide the guid: fall back to the row key (the current target slot)
+      local key, _, guid = WCK.Identify("target", WCK.targetSlot)
+      local n = guid and WCK.ClearGUID(WCK.map, guid) or WCK.ClearRow(WCK.map, key)
+      local id = guid or key
+      if id ~= lastDeadTarget then lastDeadTarget = id; WCK.Trace("CLR_TARGET", id .. " rows=" .. n) end
     end
     WCK.Refresh()
   end)
@@ -308,7 +325,7 @@ function WCK.Probe()
   P("ctx", tostring(ver) .. " " .. tostring(build) .. " instance " .. tostring(inInst) .. " " .. tostring(kind)
     .. " combat " .. tostring(InCombatLockdown()))
 
-  for _, u in ipairs({ "target", "focus", "mouseover", "nameplate1", "nameplate2" }) do
+  for _, u in ipairs({ "target", "focus", "mouseover", "pettarget", "nameplate1", "nameplate2" }) do
     Try("unit " .. u, function()
       if not UnitExists(u) then return end
       local okU, isT = pcall(UnitIsUnit, u, "target")
@@ -316,6 +333,16 @@ function WCK.Probe()
         .. " dead " .. S(UnitIsDead(u)) .. " hostile " .. S(UnitCanAttack("player", u))
         .. " isTarget " .. (okU and S(isT) or "ERROR"))
     end)
+  end
+  if C_Secrets then
+    Try("secrets identity", function() P("secrets identity", S(C_Secrets.ShouldUnitIdentityBeSecret("target"))) end)
+    Try("secrets compare", function()
+      P("secrets compare", "can " .. S(C_Secrets.CanCompareUnitTokens("target", "nameplate1"))
+        .. " secret " .. S(C_Secrets.ShouldUnitComparisonBeSecret("target", "nameplate1")))
+    end)
+    Try("secrets restricted", function() P("secrets restricted", S(C_Secrets.HasSecretRestrictions())) end)
+  else
+    P("secrets", "C_Secrets: missing")
   end
 
   for _, n in ipairs({ "Shadow Bolt", "Corruption" }) do
@@ -379,9 +406,10 @@ function WCK.Probe()
     for key, row in pairs(WCK.map.rows) do
       local spells = {}
       for spell, t in pairs(row.casts) do spells[#spells + 1] = spell .. string.format("@%.0fs", GetTime() - t) end
-      P("row " .. key, tostring(row.label) .. " guid " .. tostring(row.guid) .. " " .. table.concat(spells, ", "))
+      P("row " .. key, tostring(row.label) .. " guid " .. tostring(row.guid) .. (row.secret and " secretName" or "")
+        .. " " .. table.concat(spells, ", "))
     end
-    local tk, _, tg = WCK.Identify("target")
+    local tk, _, tg = WCK.Identify("target", WCK.targetSlot)
     P("target key", tk .. " dead " .. tostring(WCK.IsDead("target")) .. " guid " .. tostring(tg))
   end
 

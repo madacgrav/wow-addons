@@ -115,7 +115,8 @@ A slot change you make in combat takes effect when combat ends. Slots are saved 
 - **Forever restrictions.** Forever runs Midnight's "secret value" rules, so addons cannot read your DoTs or curses on an enemy in combat. Everything here comes from your own cast events and readable spell data, which is why there are no exact timers.
   - Raid marks become unreadable in combat once set. Rows are therefore keyed by GUID, not mark, and the rotation's mark condition only knows whether a mark is set.
 - **Not tracked:** exact DoT or CC timers, enemy auras, health or casts, and PvP cooldowns, trinkets or DR.
-- **Dungeons and battlegrounds are untested.** If enemy names or GUIDs are unreadable there, rows fall back to a single "Target" row, and the nameplate marker stays off.
+- **Dungeons.** In dungeon combat Forever hides enemy GUIDs and names from addons, and even the name of the mob you cast on. Each target you switch to gets its own row, labelled with the mob's name (the game displays it; the addon never reads it), or "Enemy N" if no name is available. Casts by mouseover land on your current target's row, because the addon can't tell which mob they hit. Tabbing back to a mob you already dotted starts a second row. Seduction gets its own "Pet target" row. A dead target's row clears; other dead mobs' rows clear when combat ends. The nameplate marker stays off in instances.
+- **Battlegrounds are untested.**
 - **Saved data:** `WarlockCombatKitDB` (account: panel position, options, last probe) and `WarlockCombatKitCharDB` (character: rules, cast slots).
 
 ## Development
