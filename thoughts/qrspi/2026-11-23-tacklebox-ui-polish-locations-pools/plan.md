@@ -600,11 +600,11 @@ Add `pins map||minimap` to the help line.
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass
+- [x] Lint clean
+- [x] Tests pass
 
 #### Manual
-- [ ] Deployed
+- [x] Deployed
 - [ ] `/reload`
 - [ ] Learned pools show on the world map (current zone and parent continent) and the minimap; hover tooltip shows name + count
 - [ ] Toggle the `rotateMinimap` option: pins stay in place relative to terrain
