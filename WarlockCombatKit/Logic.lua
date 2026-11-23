@@ -29,16 +29,18 @@ function WCK.PickUnit(sentName, names)
   return "target"
 end
 
-function WCK.CastSent(map, castGUID, spell, key, label, guid, now)
+-- secret = { rawName } when the unit's name is secret (never compared, only handed to SetText)
+function WCK.CastSent(map, castGUID, spell, key, label, guid, now, secret)
   if not castGUID or not spell or not key then return end
   for g, p in pairs(map.pending) do if now - p.t > 10 then map.pending[g] = nil end end -- lost SUCCEEDED/FAILED
-  map.pending[castGUID] = { spell = spell, key = key, label = label, guid = guid, t = now }
+  map.pending[castGUID] = { spell = spell, key = key, label = label, guid = guid, t = now, secret = secret }
 end
 
-function WCK.CastLanded(map, key, label, guid, spell, now)
+function WCK.CastLanded(map, key, label, guid, spell, now, secret)
   local row = map.rows[key]
   if not row then row = { key = key, casts = {} }; map.rows[key] = row end
   row.label, row.guid, row.last = label or row.label, guid or row.guid, now
+  row.secret = secret or row.secret
   row.casts[spell] = now
 end
 
@@ -46,7 +48,7 @@ function WCK.CastSucceeded(map, castGUID, now)
   local p = castGUID and map.pending[castGUID]
   if not p then return end
   map.pending[castGUID] = nil
-  WCK.CastLanded(map, p.key, p.label, p.guid, p.spell, now)
+  WCK.CastLanded(map, p.key, p.label, p.guid, p.spell, now, p.secret)
 end
 
 function WCK.CastFailed(map, castGUID) if castGUID then map.pending[castGUID] = nil end end
@@ -76,7 +78,7 @@ function WCK.RowsView(map, now, tracked)
       icons[#icons + 1] = { spell = spell, age = now - t, alpha = WCK.IconAlpha(now - t, d.stale), kind = d.kind, stale = d.stale }
     end
     table.sort(icons, function(a, b) return a.age < b.age end)
-    out[#out + 1] = { key = row.key, label = row.label, last = row.last, icons = icons }
+    out[#out + 1] = { key = row.key, label = row.label, secret = row.secret, last = row.last, icons = icons }
   end
   table.sort(out, function(a, b) return a.last > b.last end)
   return out

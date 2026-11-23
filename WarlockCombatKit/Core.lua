@@ -116,14 +116,17 @@ function WCK.SpellName(spellID)
   return info and info.name
 end
 
--- key, label, guid, marked; marks are secret in combat once set, so only "is there one" is known
+-- key, label, guid, marked, secret; marks are secret in combat once set, so only "is there one" is known
+-- secret = { rawName } when the name is secret (dungeon combat): only ever handed to SetText, never compared
 function WCK.Identify(unit)
   local okG, guid = pcall(UnitGUID, unit)
-  local okN, name = pcall(UnitName, unit)
+  local okN, raw = pcall(UnitName, unit)
   local okM, m = pcall(GetRaidTargetIndex, unit)
-  guid, name = okG and NonSecret(guid) or nil, okN and NonSecret(name) or nil
+  local secret = okN and WCK.Secret(raw) and { raw } or nil
+  guid = okG and NonSecret(guid) or nil
+  local name = okN and NonSecret(raw) or nil
   local key, label = WCK.EnemyKey(guid, name)
-  return key, label, guid, okM and (WCK.Secret(m) or m ~= nil) or false
+  return key, label, guid, okM and (WCK.Secret(m) or m ~= nil) or false, secret
 end
 
 -- procs: Nightfall on Forever has no overlay event or button glow (probe runs 7-12), but it makes
@@ -262,18 +265,18 @@ table.insert(WCK.inits, function()
     local names = {}
     for _, u in ipairs({ "mouseover", "target", "focus" }) do names[u] = NonSecret(UnitName(u)) end
     local u = WCK.PickUnit(NonSecret(target), names)
-    local key, label, guid = WCK.Identify(u)
+    local key, label, guid, _, secret = WCK.Identify(u)
     label = label or NonSecret(target)
-    WCK.Trace("KEY", u .. " " .. key .. " lbl=" .. S(label))
-    WCK.CastSent(WCK.map, castGUID, spell, key, label, guid, GetTime())
+    WCK.Trace("KEY", u .. " " .. key .. " lbl=" .. S(label) .. (secret and " secret" or ""))
+    WCK.CastSent(WCK.map, castGUID, spell, key, label, guid, GetTime(), secret)
   end)
   WCK.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, castGUID, spellID)
     if unit == "player" and not WCK.Secret(castGUID) then WCK.CastSucceeded(WCK.map, castGUID, GetTime()); WCK.Refresh()
     elseif unit == "pet" then -- Seduction: pet casts have no SENT; key on the pet's target
       local spell = WCK.SpellName(spellID)
       if spell and WCK.DATA.tracked[spell] then
-        local key, label, guid = WCK.Identify("pettarget")
-        WCK.CastLanded(WCK.map, key, label, guid, spell, GetTime()); WCK.Refresh()
+        local key, label, guid, _, secret = WCK.Identify("pettarget")
+        WCK.CastLanded(WCK.map, key, label, guid, spell, GetTime(), secret); WCK.Refresh()
       end
     end
   end)
@@ -395,7 +398,8 @@ function WCK.Probe()
     for key, row in pairs(WCK.map.rows) do
       local spells = {}
       for spell, t in pairs(row.casts) do spells[#spells + 1] = spell .. string.format("@%.0fs", GetTime() - t) end
-      P("row " .. key, tostring(row.label) .. " guid " .. tostring(row.guid) .. " " .. table.concat(spells, ", "))
+      P("row " .. key, tostring(row.label) .. " guid " .. tostring(row.guid) .. (row.secret and " secretName" or "")
+        .. " " .. table.concat(spells, ", "))
     end
     local tk, _, tg = WCK.Identify("target")
     P("target key", tk .. " dead " .. tostring(WCK.IsDead("target")) .. " guid " .. tostring(tg))

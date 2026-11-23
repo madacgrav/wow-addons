@@ -40,6 +40,13 @@ eq(#v, 2, "two rows"); eq(v[1].key, "guid:G1", "newest row first"); eq(v[1].icon
 WCK.CastLanded(map, "guid:G9", "Imp", "G9", "Fear", 111); eq(WCK.ClearGUID(map, "G9"), 1, "cleared one"); eq(map.rows["guid:G9"], nil, "clear by guid")
 eq(WCK.ClearGUID(map, "nope"), 0, "no match clears none")
 WCK.ClearAll(map); eq(next(map.rows), nil, "clear all")
+-- dungeon: secret names ride along wrapped, never compared
+local sec = { "opaque" }
+WCK.CastSent(map, "s1", "Corruption", "target", nil, nil, 200, sec); WCK.CastSucceeded(map, "s1", 201)
+eq(map.rows.target.secret, sec, "secret name lands")
+WCK.CastLanded(map, "target", nil, nil, "Fear", 202); eq(map.rows.target.secret, sec, "nil recast keeps secret name")
+eq(WCK.RowsView(map, 203, WCK.DATA.tracked)[1].secret, sec, "view carries secret name")
+WCK.ClearAll(map)
 
 -- Phase 3
 eq(WCK.RowHasCC({ icons = { { kind = "cc", age = 5, stale = 20 } } }), true, "fresh fear")

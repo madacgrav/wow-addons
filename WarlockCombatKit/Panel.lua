@@ -203,7 +203,11 @@ function WCK.RenderPanel()
   for i, r in ipairs(f.rows) do
     local v = view[i]
     if v then
-      r.label:SetText(v.label or (v.key == "target" and "Target" or "?"))
+      local lbl = r.label -- a secret name can't be read but SetText still displays it
+      if v.label then lbl:SetText(v.label)
+      elseif not (v.secret and pcall(lbl.SetText, lbl, v.secret[1])) then
+        lbl:SetText(v.key == "target" and "Target" or "?")
+      end
       for j, t in ipairs(r.icons) do
         local icon = v.icons[j]
         if icon then t:SetTexture(C_Spell.GetSpellTexture(icon.spell)); t:SetAlpha(icon.alpha); t:Show() else t:Hide() end

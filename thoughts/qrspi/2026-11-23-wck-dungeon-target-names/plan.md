@@ -101,6 +101,8 @@ end
 
 ## Phase 2: Key on SENT name + show hidden names
 
+> **Gate (Run 13):** the SENT target is SECRET in dungeons, so the SENT-name key step (EnemyKey `sentName`, Identify `sentName`, its tests and the "different names get rows" changelog wording) was skipped. Only the secret-label pass-through was built.
+
 ### Changes
 
 #### 1. Logic: key chain and secret label carried through
@@ -200,9 +202,9 @@ WCK.ClearAll(map)
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] luacheck shows no new warnings
-- [ ] robocopy deploy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] luacheck shows no new warnings
+- [x] robocopy deploy exits 0-7
 
 #### Manual
 - [ ] Dungeon: dot two differently named mobs. Expect two rows with their names. `/wck probe` shows `row name:<Mob>` lines or `secretName`.

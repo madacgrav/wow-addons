@@ -7,6 +7,9 @@ All notable changes to this addon. Versions match `## Version` in `WarlockCombat
 ### Added
 - `/wck probe` reports secret-identity checks (`C_Secrets`) and the pet's target; the trace logs the row key chosen for each cast (`KEY`) and casts dropped because the game hid their spell or cast ID (`DROP`).
 
+### Fixed
+- In dungeons, rows show the mob's name even though the game hides it from addons (the name is handed to the game to display).
+
 ## [0.2.1] — 2026-11-23
 
 ### Changed
