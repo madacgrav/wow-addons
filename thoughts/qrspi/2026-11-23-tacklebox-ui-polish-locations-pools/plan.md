@@ -175,12 +175,12 @@ The tooltip already shows `self.title`.
 
 #### Manual
 - [x] Deployed with robocopy
-- [ ] `/reload`
-- [ ] Collapsed panel: title in MORPHEUS, header band, skill bar and zone line aligned as before
-- [ ] Expanded: tab strip, rule and rows aligned; `/fstack` shows no overlaps
-- [ ] An empty tab (e.g. Water with no items) shows a centred icon and text
-- [ ] Row and tab hover look the same strength; close button sits inside the border
-- [ ] Collapse, expand and `/reload` keep the state
+- [x] `/reload`
+- [x] Collapsed panel: title in MORPHEUS, header band, skill bar and zone line aligned as before
+- [x] Expanded: tab strip, rule and rows aligned; `/fstack` shows no overlaps
+- [x] An empty tab (e.g. Water with no items) shows a centred icon and text
+- [x] Row and tab hover look the same strength; close button sits inside the border
+- [x] Collapse, expand and `/reload` keep the state
 
 ---
 
@@ -319,11 +319,11 @@ for name, s in pairs(TB.DATA.spots) do for _, k in ipairs(s.pools) do assert(TB.
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass, including the Spots tests and the data integrity loop
+- [x] Lint clean
+- [x] Tests pass, including the Spots tests and the data integrity loop
 
 #### Manual
-- [ ] Deployed
+- [x] Deployed
 - [ ] `/reload`
 - [ ] 6 tabs, icon-only; Spots tab lists zones for current skill, with the current zone first if it has data
 - [ ] Hovering a spot row shows the full text
