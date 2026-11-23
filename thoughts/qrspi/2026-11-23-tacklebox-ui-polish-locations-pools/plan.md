@@ -170,11 +170,11 @@ The tooltip already shows `self.title`.
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass
+- [x] Lint clean
+- [x] Tests pass
 
 #### Manual
-- [ ] Deployed with robocopy
+- [x] Deployed with robocopy
 - [ ] `/reload`
 - [ ] Collapsed panel: title in MORPHEUS, header band, skill bar and zone line aligned as before
 - [ ] Expanded: tab strip, rule and rows aligned; `/fstack` shows no overlaps
