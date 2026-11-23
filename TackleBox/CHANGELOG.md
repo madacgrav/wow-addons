@@ -2,6 +2,20 @@
 
 All notable changes to this addon. Versions match `## Version` in `TackleBox.toc`; each version is published as a `tb-vX.Y.Z` GitHub release.
 
+## [1.2.0] — 2026-11-23
+
+### Added
+- **Spots tab.** Best zones for your skill with their notable catches and the pool types that spawn there; your current zone comes first. Hover a row for the full text.
+- **Learned pools.** Hover a pool and cast at it (within 60 seconds of hovering): once the catch lands, TackleBox saves the spot, account-wide. Repeat catches at the same pool raise its count.
+- **Nearby pools.** The top of the Spots tab lists learned pools on your map, nearest first, with distance and times seen. Click one to set a waypoint.
+- **Map pins.** Learned pools show on the world map and minimap. `/tb pins map` and `/tb pins minimap` turn them off or on.
+- **Pool alerts.** Hovering a pool prints "<pool> nearby" and flashes, once per pool per minute, never in combat. `/tb detect` turns them off or on.
+
+### Changed
+- Zone bands follow the published Forever tiers and include Zephras Isle, The Riverglades, Shen'Dralas and Mount Hyjal.
+- Panel polish: display-font title, header glow, framed row icons, a centred empty state, icon-only tabs, and matching hover strength.
+- Embeds LibStub, CallbackHandler-1.0 and HereBeDragons 2.18 (map and minimap pins). Licence texts ship in `Libs/`.
+
 ## [1.1.0] — 2026-11-23
 
 ### Added
