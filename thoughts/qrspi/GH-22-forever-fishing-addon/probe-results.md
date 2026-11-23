@@ -186,5 +186,6 @@ Steps: face a pool and run `/tb probe`; mouse over it and run `/tb probe`; cast 
 - Shared camp cooldown: `C_Container.GetItemCooldown(<any camp item>)`, 3600 s, starts at placement (Bowl/Rack/Hut and their place spells).
 - Placement: secure `type=item` click opens a ground-target cursor; second click places. Camp items are consumed.
 - Known recipe: `C_SpellBook.IsSpellKnown(recipeSpell)`.
+- Craft buttons (user report): `macro` (/cast Fish Bowl) -> "Item is not ready yet" (name resolves to the item, not the recipe); `spell` (type=spell 1229745) -> nothing happens.
 - Craft method: one-click methods unproven (no reagents in bags; CraftRecipe pcall returned no error). Chosen: "window" (`C_TradeSkillUI.OpenTradeSkill(356)` returned true). Revisit with reagents in bags.
 - Reagent IDs: Raw Brilliant Smallfish 6291, Bolt of Runecloth 14048 confirmed in bags. Empty Vial / Simple Wood / Seasonal Fish Steaks / Crystal Vial / Raw Mithril Head Trout not seen.
