@@ -204,6 +204,30 @@ table.insert(WCK.refreshers, function() -- file scope: runs after the proc refre
   WCK.ruleState = WCK.BuildRuleState(GetTime())
   WCK.next = WCK.EvalRules(WCK.char.rules, WCK.ruleState)
 end)
+
+-- bar cooldowns: every bar spell (rules + known tail), not just rule spells; secret fields read as unknown
+local function Clean(v) if WCK.Secret(v) then return nil end return v end
+function WCK.BuildCooldowns(spells)
+  local onCD, earliest = {}, nil
+  for _, name in ipairs(spells) do
+    local ok, cd = pcall(C_Spell.GetSpellCooldown, name)
+    if ok and type(cd) == "table" then
+      local on, ends = WCK.CooldownState({ isActive = Clean(cd.isActive), isOnGCD = Clean(cd.isOnGCD),
+        startTime = Clean(cd.startTime), duration = Clean(cd.duration) })
+      if on then
+        onCD[name] = true
+        if ends and (not earliest or ends < earliest) then earliest = ends end
+      end
+    end
+  end
+  return onCD, earliest
+end
+WCK.onCD, WCK.cdEnd = {}, nil
+table.insert(WCK.refreshers, function() -- after WCK.next, before Rotation.lua's highlight refresher
+  local spells = {}
+  for _, e in ipairs(WCK.BarSpells(WCK.char.rules, WCK.DATA.tail, WCK.spellSet, WCK.DATA.core)) do spells[#spells + 1] = e.spell end
+  WCK.onCD, WCK.cdEnd = WCK.BuildCooldowns(spells)
+end)
 WCK.On("SPELL_UPDATE_COOLDOWN", WCK.Refresh)
 WCK.On("PLAYER_TARGET_CHANGED", WCK.Refresh)
 WCK.On("RAID_TARGET_UPDATE", WCK.Refresh)
