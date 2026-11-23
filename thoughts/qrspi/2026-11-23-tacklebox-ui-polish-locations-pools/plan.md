@@ -655,11 +655,11 @@ eq(TB.ShouldAlert(al, "q", 30, 60), true, "other pool"); eq(TB.ShouldAlert(al, "
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass
+- [x] Lint clean
+- [x] Tests pass
 
 #### Manual
-- [ ] Deployed
+- [x] Deployed
 - [ ] `/reload`
 - [ ] Walk up to a pool (soft-interact) or mouse over it: one chat line + flash
 - [ ] Again within 60 s: silent; after 60 s: alerts again
