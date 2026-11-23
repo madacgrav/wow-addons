@@ -1,8 +1,7 @@
 local ADDON, TB = ...
--- ponytail: fixed 30 rows; collapse sections when they overflow, add a ScrollBox if that bites
-local MAX_ROWS = 30
 -- TOP = header + zone line + tab strip height above the first row; HEAD = collapsed panel height
 local WIDTH, ROW_W, TOP, TAB_H, HEAD = 320, 296, 146, 34, 100
+local VISIBLE, LIST_W = 10, ROW_W - 20 -- rows shown before scrolling; 20px gutter keeps the scroll bar inside the edge
 local panel
 
 -- deep water, sand and rope
@@ -125,34 +124,43 @@ local function Build()
   -- tab strip: one icon tab per section; tabs are made lazily in RenderPanel once the section list is known
   panel.tabs = {}
 
+  -- rows scroll inside a box at most VISIBLE rows tall; rows are made lazily by GetRow
   panel.rows = {}
-  for i = 1, MAX_ROWS do
-    local row = CreateFrame("Frame", nil, panel)
-    row:SetSize(ROW_W, 24); row:SetPoint("TOPLEFT", 12, -TOP - (i - 1) * 26)
-    row.band = row:CreateTexture(nil, "BACKGROUND"); row.band:SetAllPoints()
-    row.icon = row:CreateTexture(nil, "ARTWORK"); row.icon:SetSize(20, 20); row.icon:SetPoint("LEFT", 2, 0)
-    row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93) -- trim the icon border
-    row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    row.text:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, 0); row.text:SetWidth(ROW_W - 50); row.text:SetJustifyH("LEFT"); row.text:SetWordWrap(false)
-    row.sub = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    row.sub:SetPoint("TOPLEFT", row.text, "BOTTOMLEFT", 0, -1); row.sub:SetWidth(ROW_W - 50); row.sub:SetJustifyH("LEFT"); row.sub:SetWordWrap(false)
-    -- thin progress line under quest fish
-    row.bar = CreateFrame("StatusBar", nil, row)
-    row.bar:SetSize(70, 4); row.bar:SetPoint("RIGHT", -6, -6); row.bar:SetMinMaxValues(0, 1)
-    row.bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-    local bbg = row.bar:CreateTexture(nil, "BACKGROUND"); bbg:SetAllPoints(); bbg:SetColorTexture(0, 0, 0, 0.6)
-    row:EnableMouse(true)
-    row.hl = row:CreateTexture(nil, "HIGHLIGHT"); row.hl:SetAllPoints(); row.hl:SetColorTexture(T.foam[1], T.foam[2], T.foam[3], 0.08)
-    row:SetScript("OnEnter", function(self)
-      if not self.itemID then return end
-      GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:SetItemByID(self.itemID)
-      if self.onTooltip then self.onTooltip(GameTooltip) end
-      GameTooltip:Show()
-    end)
-    row:SetScript("OnLeave", GameTooltip_Hide)
-    panel.rows[i] = row
-  end
+  panel.scroll = CreateFrame("ScrollFrame", "TBPanelScroll", panel, "UIPanelScrollFrameTemplate")
+  panel.scroll:SetPoint("TOPLEFT", 12, -TOP); panel.scroll:SetSize(LIST_W, 3 * 26)
+  panel.content = CreateFrame("Frame", nil, panel.scroll)
+  panel.content:SetSize(LIST_W, 26)
+  panel.scroll:SetScrollChild(panel.content)
   panel:HookScript("OnShow", function(self) self.quip:SetText(QUIPS[math.random(#QUIPS)]) end)
+end
+
+local function GetRow(i)
+  if panel.rows[i] then return panel.rows[i] end
+  local row = CreateFrame("Frame", nil, panel.content)
+  row:SetSize(LIST_W, 24); row:SetPoint("TOPLEFT", 0, -(i - 1) * 26)
+  row.band = row:CreateTexture(nil, "BACKGROUND"); row.band:SetAllPoints()
+  row.icon = row:CreateTexture(nil, "ARTWORK"); row.icon:SetSize(20, 20); row.icon:SetPoint("LEFT", 2, 0)
+  row.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93) -- trim the icon border
+  row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  row.text:SetPoint("TOPLEFT", row.icon, "TOPRIGHT", 6, 0); row.text:SetWidth(LIST_W - 50); row.text:SetJustifyH("LEFT"); row.text:SetWordWrap(false)
+  row.sub = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  row.sub:SetPoint("TOPLEFT", row.text, "BOTTOMLEFT", 0, -1); row.sub:SetWidth(LIST_W - 50); row.sub:SetJustifyH("LEFT"); row.sub:SetWordWrap(false)
+  -- thin progress line under quest fish
+  row.bar = CreateFrame("StatusBar", nil, row)
+  row.bar:SetSize(70, 4); row.bar:SetPoint("RIGHT", -6, -6); row.bar:SetMinMaxValues(0, 1)
+  row.bar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+  local bbg = row.bar:CreateTexture(nil, "BACKGROUND"); bbg:SetAllPoints(); bbg:SetColorTexture(0, 0, 0, 0.6)
+  row:EnableMouse(true)
+  row.hl = row:CreateTexture(nil, "HIGHLIGHT"); row.hl:SetAllPoints(); row.hl:SetColorTexture(T.foam[1], T.foam[2], T.foam[3], 0.08)
+  row:SetScript("OnEnter", function(self)
+    if not self.itemID then return end
+    GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:SetItemByID(self.itemID)
+    if self.onTooltip then self.onTooltip(GameTooltip) end
+    GameTooltip:Show()
+  end)
+  row:SetScript("OnLeave", GameTooltip_Hide)
+  panel.rows[i] = row
+  return row
 end
 
 local function MakeTab(i, n)
@@ -213,10 +221,11 @@ function TB.RenderPanel(rows, skill, misses, tabs, active, zone)
   panel.rule:SetShown(exp)
   for _, t in ipairs(panel.tabs) do t:SetShown(exp) end
 
-  local n, stripe = math.min(#rows, MAX_ROWS), false
-  for i, row in ipairs(panel.rows) do
+  local n, stripe = #rows, false
+  for i = 1, math.max(n, #panel.rows) do
     local v = rows[i]
-    row:SetShown(exp and v ~= nil)
+    local row = v and GetRow(i) or panel.rows[i]
+    row:SetShown(v ~= nil)
     if v then
       row.icon:SetShown(not v.empty)
       row.icon:SetTexture(v.icon or 134400)
@@ -235,7 +244,13 @@ function TB.RenderPanel(rows, skill, misses, tabs, active, zone)
       row.itemID, row.onTooltip = v.itemID, v.onTooltip
     end
   end
-  panel:SetHeight(exp and (TOP + 10 + math.max(n, 3) * 26) or HEAD) -- keep a little water under short tabs
+  local vis = math.min(math.max(n, 3), VISIBLE) -- keep a little water under short tabs
+  panel.content:SetHeight(math.max(n, 1) * 26)
+  panel.scroll:SetHeight(vis * 26)
+  if panel.scroll.ScrollBar then panel.scroll.ScrollBar:SetShown(n > VISIBLE) end
+  if active ~= panel.lastTab then panel.scroll:SetVerticalScroll(0); panel.lastTab = active end
+  panel.scroll:SetShown(exp)
+  panel:SetHeight(exp and (TOP + 10 + vis * 26) or HEAD)
   panel:Show()
 end
 

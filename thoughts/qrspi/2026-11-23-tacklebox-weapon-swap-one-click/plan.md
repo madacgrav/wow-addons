@@ -157,12 +157,12 @@ eq(TB.ZoneStatus(Z, L, { level = 100 }, ""), nil, "zone empty name")
 - [x] Deployed with robocopy (exit code 0-7).
 
 #### Manual
-- [ ] `/reload`: no errors. The panel starts collapsed, showing the header plus the zone line.
-- [ ] In Orgrimmar (or any listed zone) the line reads `<zone>: skill A-B [flag]`, colored green, grey or red.
-- [ ] In an unlisted zone it reads `<zone>: no fishing data` in grey.
-- [ ] Crossing a zone border updates the line within a second.
-- [ ] The plus button shows the tabs and rows, and the minus button hides them. `/reload` keeps the last state.
-- [ ] Toggling in combat works with no errors.
+- [x] `/reload`: no errors. The panel starts collapsed, showing the header plus the zone line.
+- [x] In Orgrimmar (or any listed zone) the line reads `<zone>: skill A-B [flag]`, colored green, grey or red.
+- [x] In an unlisted zone it reads `<zone>: no fishing data` in grey.
+- [x] Crossing a zone border updates the line within a second.
+- [x] The plus button shows the tabs and rows, and the minus button hides them. `/reload` keeps the last state.
+- [x] Toggling in combat works with no errors.
 
 ---
 
@@ -232,9 +232,9 @@ Rows no longer need `exp` in `SetShown`, because hiding `panel.scroll` hides the
 
 ### Verification
 #### Automated
-- [ ] `lua TackleBox/tests/run.lua` prints `all tests passed`.
-- [ ] `lint.sh TackleBox` shows no warnings beyond the baseline of 29.
-- [ ] Deployed with robocopy.
+- [x] `lua TackleBox/tests/run.lua` prints `all tests passed`.
+- [x] `lint.sh TackleBox` shows no warnings beyond the baseline of 29.
+- [x] Deployed with robocopy.
 
 #### Manual
 - [ ] `/reload`: no errors. The Catch tab with more than 10 entries shows 10 rows, and the wheel scrolls to the last entry (count matches the badge).
