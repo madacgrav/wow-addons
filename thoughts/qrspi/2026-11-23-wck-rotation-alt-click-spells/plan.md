@@ -220,12 +220,12 @@ eq(so.macrotext2, nil, "shift only: no right"); eq(so["shift-macrotext1"], WCK.C
 - [x] robocopy deploy exits 0-7
 
 #### Manual (in-game, `/reload`)
-- [ ] Set Shift on Corruption to Banish: Shift+left casts Banish
-- [ ] With Right=Fear and Shift=Banish: Shift+right casts Fear; with Right unset, Shift+right casts Corruption
-- [ ] Plain left- and right-click are unchanged
-- [ ] The tooltip shows both lines
-- [ ] Shift+drag from the bar background or the circle still moves the kit and casts nothing
-- [ ] Shift+drag starting on a button: record whether it casts, and note it for the README in Phase 3
+- [x] Set Shift on Corruption to Banish: Shift+left casts Banish
+- [x] With Right=Fear and Shift=Banish: Shift+right casts Fear; with Right unset, Shift+right casts Corruption
+- [x] Plain left- and right-click are unchanged
+- [x] The tooltip shows both lines
+- [x] Shift+drag from the bar background or the circle still moves the kit and casts nothing
+- [x] Shift+drag starting on a button: record whether it casts, and note it for the README in Phase 3
 
 ---
 
@@ -259,9 +259,9 @@ If Phase 2 found that a Shift+drag starting on a button casts, add: "Start Shift
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] `luacheck WarlockCombatKit --globals WCK` shows no new warnings
-- [ ] robocopy deploy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] `luacheck WarlockCombatKit --globals WCK` shows no new warnings
+- [x] robocopy deploy exits 0-7
 
 #### Manual
 - [ ] The AddOns list in-game shows Warlock Combat Kit 0.3.0

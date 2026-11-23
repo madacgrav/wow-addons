@@ -2,6 +2,11 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockCombatKit.toc`; each version is published as a `wck-vX.Y.Z` GitHub release.
 
+## [0.3.0] — 2026-11-23
+
+### Added
+- Rotation bar buttons can cast a situational spell on right-click and another on Shift+click, chosen per spell in the new "Alt clicks" settings section. Unset clicks cast the button's own spell.
+
 ## [0.2.2] — 2026-11-23
 
 ### Added
