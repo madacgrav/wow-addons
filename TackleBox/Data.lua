@@ -82,11 +82,19 @@ TB.DATA = {
     ["Eastern Plaguelands"] = { notable = { "Lightning Eel", "Plated Armorfish" }, pools = { "gsage" } },
   },
   fish = {},          -- Phase 3
-  -- unlock = ItemSparse RequiredSkillRank; aura IDs are the DB2 "Uncommon/Rare Fishing" dummies, mapping unverified in game
-  campBuffs = {
-    { spellID = 1280341, name = "Fishing Rack (Uncommon)", unlock = 140 },
-    { spellID = 1280342, name = "Fishing Hut (Rare)", unlock = 300 },
+  -- fishing camp items, best first. item/recipe/skill: DB2 build 70450 (probe-results.md:71-113); recipes known via
+  -- C_SpellBook.IsSpellKnown (probe run 7E). Bowl reagents third-party (warcraft.wiki.gg Fish_Bowl); 6291 seen in bags (run 7A).
+  -- ponytail: Rack/Hut reagent item IDs (Simple Wood, Seasonal Fish Steaks, ...) not probed yet, so no craft offer for them
+  camp = {
+    { key = "hut", name = "Fishing Hut", item = 279966, recipe = 1262998, skill = 300 },
+    { key = "rack", name = "Fishing Rack", item = 279965, recipe = 1262990, skill = 140 },
+    { key = "bowl", name = "Fish Bowl", item = 279967, recipe = 1229745, skill = 20, reagents = { { 6291, 1 }, { 3371, 1 } } },
   },
+  -- probe run 7: one shared "Camp Benefits" buff (~1 h); "Campfire Nearby" while at a fire; kits consumed, best first
+  campAura = 1229741,
+  campfires = { items = { 279974, 279961, 279981 }, aura = 1283391 }, -- Expert, Journeyman, Basic Campfire Kit
+  campCooldown = "item",   -- C_Container.GetItemCooldown(camp item): shared 3600 s from placement (run 7D)
+  campCraftMethod = "window", -- /cast and type=spell do not craft (run 7); CraftRecipe unproven -> open Fishing
   -- items in preference order; on-use spells from ItemEffect (Draught -> 11319, Surfer Shoes -> 1299351);
   -- auras = every DB2 "Water Walking"/"Water Walk" aura (type 104), so other sources (shaman, new items) also count
   waterWalk = {

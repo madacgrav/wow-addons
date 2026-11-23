@@ -148,17 +148,27 @@ function TB.IsMiss(stopT, lastLootT)
   return not (lastLootT and lastLootT >= stopT - 0.5)
 end
 
--- state[spellID] = {active, remaining|nil}; skill = TB.skill
-function TB.CampRows(buffs, state, skill, subzone)
+-- reagents = { {id, n} }; returns true, or false + the first short reagent id
+function TB.CanCraft(reagents, counts)
+  for _, r in ipairs(reagents) do if (counts[r[1]] or 0) < r[2] then return false, r[1] end end
+  return true
+end
+
+-- camp = DATA.camp; state[auraID] = {active, remaining|nil}; counts[itemID] = n (camp items and reagents)
+function TB.CampRows(camp, state, skill, counts)
   local rows, lvl = {}, skill and skill.level or 0
-  for _, b in ipairs(buffs) do
-    local s = b.spellID and state[b.spellID]
-    local active = (s and s.active) or (b.subzone ~= nil and b.subzone == subzone)
-    local sub
-    if active then sub = (s and s.remaining) and TB.FormatTime(s.remaining) .. " left" or "active"
-    elseif lvl < b.unlock then sub = "needs skill " .. b.unlock
+  for _, c in ipairs(camp) do
+    local s = c.aura and state[c.aura]
+    local active = s and s.active
+    local sub, miss, ok
+    if active then sub = s.remaining and (TB.FormatTime(s.remaining) .. " left") or "active"
+    elseif lvl < c.skill then sub = "needs skill " .. c.skill
+    elseif (counts[c.item] or 0) > 0 then sub = "in bags (" .. counts[c.item] .. ")"
+    elseif c.reagents then
+      ok, miss = TB.CanCraft(c.reagents, counts)
+      sub = ok and "can craft" or ("missing item:" .. miss) -- the panel swaps in the reagent name via r.missing
     else sub = "available" end
-    rows[#rows + 1] = { text = b.name, sub = sub, active = active, color = active and { 0.25, 0.75, 0.25 } or nil }
+    rows[#rows + 1] = { text = c.name, sub = sub, item = c.item, missing = miss, active = active, color = active and { 0.25, 0.75, 0.25 } or nil }
   end
   return rows
 end

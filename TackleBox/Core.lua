@@ -133,11 +133,9 @@ end)
 -- cast bar + got-away: a fishing cast that ends with no fishing loot within 1s counts as a miss
 TB.session = { misses = 0 }
 TB.Trace = Trace
--- probe run 7 traces: casts, crafts, error text, item cooldown updates
+-- traces for /tb probe and /tb camp: casts and crafts
 TB.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID) if unit == "player" then Trace("CAST_OK", TB.Secret(spellID) and "SECRET" or tostring(spellID)) end end)
 TB.On("TRADE_SKILL_ITEM_CRAFTED_RESULT", function() Trace("CRAFTED") end)
-TB.On("UI_ERROR_MESSAGE", function(_, msg) Trace("UI_ERR", TB.Secret(msg) and "SECRET" or tostring(msg)) end)
-TB.On("BAG_UPDATE_COOLDOWN", function() Trace("BAG_CD") end)
 local function IsFishing(spellID) return spellID and not TB.Secret(spellID) and TB.DATA.fishingSpells[spellID] end
 
 -- pool learning: name at cast time, position = player + offset along facing, saved on confirmed fishing loot
@@ -422,30 +420,6 @@ function TB.CampProbe()
   for _, e in ipairs(TB.trace) do P("trace", string.format("+%.2f %s %s", e[1] - t0, e[2], tostring(e[3] or ""))) end
 end
 
--- temporary craft/place test buttons (probe run 7); removed once the results are in Data.lua
-local testFrame
-function TB.CampTestButtons()
-  if InCombatLockdown() then return TB.Print("not in combat") end
-  if testFrame then testFrame:SetShown(not testFrame:IsShown()) return end
-  testFrame = CreateFrame("Frame", "TBCampTest", UIParent, "BackdropTemplate")
-  testFrame:SetSize(330, 40); testFrame:SetPoint("CENTER", 0, 200); TB.Skin(testFrame, 12)
-  local defs = {
-    { "macro", function(b) b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", "/cast Fish Bowl") end },
-    { "spell", function(b) b:SetAttribute("type", "spell"); b:SetAttribute("spell", 1229745) end },
-    { "api", function(b) b:SetScript("PostClick", function()
-      local ok, err = pcall(C_TradeSkillUI.CraftRecipe, 1229745); TB.Print("CraftRecipe " .. tostring(ok) .. " " .. tostring(err)) end) end },
-    { "window", function(b) b:SetScript("PostClick", function()
-      local ok, err = pcall(C_TradeSkillUI.OpenTradeSkill, 356); TB.Print("OpenTradeSkill " .. tostring(ok) .. " " .. tostring(err)) end) end },
-    { "kit", function(b) b:SetAttribute("type", "item"); b:SetAttribute("item", "item:279981") end },
-    { "bowl", function(b) b:SetAttribute("type", "item"); b:SetAttribute("item", "item:279967") end },
-  }
-  for i, d in ipairs(defs) do
-    local b = CreateFrame("Button", "TBCampTest" .. i, testFrame, "SecureActionButtonTemplate,UIPanelButtonTemplate")
-    b:SetSize(50, 24); b:SetPoint("LEFT", 6 + (i - 1) * 53, 0); b:SetText(d[1]); b:RegisterForClicks("AnyUp", "AnyDown")
-    d[2](b)
-  end
-end
-
 SLASH_TACKLEBOX1 = "/tb"
 SlashCmdList.TACKLEBOX = function(msg)
   local cmd = (msg or ""):lower():match("^%s*(%S*)")
@@ -455,7 +429,7 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "reset" then wipe(TB.db.frames); TB.Print("positions reset; /reload to apply")
   elseif cmd == "probe" then TB.Probe()
   elseif cmd == "flash" then TB.db.flash = not TB.db.flash; TB.Print("flash " .. (TB.db.flash and "on" or "off"))
-  elseif cmd == "camp" then if (msg or ""):lower():match("test") then TB.CampTestButtons() else TB.CampProbe() end
+  elseif cmd == "camp" then TB.CampProbe()
   elseif cmd == "detect" then TB.db.detect = not TB.db.detect; TB.Print("pool alerts " .. (TB.db.detect and "on" or "off"))
   elseif cmd == "pins" then
     local which = (msg or ""):lower():match("^%s*%S+%s+(%S+)")

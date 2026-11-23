@@ -60,11 +60,20 @@ eq(TB.IsMiss(10, nil), true, "no loot"); eq(TB.IsMiss(10, 9.7), false, "loot jus
 eq(TB.IsMiss(10, 10.01), false, "loot after stop"); eq(TB.IsMiss(10, 5), true, "old loot")
 
 -- Phase 4
-local B = { { spellID = 1, name = "Rack", unlock = 140 }, { spellID = 2, name = "Hut", unlock = 300 }, { name = "Fire", unlock = 1, subzone = "Camp" } }
-local cr = TB.CampRows(B, { [1] = { active = true, remaining = 65 }, [2] = { active = false } }, { level = 200 }, "Camp")
-eq(cr[1].sub, "1:05 left", "timer"); eq(cr[2].sub, "needs skill 300", "below unlock"); eq(cr[3].sub, "active", "subzone active")
-cr = TB.CampRows(B, { [1] = { active = true } }, { level = 300 }, nil)
-eq(cr[1].sub, "active", "secret timer"); eq(cr[2].sub, "available", "eligible")
+local C = { { key = "hut", name = "Hut", item = 3, skill = 300 },
+  { key = "bowl", name = "Bowl", item = 1, skill = 20, aura = 11, reagents = { { 7, 1 }, { 8, 1 } } } }
+local cr = TB.CampRows(C, { [11] = { active = true, remaining = 65 } }, { level = 200 }, {})
+eq(cr[1].sub, "needs skill 300", "camp below skill"); eq(cr[2].sub, "1:05 left", "camp timer")
+cr = TB.CampRows(C, {}, { level = 200 }, { [1] = 2 }); eq(cr[2].sub, "in bags (2)", "camp in bags")
+cr = TB.CampRows(C, {}, { level = 200 }, { [7] = 1, [8] = 1 }); eq(cr[2].sub, "can craft", "camp can craft")
+cr = TB.CampRows(C, {}, { level = 200 }, { [7] = 1 }); eq(cr[2].missing, 8, "camp missing reagent")
+cr = TB.CampRows(C, { [11] = { active = true } }, { level = 300 }, {}); eq(cr[2].sub, "active", "camp secret timer"); eq(cr[1].sub, "available", "camp no reagents data")
+eq(TB.CanCraft({ { 1, 2 } }, { [1] = 2 }), true, "craft ok"); eq(select(2, TB.CanCraft({ { 1, 2 }, { 5, 1 } }, { [1] = 1 })), 1, "craft first missing")
+eq(TB.CanCraft({}, {}), true, "no reagents")
+for _, ce in ipairs(TB.DATA.camp) do
+  assert(ce.item and ce.recipe and ce.skill, "camp data " .. tostring(ce.key))
+  for _, r in ipairs(ce.reagents or {}) do assert(r[1] and r[2], "camp reagent " .. ce.key) end
+end
 
 -- Phase 5
 eq(TB.WaterWalkPick({ 1, 2 }, {}, false), nil, "none owned")
