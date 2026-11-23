@@ -324,10 +324,10 @@ for name, s in pairs(TB.DATA.spots) do for _, k in ipairs(s.pools) do assert(TB.
 
 #### Manual
 - [x] Deployed
-- [ ] `/reload`
-- [ ] 6 tabs, icon-only; Spots tab lists zones for current skill, with the current zone first if it has data
-- [ ] Hovering a spot row shows the full text
-- [ ] Where tab shows the new bands; zone line still coloured
+- [x] `/reload`
+- [x] 6 tabs, icon-only; Spots tab lists zones for current skill, with the current zone first if it has data
+- [x] Hovering a spot row shows the full text
+- [x] Where tab shows the new bands; zone line still coloured
 
 ---
 
@@ -511,11 +511,11 @@ local near = TB.NearestPools(pl, 0.6, 0.5, 1000, 1000, 2); eq(#near, 2, "max res
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass (Pools block)
+- [x] Lint clean
+- [x] Tests pass (Pools block)
 
 #### Manual
-- [ ] Deployed
+- [x] Deployed
 - [ ] `/reload` with no errors; libs load (`/dump LibStub("HereBeDragons-2.0").GetPlayerZonePosition ~= nil`)
 - [ ] Fish a pool: chat `learned <pool>`; Spots tab shows "Nearby pools" with distance
 - [ ] Fish the same pool again: no new line, `seen 2x`
