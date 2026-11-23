@@ -49,6 +49,7 @@ table.insert(WCK.inits, function()
       GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(self.spell)
       local alt = WCK.char.alts[self.spell]
       if alt and alt.right then GameTooltip:AddLine("Right-click: " .. alt.right, 1, 1, 1) end
+      if alt and alt.shift then GameTooltip:AddLine("Shift-click: " .. alt.shift, 1, 1, 1) end
       GameTooltip:Show()
     end)
     b:SetScript("OnLeave", GameTooltip_Hide)

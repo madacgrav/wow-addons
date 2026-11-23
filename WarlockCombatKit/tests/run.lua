@@ -157,5 +157,9 @@ eq(WCK.AltAttrs("Corruption", { right = "Fear" }).macrotext2, WCK.CastMacro("Fea
 eq(WCK.AltAttrs("Corruption", { right = "" }).macrotext2, nil, "empty right ignored")
 eq(WCK.AltAttrs(nil, { right = "Fear" }).macrotext, "", "no main spell")
 eq(WCK.AltAttrs("Fear", { right = "Fear" }).macrotext2, WCK.CastMacro("Fear"), "alt may equal main")
+local both = WCK.AltAttrs("Corruption", { right = "Fear", shift = "Banish" })
+eq(both.macrotext2, WCK.CastMacro("Fear"), "both: right"); eq(both["shift-macrotext1"], WCK.CastMacro("Banish"), "both: shift")
+local so = WCK.AltAttrs("Corruption", { shift = "Banish" })
+eq(so.macrotext2, nil, "shift only: no right"); eq(so["shift-macrotext1"], WCK.CastMacro("Banish"), "shift only")
 
 print("all tests passed")

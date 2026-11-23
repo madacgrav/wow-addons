@@ -212,7 +212,7 @@ end
 
 -- rotation bar click variants: attribute name per alternate; an unset alternate stays nil so the secure
 -- template falls back to the plain macrotext (the button's own spell)
-WCK.ALT_ATTRS = { right = "macrotext2" }
+WCK.ALT_ATTRS = { right = "macrotext2", shift = "shift-macrotext1" }
 function WCK.AltAttrs(spell, alt)
   local out = { macrotext = WCK.CastMacro(spell) }
   if type(alt) == "table" then

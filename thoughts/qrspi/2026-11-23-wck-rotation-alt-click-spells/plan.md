@@ -153,15 +153,15 @@ eq(WCK.AltAttrs("Fear", { right = "Fear" }).macrotext2, WCK.CastMacro("Fear"), "
 - [x] robocopy deploy exits 0-7
 
 #### Manual (in-game, `/reload`)
-- [ ] No Lua errors on login; `/dump WarlockCombatKitCharDB.alts` shows a table
-- [ ] `/wck config` shows the "Alt clicks" section with one row per bar spell
-- [ ] Set Right on Corruption to Fear: left-click Corruption casts Corruption, right-click casts Fear
-- [ ] Right-click on a button with no alternate casts its own spell
-- [ ] Tooltip on Corruption shows "Right-click: Fear"
-- [ ] Reorder rules so Corruption moves: the alternate follows Corruption, and the alt rows update while the window is open
-- [ ] Change an alternate in combat: chat says "applies after combat", no `ADDON_ACTION_BLOCKED`, and it works after combat
-- [ ] Set Right back to "(none)": right-click casts the main spell again
-- [ ] Right-click on the Life Tap core still opens options
+- [x] No Lua errors on login; `/dump WarlockCombatKitCharDB.alts` shows a table
+- [x] `/wck config` shows the "Alt clicks" section with one row per bar spell
+- [x] Set Right on Corruption to Fear: left-click Corruption casts Corruption, right-click casts Fear
+- [x] Right-click on a button with no alternate casts its own spell
+- [x] Tooltip on Corruption shows "Right-click: Fear"
+- [x] Reorder rules so Corruption moves: the alternate follows Corruption, and the alt rows update while the window is open
+- [x] Change an alternate in combat: chat says "applies after combat", no `ADDON_ACTION_BLOCKED`, and it works after combat
+- [x] Set Right back to "(none)": right-click casts the main spell again
+- [x] Right-click on the Life Tap core still opens options
 
 **If right-click still casts the main spell** (so Forever ignores `macrotext2`): add `b:SetAttribute("type2", "macro")` next to `type` in `Rotation.lua:40`, redeploy and retest. If that also fails, stop: record the result here and return to `/qrspi-plan-toolkit:3-design`.
 
@@ -215,9 +215,9 @@ eq(so.macrotext2, nil, "shift only: no right"); eq(so["shift-macrotext1"], WCK.C
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] `luacheck WarlockCombatKit --globals WCK` shows no new warnings
-- [ ] robocopy deploy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] `luacheck WarlockCombatKit --globals WCK` shows no new warnings
+- [x] robocopy deploy exits 0-7
 
 #### Manual (in-game, `/reload`)
 - [ ] Set Shift on Corruption to Banish: Shift+left casts Banish

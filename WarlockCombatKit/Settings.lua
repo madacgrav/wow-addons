@@ -123,7 +123,10 @@ end)
 -- Alt clicks: a situational spell per bar spell; keyed by spell name so it follows rule reorders
 table.insert(WCK.settingsSections, function(win, y)
   local head = win:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  head:SetPoint("TOPLEFT", 20, y); head:SetText("Alt clicks (right-click casts instead)")
+  head:SetPoint("TOPLEFT", 20, y); head:SetText("Alt clicks")
+  for _, c in ipairs({ { 134, "Right-click" }, { 248, "Shift+click" } }) do
+    local t = win:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall"); t:SetPoint("TOPLEFT", c[1] + 14, y - 2); t:SetText(c[2])
+  end
   local rows = {}
   local function Set(spell, key, name)
     local a = WCK.char.alts[spell] or {}
@@ -147,6 +150,8 @@ table.insert(WCK.settingsSections, function(win, y)
     r.label:SetWidth(110); r.label:SetJustifyH("LEFT")
     r.right = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
     r.right:SetWidth(110); r.right:SetPoint("LEFT", 120, 0); AltMenu(r.right, "right")
+    r.shift = CreateFrame("DropdownButton", nil, r, "WowStyle1DropdownTemplate")
+    r.shift:SetWidth(110); r.shift:SetPoint("LEFT", r.right, "RIGHT", 4, 0); AltMenu(r.shift, "shift")
     rows[i] = r
   end
   table.insert(win.syncs, { Sync = function()
@@ -155,7 +160,7 @@ table.insert(WCK.settingsSections, function(win, y)
       local e = list[i]
       r.spell = e and e.spell
       r:SetShown(e ~= nil)
-      if e then r.label:SetText(e.spell); r.right:GenerateMenu() end
+      if e then r.label:SetText(e.spell); r.right:GenerateMenu(); r.shift:GenerateMenu() end
     end
   end })
   return y - 18 - WCK.BAR_MAX * 26 - 8
