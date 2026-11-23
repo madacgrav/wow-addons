@@ -1,0 +1,17 @@
+# Research Questions
+
+## Context
+Focus on the `TackleBox/` addon: `Actions.lua` (secure buttons on the side bar), `Data.lua` (`campBuffs`, `waterWalk`), `Logic.lua` (`CampRows`, `WaterWalkPick`, pure pickers), `Core.lua` (`TB.ReadAura`, `TB.Probe`, bag/aura events), `Panel.lua` (Camp section) and `tests/run.lua`. Also read `thoughts/qrspi/GH-22-forever-fishing-addon/probe-results.md` (Rack/Hut DB2 findings, Run 4-6), `thoughts/qrspi/2026-10-21-forever-fishing-addon-gaps/research.md`, and the wow-forever-addon skill references at `D:\Source\wowskill\skills\wow-forever-addon\references\` (`forever-api-index.md`, `forever-api-notes.md`, `taint-and-secure.md`, `events.md`). Web research only where those lack a fact; label each such fact verified / reported / unverified for Forever.
+
+## Questions
+1. How does `Actions.lua` build and drive the side-bar buttons end to end: which secure templates and attributes each button kind uses (`type` item / macro / spell, `macrotext`), how `TB.actions` entries are chosen in the refresher (bag scan, `PoleEquipped`, `WaterWalkPick`, greyed-out state and tooltips), how combat lockdown is handled in `Apply`, and how buttons are ordered, shown and hidden? Include the pure helpers in `Logic.lua` these call and their tests.
+
+2. How is the Camp tab's data produced today: what `Data.lua` `campBuffs` holds, how `TB.ReadAura` and `TB.auraState` read buff state (combat caching, secret values, the 1 s ticker), how `CampRows` derives each row, and what `probe-results.md` records about the Rack/Hut items (279965/279966), their summon effects, area triggers and candidate auras, including anything still marked unverified?
+
+3. What fishing camp items exist in WoW Forever (Fishing Rack, Fishing Hut, Fish Bowl, Simple Fish Drying Rack, Fisher's Bait Table, Grand Angler's Basin, Basic Campfire Kit, and others), and for each: item ID, how it is obtained (drop, vendor, quest, or recipe and which profession/skill and reagents), required Fishing skill, what using it does (placed object, buff, buff spell ID, duration, area), and whether it is consumed? Sources: wago.tools DB2 (Item, ItemEffect, SpellEffect, SkillLineAbility, Spell reagents), warcraft.wiki.gg, Wowhead `/forever/`, guides.
+
+4. Which Forever APIs and constraints govern crafting from an addon: `C_TradeSkillUI` functions for opening a profession, listing known recipes, recipe info and reagent counts (`GetRecipeInfo`, `GetRecipeSchematic`, `CraftRecipe`, `IsRecipeProfession...`), `C_Spell`/`IsSpellKnown` for recipe spells, whether crafting requires the profession window open or a hardware event, whether it is protected or callable from a secure/insecure button, `/cast <recipe>` macro behaviour, and related events (`TRADE_SKILL_SHOW`, `TRADE_SKILL_LIST_UPDATE`, `UNIT_SPELLCAST_SUCCEEDED`)? State what is in the skill's API index vs reported only on the web.
+
+5. How do item-use placement mechanics behave for addons in Retail-12.x-family clients: can `SecureActionButtonTemplate` with `type = item` use a toy/placeable that summons a game object (ground-targeted vs instant), are there cooldown APIs (`C_Container.GetItemCooldown`, `C_Item.GetItemCooldown`) and charge/consumption info, and how do the bag-scan helpers in `Actions.lua` / `Core.lua` (`BagItems`, `TB.CountItems`) find items today?
+
+6. How does `TB.Probe()` in `Core.lua` gather and print facts (sections, `Try`/`P` helpers, bag item filter `PROBE_WORDS`, trace), and what do the existing tests in `tests/run.lua` cover for `CampRows`, `WaterWalkPick`, `PickPole` and `PickLure`?
