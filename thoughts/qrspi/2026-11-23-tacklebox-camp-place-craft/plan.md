@@ -133,11 +133,11 @@ TB.On("BAG_UPDATE_COOLDOWN", function() Trace("BAG_CD") end)
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass
+- [x] Lint clean
+- [x] Tests pass
 
 #### Manual
-- [ ] Deployed; `/reload` clean
+- [x] Deployed; `/reload` clean
 - [ ] `/tb camp` away from any campfire, with Fish Bowl + Basic Campfire Kit in bags
 - [ ] `/tb camp test`: click **kit** (places campfire? cursor?), then `/tb camp` while standing at the fire
 - [ ] Click **bowl**, wait 1 min seated, `/tb camp` (buff IDs, cooldowns)
