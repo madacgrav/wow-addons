@@ -280,3 +280,10 @@ function TB.NearestPools(list, px, py, w, h, max)
   for i = #out, (max or 10) + 1, -1 do out[i] = nil end
   return out
 end
+
+-- once per key per cooldown seconds; records the alert time when it says yes
+function TB.ShouldAlert(last, key, now, cooldown)
+  if last[key] and now - last[key] < cooldown then return false end
+  last[key] = now
+  return true
+end

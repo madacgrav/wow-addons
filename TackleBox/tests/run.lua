@@ -139,4 +139,9 @@ _, new = TB.MergePool(pl, 0.6, 0.5, "eel", 4, 15, 1000, 1000); eq(new, true, "10
 local near = TB.NearestPools(pl, 0.6, 0.5, 1000, 1000, 2); eq(#near, 2, "max respected"); eq(near[1].pool.x, 0.6, "nearest first")
 eq(#TB.NearestPools({}, 0, 0, 1, 1), 0, "no pools")
 
+-- Detector
+local al = {}
+eq(TB.ShouldAlert(al, "p", 0, 60), true, "first alert"); eq(TB.ShouldAlert(al, "p", 30, 60), false, "cooldown")
+eq(TB.ShouldAlert(al, "q", 30, 60), true, "other pool"); eq(TB.ShouldAlert(al, "p", 61, 60), true, "after cooldown")
+
 print("all tests passed")

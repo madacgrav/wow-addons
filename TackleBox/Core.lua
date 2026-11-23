@@ -142,11 +142,26 @@ TB.POOL_OFFSET, TB.POOL_MERGE, TB.HOVER_SECONDS = 15, 15, 60 -- yards, yards, se
 -- probe 6B: pools never become softinteract; the name only shows in the hover tooltip. Remember the last
 -- hovered pool so a cast within HOVER_SECONDS of hovering still learns it (one-key casters rarely hover at cast time).
 TB.lastHover = nil -- { name, t }
+
+-- detector: chat line + flash when a pool is hovered or soft-targeted; once per pool per minute, never in combat
+TB.alerts = {}
+local function Alert(name)
+  if not TB.active or not TB.db.detect or InCombatLockdown() then return end
+  if TB.ShouldAlert(TB.alerts, name, GetTime(), 60) then
+    TB.Print(name .. " nearby")
+    if TB.db.flash then TB.Flash() end
+  end
+end
 table.insert(TB.inits, function()
   GameTooltip:HookScript("OnShow", function()
     local t = GameTooltipTextLeft1:GetText()
-    if t and not TB.Secret(t) and TB.PoolKey(t, TB.DATA.pools) then TB.lastHover = { name = t, t = GetTime() } end
+    if t and not TB.Secret(t) and TB.PoolKey(t, TB.DATA.pools) then TB.lastHover = { name = t, t = GetTime() }; Alert(t) end
   end)
+end)
+-- probe 6B saw no pool as softinteract; kept so the alert fires if a later build makes pools soft-targetable
+TB.On("PLAYER_SOFT_INTERACT_CHANGED", function()
+  local ok, n = pcall(function() if UnitExists("softinteract") and UnitIsGameObject("softinteract") then return UnitName("softinteract") end end)
+  if ok and n and not TB.Secret(n) and TB.PoolKey(n, TB.DATA.pools) then Alert(n) end
 end)
 
 -- pool under soft-interact, else the tooltip, else a recent hover; nil when secret or not a known pool
@@ -354,6 +369,7 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "reset" then wipe(TB.db.frames); TB.Print("positions reset; /reload to apply")
   elseif cmd == "probe" then TB.Probe()
   elseif cmd == "flash" then TB.db.flash = not TB.db.flash; TB.Print("flash " .. (TB.db.flash and "on" or "off"))
+  elseif cmd == "detect" then TB.db.detect = not TB.db.detect; TB.Print("pool alerts " .. (TB.db.detect and "on" or "off"))
   elseif cmd == "pins" then
     local which = (msg or ""):lower():match("^%s*%S+%s+(%S+)")
     if which ~= "map" and which ~= "minimap" then TB.Print("usage: /tb pins map||minimap")
@@ -370,5 +386,5 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "unbind" then
     if InCombatLockdown() then TB.Print("can't change the cast key in combat")
     else TB.db.castKey = nil; TB.BindCast(); TB.Print("cast key cleared") end
-  else TB.Print("/tb show||hide||lock||reset||probe||flash||pins map||minimap||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
+  else TB.Print("/tb show||hide||lock||reset||probe||flash||pins map||minimap||detect||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
 end
