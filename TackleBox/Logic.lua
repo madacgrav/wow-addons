@@ -225,3 +225,30 @@ function TB.NormalizeKey(s)
   s = s:match("^%s*(.-)%s*$"):upper()
   return s ~= "" and s or nil
 end
+
+function TB.PoolByKey(pools, key) for _, p in ipairs(pools) do if p.key == key then return p end end end
+function TB.PoolKey(name, pools) for _, p in ipairs(pools) do if p.name == name then return p.key end end end
+
+-- spot rows for zones whose band holds the base skill; current zone first even when out of band
+function TB.SpotsRows(spots, zones, pools, skill, current)
+  if not skill then return {} end
+  local rows, seen = {}, {}
+  local function add(name)
+    local s = spots[name]
+    if not s or seen[name] then return end
+    seen[name] = true
+    local pnames, icon = {}, nil
+    for _, k in ipairs(s.pools) do
+      local p = TB.PoolByKey(pools, k)
+      if p then pnames[#pnames + 1] = p.name; icon = icon or p.icon end
+    end
+    local sub = table.concat(s.notable, ", ")
+    if #pnames > 0 then sub = sub .. " - " .. table.concat(pnames, ", ") end
+    rows[#rows + 1] = { text = name .. (name == current and " [here]" or ""), sub = sub, icon = icon or "Interface\\Icons\\INV_Misc_Fish_02", zone = name }
+  end
+  add(current)
+  for _, z in ipairs(zones) do
+    if skill.level >= z.band and skill.level < z.max then for _, n in ipairs(z.names) do add(n) end end
+  end
+  return rows
+end

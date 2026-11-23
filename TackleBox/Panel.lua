@@ -179,6 +179,10 @@ local function GetRow(i)
   row:EnableMouse(true)
   row.hl = row:CreateTexture(nil, "HIGHLIGHT"); row.hl:SetAllPoints(); row.hl:SetColorTexture(T.foam[1], T.foam[2], T.foam[3], T.hi)
   row:SetScript("OnEnter", function(self)
+    if not self.itemID and self.full then -- spot rows: the sub line is often cut off
+      GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:AddLine(self.full, 1, 1, 1, true); GameTooltip:Show()
+      return
+    end
     if not self.itemID then return end
     GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:SetItemByID(self.itemID)
     if self.onTooltip then self.onTooltip(GameTooltip) end
@@ -271,6 +275,7 @@ function TB.RenderPanel(rows, skill, misses, tabs, active, zone)
         row.bar:SetStatusBarColor(done and 0.25 or T.line[1], done and 0.75 or T.line[2], done and 0.25 or T.line[3])
       end
       row.itemID, row.onTooltip = v.itemID, v.onTooltip
+      row.full = v.zone and v.sub or nil
     end
   end
   local empty = n == 1 and rows[1].empty
@@ -350,6 +355,9 @@ table.insert(TB.sections, { key = "catch", title = "Collection", tab = "Catch", 
     end
   end
   return rows
+end })
+table.insert(TB.sections, { key = "spots", title = "Best spots", tab = "Spots", empty = "No spot data for your skill yet.", icon = "Interface\\Icons\\INV_Misc_Spyglass_01", build = function()
+  return TB.SpotsRows(TB.DATA.spots, TB.DATA.zones, TB.DATA.pools, TB.skill, GetRealZoneText())
 end })
 table.insert(TB.refreshers, function()
   if not TB.db.shown then if panel then panel:Hide() end return end
