@@ -144,3 +144,17 @@ This settles the Rack ~140 / Hut 300 conflict in the guides.
 - Conclusion: learning and detection use the tooltip path. Pool name must come from a hover at or shortly before the cast (cache last hovered pool with a timestamp).
 - Cast-at-pool trace not yet captured.
 Steps: face a pool and run `/tb probe`; mouse over it and run `/tb probe`; cast and catch, then `/tb probe`. Paste `TackleBoxDB.lastProbe` here.
+
+## Run 7: camp (2026-11-23)
+
+### 7A: `/tb camp` away from a fire
+- Item use spells (`C_Item.GetItemSpell`): Fish Bowl 279967 -> 1307245, Fishing Rack 279965 -> 1307247, Fishing Hut 279966 -> 1307246, Basic Campfire Kit 279981 -> 1307227 ("Basic Campfire").
+- Journeyman 279961 / Expert 279974 kits: name nil, spell nil (not owned, item data not cached).
+- `C_Container.GetItemCooldown` readable, not secret: 0/0/1 for all owned camp items (no cooldown running).
+- `C_Spell.GetSpellCooldown` for place spells 1307247/1307246: 0/0.
+- Recipe known: `C_SpellBook.IsSpellKnown(1229745)` true (Fish Bowl), false for Rack 1262990 / Hut 1262998 (not learned). `C_TradeSkillUI.GetRecipeInfo(id).learned` false for all three with the profession window closed: not usable as a known-check.
+- Bags: Fish Bowl x6, Basic Campfire Kit x2, Bolt of Runecloth 14048 x1, Raw Brilliant Smallfish 6291 x3, Coated Cerulean Vial 17693 x1. No Empty Vial.
+- No helpful auras at the time.
+
+### 7B: kit from a secure `type=item` button
+- Click opens a ground-target placement cursor; a second click places the campfire. Placement works from a secure item button (two clicks).
