@@ -348,10 +348,10 @@ In the Rotation build:
 - [x] Robocopy deploy exits 0-7
 
 #### Manual
-- [ ] Every checkbox, dropdown, icon button and the Reset button shows a tooltip, and dropdown hover highlight still works
-- [ ] Slot rows: the bound key shows in white and unbound in grey. After binding a key and reopening, the label updates. The icon follows the pick immediately
-- [ ] Alt rows: the RIGHT-CLICK and SHIFT+CLICK headers line up over their dropdowns. Icons match the bar spells. Rows follow a rule reorder
-- [ ] All 13 alt rows fit (with Shadow Bolt, Fear and Banish known and 10 rules). No Lua errors
+- [x] Every checkbox, dropdown, icon button and the Reset button shows a tooltip, and dropdown hover highlight still works
+- [x] Slot rows: the bound key shows in white and unbound in grey. After binding a key and reopening, the label updates. The icon follows the pick immediately
+- [x] Alt rows: the RIGHT-CLICK and SHIFT+CLICK headers line up over their dropdowns. Icons match the bar spells. Rows follow a rule reorder
+- [x] All 13 alt rows fit (with Shadow Bolt, Fear and Banish known and 10 rules). No Lua errors
 
 ---
 
@@ -391,9 +391,9 @@ In the Rotation build:
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] `grep -n "Version: 0.4.0" WarlockCombatKit/WarlockCombatKit.toc` matches
-- [ ] Robocopy deploy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] `grep -n "Version: 0.4.0" WarlockCombatKit/WarlockCombatKit.toc` matches
+- [x] Robocopy deploy exits 0-7
 
 #### Manual
 - [ ] The addon list shows Warlock Combat Kit 0.4.0
