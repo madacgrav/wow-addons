@@ -354,6 +354,10 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "reset" then wipe(TB.db.frames); TB.Print("positions reset; /reload to apply")
   elseif cmd == "probe" then TB.Probe()
   elseif cmd == "flash" then TB.db.flash = not TB.db.flash; TB.Print("flash " .. (TB.db.flash and "on" or "off"))
+  elseif cmd == "pins" then
+    local which = (msg or ""):lower():match("^%s*%S+%s+(%S+)")
+    if which ~= "map" and which ~= "minimap" then TB.Print("usage: /tb pins map||minimap")
+    else TB.db.pins[which] = not TB.db.pins[which]; TB.Pins.Refresh(); TB.Print(which .. " pins " .. (TB.db.pins[which] and "on" or "off")) end
   elseif cmd == "bind" then
     local key = TB.NormalizeKey((msg or ""):match("^%s*%S+%s+(.-)%s*$"))
     if not key then TB.Print("usage: /tb bind <KEY>, for example /tb bind F")
@@ -366,5 +370,5 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "unbind" then
     if InCombatLockdown() then TB.Print("can't change the cast key in combat")
     else TB.db.castKey = nil; TB.BindCast(); TB.Print("cast key cleared") end
-  else TB.Print("/tb show||hide||lock||reset||probe||flash||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
+  else TB.Print("/tb show||hide||lock||reset||probe||flash||pins map||minimap||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
 end

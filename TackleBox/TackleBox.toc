@@ -15,4 +15,5 @@ Logic.lua
 Core.lua
 Actions.lua
 Panel.lua
+Map.lua
 CastBar.lua
