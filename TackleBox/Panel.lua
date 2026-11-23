@@ -364,8 +364,8 @@ table.insert(TB.sections, { key = "catch", title = "Collection", tab = "Catch", 
   return rows
 end })
 table.insert(TB.sections, { key = "spots", title = "Best spots", tab = "Spots", empty = "No spot data for your skill yet.", icon = "Interface\\Icons\\INV_Misc_Spyglass_01", build = function()
-  local rows = TB.SpotsRows(TB.DATA.spots, TB.DATA.zones, TB.DATA.pools, TB.skill, GetRealZoneText())
-  -- learned pools on this map, nearest first; click sets a waypoint
+  -- learned pools on this map first (nearest first, click sets a waypoint), then the best zones for your skill
+  local rows = {}
   local x, y, map = TB.PlayerPos()
   local list, w, h = map and TB.db.pools[map], nil, nil
   if map then w, h = TB.HBD:GetZoneSize(map) end
@@ -378,6 +378,9 @@ table.insert(TB.sections, { key = "spots", title = "Best spots", tab = "Spots", 
         icon = info and info.icon, hint = "Click: set waypoint", onClick = function() TB.Waypoint(map, p.x, p.y) end }
     end
   end
+  local spots = TB.SpotsRows(TB.DATA.spots, TB.DATA.zones, TB.DATA.pools, TB.skill, GetRealZoneText())
+  if #rows > 0 and #spots > 0 then rows[#rows + 1] = { header = true, text = "Best spots" } end
+  for _, r in ipairs(spots) do rows[#rows + 1] = r end
   return rows
 end })
 table.insert(TB.refreshers, function()
@@ -385,8 +388,10 @@ table.insert(TB.refreshers, function()
   -- every tab builds so the badges stay current; the sections are small
   local secs = {}
   for _, s in ipairs(TB.sections) do
-    local rows = s.build()
-    secs[#secs + 1] = { key = s.key, title = s.title, tab = s.tab, icon = s.icon, empty = s.empty, rows = rows, count = #rows }
+    local rows, count = s.build(), 0
+    for _, r in ipairs(rows) do if not r.header then count = count + 1 end end -- badges skip section headers
+    -- a tab holding only headers (e.g. "No map position here") still counts as empty for the badge, not for the list
+    secs[#secs + 1] = { key = s.key, title = s.title, tab = s.tab, icon = s.icon, empty = s.empty, rows = rows, count = count }
   end
   local rows, active = TB.TabRows(secs, TB.db.tab)
   local zone = TB.ZoneStatus(TB.DATA.zones, TB.DATA.lures, TB.skill, GetRealZoneText())
