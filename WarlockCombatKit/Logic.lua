@@ -12,11 +12,21 @@ end
 -- cast map: what I cast, keyed per enemy; all times are GetTime() seconds
 function WCK.NewCastMap() return { pending = {}, rows = {} } end
 
--- nil for anything secret; guid > name > current target (raid marks turn secret in combat once set)
-function WCK.EnemyKey(guid, name)
+-- nil for anything secret; guid > name > target slot (one per target switch) > current target
+-- (raid marks turn secret in combat once set; dungeons hide guid and name in combat)
+function WCK.EnemyKey(guid, name, slot)
   if guid then return "guid:" .. guid, name end
   if name then return "name:" .. name, name end
+  if slot then return "slot:" .. slot, nil end
   return "target", nil
+end
+
+-- label for a row with no readable name (a secret name, if any, is tried first by the panel)
+function WCK.FallbackLabel(key)
+  if key == "slot:pet" then return "Pet target" end
+  local n = key:match("^slot:(%d+)$")
+  if n then return "Enemy " .. n end
+  return key == "target" and "Target" or "?"
 end
 
 -- which unit token the SENT target name refers to (names = {token = non-secret name or nil})

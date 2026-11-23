@@ -206,7 +206,7 @@ function WCK.RenderPanel()
       local lbl = r.label -- a secret name can't be read but SetText still displays it
       if v.label then lbl:SetText(v.label)
       elseif not (v.secret and pcall(lbl.SetText, lbl, v.secret[1])) then
-        lbl:SetText(v.key == "target" and "Target" or "?")
+        lbl:SetText(WCK.FallbackLabel(v.key))
       end
       for j, t in ipairs(r.icons) do
         local icon = v.icons[j]

@@ -214,6 +214,8 @@ WCK.ClearAll(map)
 
 ## Phase 3: Target slot fallback
 
+> **As built:** with the SENT-name step skipped (Run 13), signatures are `EnemyKey(guid, name, slot)` and `Identify(unit, slot)`; the "sent name beats slot" test became "name beats slot" / "guid beats slot".
+
 ### Changes
 
 #### 1. Logic: slot key and fallback label
@@ -294,9 +296,9 @@ WCK.ClearAll(map)
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] luacheck shows no new warnings
-- [ ] robocopy deploy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] luacheck shows no new warnings
+- [x] robocopy deploy exits 0-7
 
 #### Manual
 - [ ] Dungeon: tab between 3 mobs, putting Corruption on each. Expect 3 rows (named, or "Enemy N"); `/wck probe` lists the matching `row slot:N` or `row name:` lines.

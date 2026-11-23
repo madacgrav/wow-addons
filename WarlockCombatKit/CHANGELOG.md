@@ -9,6 +9,7 @@ All notable changes to this addon. Versions match `## Version` in `WarlockCombat
 
 ### Fixed
 - In dungeons, rows show the mob's name even though the game hides it from addons (the name is handed to the game to display).
+- In dungeons, each target you switch to gets its own row instead of every cast sharing one "Target" row. A row with no name at all shows "Enemy 1", "Enemy 2"…; the succubus's Seduction target gets its own "Pet target" row.
 
 ## [0.2.1] — 2026-11-23
 
