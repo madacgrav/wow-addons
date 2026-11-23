@@ -60,6 +60,11 @@ WCK.CastLanded(map, "slot:3", nil, nil, "Curse of Agony", 301)
 WCK.CastLanded(map, "slot:4", nil, nil, "Corruption", 302)
 eq(#WCK.RowsView(map, 303, WCK.DATA.tracked), 2, "one row per slot")
 WCK.ClearAll(map)
+-- clear a dead target's row by key
+WCK.CastLanded(map, "slot:5", nil, nil, "Corruption", 400); WCK.CastLanded(map, "slot:6", nil, nil, "Corruption", 401)
+eq(WCK.ClearRow(map, "slot:5"), 1, "clear row by key"); eq(map.rows["slot:5"], nil, "row gone")
+eq(map.rows["slot:6"] ~= nil, true, "other row kept"); eq(WCK.ClearRow(map, "slot:5"), 0, "nothing left to clear")
+WCK.ClearAll(map)
 
 -- Phase 3
 eq(WCK.RowHasCC({ icons = { { kind = "cc", age = 5, stale = 20 } } }), true, "fresh fear")

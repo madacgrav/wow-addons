@@ -2,7 +2,7 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockCombatKit.toc`; each version is published as a `wck-vX.Y.Z` GitHub release.
 
-## [Unreleased]
+## [0.2.2] — 2026-11-23
 
 ### Added
 - `/wck probe` reports secret-identity checks (`C_Secrets`) and the pet's target; the trace logs the row key chosen for each cast (`KEY`) and casts dropped because the game hid their spell or cast ID (`DROP`).
@@ -10,6 +10,7 @@ All notable changes to this addon. Versions match `## Version` in `WarlockCombat
 ### Fixed
 - In dungeons, rows show the mob's name even though the game hides it from addons (the name is handed to the game to display).
 - In dungeons, each target you switch to gets its own row instead of every cast sharing one "Target" row. A row with no name at all shows "Enemy 1", "Enemy 2"…; the succubus's Seduction target gets its own "Pet target" row.
+- In dungeons, a dead target's row clears even though the game hides its GUID.
 
 ## [0.2.1] — 2026-11-23
 

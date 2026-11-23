@@ -207,7 +207,7 @@ WCK.ClearAll(map)
 - [x] robocopy deploy exits 0-7
 
 #### Manual
-- [ ] Dungeon: dot two differently named mobs. Expect two rows with their names. `/wck probe` shows `row name:<Mob>` lines or `secretName`.
+- [ ] (n/a: SENT-name step skipped) Dungeon: dot two differently named mobs. Expect two rows with their names. `/wck probe` shows `row name:<Mob>` lines or `secretName`.
 - [ ] Open world: dot two mobs. Expect `guid:` rows and the same look as before.
 
 ---
@@ -301,7 +301,7 @@ WCK.ClearAll(map)
 - [x] robocopy deploy exits 0-7
 
 #### Manual
-- [ ] Dungeon: tab between 3 mobs, putting Corruption on each. Expect 3 rows (named, or "Enemy N"); `/wck probe` lists the matching `row slot:N` or `row name:` lines.
+- [x] Dungeon: tab between 3 mobs, putting Corruption on each. Expect 3 rows (named, or "Enemy N"); `/wck probe` lists the matching `row slot:N` or `row name:` lines.
 - [ ] Seduction from the succubus on a different mob than your target. Expect a "Pet target" row (or the mob's name).
 - [ ] Open world: unchanged.
 
@@ -365,10 +365,10 @@ Adjust the wording to match what the Phase 1 probe actually found. For example, 
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] luacheck shows no new warnings
-- [ ] `grep -n "Version: 0.2.2" WarlockCombatKit/WarlockCombatKit.toc` matches
-- [ ] robocopy deploy exits 0-7
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] luacheck shows no new warnings
+- [x] `grep -n "Version: 0.2.2" WarlockCombatKit/WarlockCombatKit.toc` matches
+- [x] robocopy deploy exits 0-7
 
 #### Manual
 - [ ] Dungeon: dot 3 mobs and kill the target. Its row disappears within about 0.5s and the others stay. `/wck probe` trace shows `CLR_TARGET slot:N rows=1` (or `name:` / `guid:`).

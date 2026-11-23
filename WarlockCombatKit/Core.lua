@@ -299,9 +299,11 @@ table.insert(WCK.inits, function()
   C_Timer.NewTicker(0.5, function()
     if next(WCK.map.rows) == nil then return end
     if WCK.IsDead("target") then
-      local _, _, guid = WCK.Identify("target")
-      local n = guid and WCK.ClearGUID(WCK.map, guid) or 0
-      if guid ~= lastDeadTarget then lastDeadTarget = guid; WCK.Trace("CLR_TARGET", tostring(guid) .. " rows=" .. n) end
+      -- dungeons hide the guid: fall back to the row key (the current target slot)
+      local key, _, guid = WCK.Identify("target", WCK.targetSlot)
+      local n = guid and WCK.ClearGUID(WCK.map, guid) or WCK.ClearRow(WCK.map, key)
+      local id = guid or key
+      if id ~= lastDeadTarget then lastDeadTarget = id; WCK.Trace("CLR_TARGET", id .. " rows=" .. n) end
     end
     WCK.Refresh()
   end)
