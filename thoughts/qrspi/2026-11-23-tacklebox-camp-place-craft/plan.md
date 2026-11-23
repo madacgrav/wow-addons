@@ -231,8 +231,8 @@ eq(TB.CanCraft({}, {}), true, "no reagents")
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass (camp block, CanCraft, integrity)
+- [x] Lint clean
+- [x] Tests pass (camp block, CanCraft, integrity)
 
 #### Manual
 - [ ] Deployed; `/reload`
