@@ -254,12 +254,18 @@ table.insert(WCK.inits, function()
   WCK.On("UNIT_SPELLCAST_SENT", function(unit, target, castGUID, spellID)
     if unit ~= "player" then return end
     local spell = WCK.SpellName(spellID)
-    if not spell or not WCK.DATA.tracked[spell] or WCK.Secret(castGUID) then return end
+    -- trace casts lost to secrecy so a dungeon run shows whether SENT itself is blind
+    if WCK.Secret(spellID) or (spell and WCK.DATA.tracked[spell] and WCK.Secret(castGUID)) then
+      WCK.Trace("DROP", "spell=" .. S(spellID) .. " guid=" .. S(castGUID)); return
+    end
+    if not spell or not WCK.DATA.tracked[spell] then return end
     local names = {}
     for _, u in ipairs({ "mouseover", "target", "focus" }) do names[u] = NonSecret(UnitName(u)) end
     local u = WCK.PickUnit(NonSecret(target), names)
     local key, label, guid = WCK.Identify(u)
-    WCK.CastSent(WCK.map, castGUID, spell, key, label or NonSecret(target), guid, GetTime())
+    label = label or NonSecret(target)
+    WCK.Trace("KEY", u .. " " .. key .. " lbl=" .. S(label))
+    WCK.CastSent(WCK.map, castGUID, spell, key, label, guid, GetTime())
   end)
   WCK.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, castGUID, spellID)
     if unit == "player" and not WCK.Secret(castGUID) then WCK.CastSucceeded(WCK.map, castGUID, GetTime()); WCK.Refresh()
@@ -308,7 +314,7 @@ function WCK.Probe()
   P("ctx", tostring(ver) .. " " .. tostring(build) .. " instance " .. tostring(inInst) .. " " .. tostring(kind)
     .. " combat " .. tostring(InCombatLockdown()))
 
-  for _, u in ipairs({ "target", "focus", "mouseover", "nameplate1", "nameplate2" }) do
+  for _, u in ipairs({ "target", "focus", "mouseover", "pettarget", "nameplate1", "nameplate2" }) do
     Try("unit " .. u, function()
       if not UnitExists(u) then return end
       local okU, isT = pcall(UnitIsUnit, u, "target")
@@ -316,6 +322,16 @@ function WCK.Probe()
         .. " dead " .. S(UnitIsDead(u)) .. " hostile " .. S(UnitCanAttack("player", u))
         .. " isTarget " .. (okU and S(isT) or "ERROR"))
     end)
+  end
+  if C_Secrets then
+    Try("secrets identity", function() P("secrets identity", S(C_Secrets.ShouldUnitIdentityBeSecret("target"))) end)
+    Try("secrets compare", function()
+      P("secrets compare", "can " .. S(C_Secrets.CanCompareUnitTokens("target", "nameplate1"))
+        .. " secret " .. S(C_Secrets.ShouldUnitComparisonBeSecret("target", "nameplate1")))
+    end)
+    Try("secrets restricted", function() P("secrets restricted", S(C_Secrets.HasSecretRestrictions())) end)
+  else
+    P("secrets", "C_Secrets: missing")
   end
 
   for _, n in ipairs({ "Shadow Bolt", "Corruption" }) do
