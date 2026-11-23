@@ -141,6 +141,9 @@ function WCK.MoveRule(rules, i, dir)
   return true
 end
 
+-- which reorder buttons a rule row may use
+function WCK.RowButtons(i, n) return { up = i > 1, down = i < n } end
+
 -- deep copy so editing a character's list never mutates DATA.defaultRules
 function WCK.CopyRules(rules)
   local out = {}

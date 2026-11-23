@@ -2,6 +2,12 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockCombatKit.toc`; each version is published as a `wck-vX.Y.Z` GitHub release.
 
+## [0.4.0] — 2026-11-23
+
+### Changed
+- Settings window redesigned: themed to match Warlock Utility Kit, split into General, Rotation, Cast slots and Alt clicks tabs, and it remembers its position and last tab.
+- Rotation rules show spell icons and use arrow and remove buttons; every setting has a hover tip.
+
 ## [0.3.0] — 2026-11-23
 
 ### Added

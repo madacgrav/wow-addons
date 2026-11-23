@@ -60,8 +60,8 @@ A rule passes when you know the spell, it is off cooldown, and its condition hol
 | target has a mark | your target has any raid mark |
 | usable (mana/range) | the game says the spell is usable right now |
 
-- Edit rules in `/wck config` > Rotation: pick a spell and condition, set N, reorder with ^ and v, delete with x.
-- Up to 10 rules. "Defaults" restores the starter list:
+- Edit rules in `/wck config` > Rotation: pick a spell and condition, set N, reorder with the arrow buttons, delete with the red X.
+- Up to 10 rules. "Restore defaults" restores the starter list:
   - Corruption, Agony and Immolate on refresh timers;
   - Shadow Bolt on proc;
   - Shadow Bolt.
@@ -72,7 +72,7 @@ A rule passes when you know the spell, it is off cooldown, and its condition hol
 A bar of round buttons docked to the right of the circle, one per spell in your rules (in rule order, except Life Tap, which is the circle's core), then a fixed group after a gap: Shadow Bolt, Fear and Banish (when you know them). Shadow Bolt always sits in that group, even if a rule uses it.
 
 - Click a button to cast its spell on your target.
-- **Right-click** or **Shift+click** a button to cast a situational spell instead. Pick them per spell in `/wck config` > "Alt clicks". With none picked, the button casts its own spell. Alternates follow the spell when you reorder rules and also work on Shadow Bolt, Fear and Banish. A change made in combat applies when combat ends.
+- **Right-click** or **Shift+click** a button to cast a situational spell instead. Pick them per spell in `/wck config` > Alt clicks tab. With none picked, the button casts its own spell. Alternates follow the spell when you reorder rules and also work on Shadow Bolt, Fear and Banish. A change made in combat applies when combat ends.
 - Buttons stay in colour. A button greys out only while its spell is on cooldown (the global cooldown does not count) and comes back when it is ready. The suggested spell (first passing rule) pulses purple. Grey buttons still cast when clicked.
 - The Shadow Bolt button glows fel green (and stays in colour) while Nightfall is up.
 - Shift+drag the bar's edge or the circle to move the whole kit (out of combat).
@@ -83,7 +83,7 @@ A bar of round buttons docked to the right of the circle, one per spell in your 
 
 Six key-bindable slots. Each casts its spell on the hostile mob under your mouse (nameplate, unit frame or the mob itself), or on your target when nothing hostile is under the mouse.
 
-1. `/wck config` > Mouseover cast slots: choose a spell for each slot you want.
+1. `/wck config` > Cast slots tab: choose a spell for each slot you want.
 2. Esc > Options > Keybindings > AddOns > Warlock Combat Kit: bind keys to "Mouseover cast slot 1–6". Shift and Ctrl modifiers work.
 
 A slot change you make in combat takes effect when combat ends. Slots are saved per character.
@@ -96,10 +96,13 @@ A slot change you make in combat takes effect when combat ends. Slots are saved 
 
 ## Settings window
 
-`/wck config` or a left-click on the minimap button opens the settings window. It has:
-- **Toggles:** Show panel, Show rotation buttons, Lock panel, Mark CC'd mobs on nameplates, Proc alerts, Proc sound.
-- **Sections:** the Rotation rule editor and the Mouseover cast slots.
-- **Reset positions** button.
+`/wck config`, a left-click on the minimap button or a right-click on the Life Tap core opens the settings window. It remembers where you put it and which tab you were on. Tabs:
+- **General:** Show panel, Show rotation buttons, Lock panel, Mark CC'd mobs on nameplates, Proc alerts, Proc sound, and the Reset positions button.
+- **Rotation:** the rule editor.
+- **Cast slots:** the mouseover cast slots.
+- **Alt clicks:** right-click and Shift+click spells for each bar button.
+
+Hover any control for a tip.
 
 ## Slash commands
 
