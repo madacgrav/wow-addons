@@ -67,19 +67,19 @@ Read the LICENSE (or the header and CurseForge page) for https://github.com/Nevc
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass (no logic change)
+- [x] Lint clean
+- [x] Tests pass (no logic change)
 
 #### Manual
-- [ ] Deployed with robocopy
-- [ ] `/reload` with no errors
-- [ ] Stand facing a pool (soft-interact highlight visible) and run `/tb probe`. `softinteract` line shows `obj <pool name>` or SECRET/none.
-- [ ] Mouse over the pool and `/tb probe`. `tooltip` line shows the pool name.
+- [x] Deployed with robocopy
+- [x] `/reload` with no errors
+- [x] Stand facing a pool and run `/tb probe`: softinteract false; pools are not soft-interact targets (probe B)
+- [x] Mouse over the pool and `/tb probe`. `tooltip` line shows the pool name.
 - [ ] Cast at the pool, catch, `/tb probe`. Trace shows `SOFT@CAST obj <pool name>`.
-- [ ] `map` line shows a numeric map and position outdoors; `map hooks` shows `function table`
-- [ ] Results pasted into probe-results.md
-- [ ] **Gate**: at least one of softinteract / tooltip returns the plain pool name. If neither does, stop and revisit design decision 1.
-- [ ] Licence recorded; redistribution allowed
+- [x] `map` line shows a numeric map and position outdoors; `map hooks` shows `function table`
+- [x] Results pasted into probe-results.md
+- [x] **Gate**: at least one of softinteract / tooltip returns the plain pool name. If neither does, stop and revisit design decision 1.
+- [x] Licence recorded; redistribution allowed
 
 ---
 
@@ -410,6 +410,17 @@ function TB.ReadPoolTarget()
     if t and not TB.Secret(t) and TB.PoolKey(t, TB.DATA.pools) then return t end
   end
 end
+
+-- probe 6B: pools never become softinteract, the name only shows in the hover tooltip. Remember the last
+-- hovered pool so a cast within 60 s of hovering still learns it (one-key cast users rarely hover at cast time).
+TB.lastHover = nil -- { name, t }
+table.insert(TB.inits, function()
+  GameTooltip:HookScript("OnShow", function()
+    local t = GameTooltipTextLeft1:GetText()
+    if t and not TB.Secret(t) and TB.PoolKey(t, TB.DATA.pools) then TB.lastHover = { name = t, t = GetTime() } end
+  end)
+end)
+-- ReadPoolTarget falls back to: if TB.lastHover and GetTime() - TB.lastHover.t < 60 then return TB.lastHover.name end
 
 function TB.PlayerPos()
   local x, y, map = TB.HBD:GetPlayerZonePosition()

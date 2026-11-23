@@ -137,5 +137,10 @@ This settles the Rack ~140 / Hut 300 conflict in the guides.
 - `softinteract: false obj false name nil guid nil`, `tooltip: false nil`: nothing targeted or hovered at probe time.
 - `lastChannel: none`, no trace: no cast yet. GetProfessionInfo(fishing) level 206/225 mod 0.
 
-### In-game (pending): pool name
+### In-game, probe B (mouse over pool), The Barrens / The Stagnant Oasis
+- `tooltip: true School of Deviate Fish`: pool name readable from GameTooltipTextLeft1, not secret, out of combat.
+- `softinteract: false obj false name nil guid nil` while standing at the pool with SoftTargetInteract 1: fishing pools do not become soft-interact targets.
+- `map: 1413 pos 0.56155204772949,0.43042528629303 facing 1.97043633461`.
+- Conclusion: learning and detection use the tooltip path. Pool name must come from a hover at or shortly before the cast (cache last hovered pool with a timestamp).
+- Cast-at-pool trace not yet captured.
 Steps: face a pool and run `/tb probe`; mouse over it and run `/tb probe`; cast and catch, then `/tb probe`. Paste `TackleBoxDB.lastProbe` here.
