@@ -87,4 +87,30 @@ eq(lid, 3, "locked: lowest requirement"); eq(ok, false, "locked flag"); eq(req, 
 eq(TB.PickLure(LL, { [1] = 5 }, true, 300), nil, "lure already on pole")
 eq(TB.PickLure(LL, {}, false, 300), nil, "no lures")
 
+-- Zone line
+local ZD, LD = TB.DATA.zones, TB.DATA.lures
+local zs = TB.ZoneStatus(ZD, LD, { level = 100, modifier = 0 }, "Orgrimmar")
+eq(zs.text, "Orgrimmar: skill 75-150 [here]", "zone here"); eq(zs.flag, "here", "zone here flag")
+eq(TB.ZoneStatus(ZD, LD, { level = 160, modifier = 0 }, "Orgrimmar").flag, "outgrown", "zone outgrown")
+eq(TB.ZoneStatus(ZD, LD, { level = 30, modifier = 0 }, "Redridge Mountains").flag, "too low", "zone too low (cast 55)")
+eq(TB.ZoneStatus(ZD, LD, { level = 230, modifier = 0 }, "Felwood").text:find("needs", 1, true) ~= nil, true, "zone lure need")
+zs = TB.ZoneStatus(ZD, LD, { level = 100, modifier = 0 }, "Moonglade")
+eq(zs.text, "Moonglade: no fishing data", "zone unknown"); eq(zs.flag, nil, "zone unknown flag")
+eq(TB.ZoneStatus(ZD, LD, nil, "Orgrimmar"), nil, "zone no skill")
+eq(TB.ZoneStatus(ZD, LD, { level = 100 }, ""), nil, "zone empty name")
+
+-- Weapons
+local bag = { { id = 5, link = "L5a", bag = 0, slot = 3 }, { id = 5, link = "L5b", bag = 1, slot = 2 }, { id = 9, link = "L9", bag = 2, slot = 1 } }
+eq(TB.FindWeapon(bag, { id = 5, link = "L5b" }).slot, 2, "weapon exact link")
+eq(TB.FindWeapon(bag, { id = 5, link = "Lx" }).slot, 3, "weapon id fallback")
+eq(TB.FindWeapon(bag, { id = 7 }), nil, "weapon missing")
+eq(TB.FindWeapon(bag, nil), nil, "weapon none remembered")
+eq(TB.WeaponsMacro({ bag = 0, slot = 3 }), "/equipslot 16 0 3", "macro mh only")
+eq(TB.WeaponsMacro({ bag = 0, slot = 3 }, { bag = 2, slot = 1 }), "/equipslot 16 0 3\n/equipslot 17 2 1", "macro mh+oh")
+eq(TB.WeaponsMacro(nil, { bag = 2, slot = 1 }), nil, "macro no mh")
+
+-- Cast key
+eq(TB.NormalizeKey(" f "), "F", "key trim+upper"); eq(TB.NormalizeKey("shift-f"), "SHIFT-F", "key modifier")
+eq(TB.NormalizeKey(""), nil, "key empty"); eq(TB.NormalizeKey(nil), nil, "key nil")
+
 print("all tests passed")

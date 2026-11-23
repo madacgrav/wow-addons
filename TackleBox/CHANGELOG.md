@@ -2,6 +2,20 @@
 
 All notable changes to this addon. Versions match `## Version` in `TackleBox.toc`; each version is published as a `tb-vX.Y.Z` GitHub release.
 
+## [1.1.0] — 2026-11-23
+
+### Added
+- **One-key cast.** `/tb bind <key>`: the key casts Fishing, and while the line is out it reels in the bobber without a mouse-over. `/tb unbind` removes it.
+- **Weapon memory.** Your main hand and off hand are remembered when you equip a pole; the pole button becomes a Weapons button that puts them back.
+- **Zone line.** The header shows your current zone's skill range and flag.
+- **Collapsible tabs.** A plus/minus button hides the tabs; the choice is remembered.
+
+### Changed
+- Tab rows scroll, 10 at a time. The Catch list is no longer cut off at 30.
+
+### Fixed
+- The cast bar and got-away count now work at every Fishing rank, not only Apprentice.
+
 ## [1.0.0] — 2026-10-22
 
 The full fishing companion: tabs, a fishing bar and a fishing-themed look.

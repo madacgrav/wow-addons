@@ -50,6 +50,11 @@ Client `1.60.1 70450`, `WOW_PROJECT_ID` 18. Character at Fishing 1/75, out of co
   - Early no-loot stops are common at this skill level, which fits missed or escaped bites.
 - Every channel is again 30 000 ms, never secret.
 
+## Run 5 — 2026-11-23, Orgrimmar / Valley of Honor, Fishing 205/225
+- **Trace:** `CHANNEL_START 7732`. The channel spell is the Fishing rank, not 7620: at skill 205 it is 7732 (Expert).
+- **Effect:** with only 7620 in `fishingSpells`, the cast bar, miss count and one-key reel never ran. All four Classic rank IDs (7620, 7731, 7732, 18248) are now listed.
+- **Override bindings:** `SetOverrideBinding`, `SetOverrideBindingClick` and `ClearOverrideBindings` exist (`override bindings: true`).
+
 ## Item IDs from client data (wago.tools DB2, build 1.60.1.70450, same build as the probes)
 - **Source:** `ItemSparse` and `Item` CSV for `?build=1.60.1.70450`. This is the build string the probe reported, so the IDs are the client's own.
 - **Check:** each ID can be confirmed in game with `/dump C_Item.GetItemInfo(<id>)`.

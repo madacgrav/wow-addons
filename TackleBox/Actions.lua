@@ -26,13 +26,51 @@ local function MakeButton(key)
   ag:Play()
   b:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-    if self.itemID then GameTooltip:SetItemByID(self.itemID) else GameTooltip:AddLine(TIPS[key], T.sand[1], T.sand[2], T.sand[3]) end
-    if self.need then GameTooltip:AddLine(self.need, 1, 0.3, 0.3) else GameTooltip:AddLine(TIPS[key], 1, 1, 1) end
+    local tip = self.tip or TIPS[key]
+    if self.itemID then GameTooltip:SetItemByID(self.itemID) else GameTooltip:AddLine(tip, T.sand[1], T.sand[2], T.sand[3]) end
+    if self.need then GameTooltip:AddLine(self.need, 1, 0.3, 0.3) else GameTooltip:AddLine(tip, 1, 1, 1) end
     GameTooltip:Show()
   end)
   b:SetScript("OnLeave", GameTooltip_Hide)
   b:Hide()
   return b
+end
+
+-- one-key cast: the key clicks TBCastKey; while the line is out the same key is INTERACTTARGET (reels in the bobber)
+local owner = CreateFrame("Frame")
+local caster -- made in the init below; secure, shown, 1x1, invisible
+local REEL_CVARS = { SoftTargetInteract = "3", SoftTargetInteractRange = "60" } -- ponytail: 60 = BetterFishing's value; Forever max unknown
+function TB.HasBindAPI() return SetOverrideBinding ~= nil and SetOverrideBindingClick ~= nil and ClearOverrideBindings ~= nil end
+
+function TB.BindCast()
+  if InCombatLockdown() or not TB.HasBindAPI() then return end
+  ClearOverrideBindings(owner)
+  if TB.db.castKey then SetOverrideBindingClick(owner, true, TB.db.castKey, "TBCastKey") end
+end
+
+function TB.RestoreCVars()
+  local b = TB.db.cvarBackup
+  if not b then return end
+  for k, v in pairs(b) do C_CVar.SetCVar(k, v) end
+  TB.db.cvarBackup = nil
+end
+
+TB.reeling = false
+function TB.ReelMode(on)
+  if not TB.db.castKey or not TB.HasBindAPI() or InCombatLockdown() then return end
+  if on then
+    if not TB.db.cvarBackup then
+      local b = {}
+      for k in pairs(REEL_CVARS) do b[k] = C_CVar.GetCVar(k) end -- nil (unknown CVar) is skipped below
+      TB.db.cvarBackup = b
+    end
+    for k, v in pairs(REEL_CVARS) do if TB.db.cvarBackup[k] ~= nil then C_CVar.SetCVar(k, v) end end
+    ClearOverrideBindings(owner)
+    SetOverrideBinding(owner, true, TB.db.castKey, "INTERACTTARGET")
+    TB.reeling = true
+  else
+    TB.RestoreCVars(); TB.BindCast(); TB.reeling = false
+  end
 end
 
 table.insert(TB.inits, function()
@@ -41,6 +79,11 @@ table.insert(TB.inits, function()
   -- vertical strip on the panel's left side, hung off the shared dock (see TB.Dock)
   bar:SetPoint("TOPRIGHT", TB.Dock(), "TOPLEFT", 2, 0); TB.DockDrag(bar)
   for _, key in ipairs(ORDER) do buttons[key] = MakeButton(key) end
+  caster = CreateFrame("Button", "TBCastKey", UIParent, "SecureActionButtonTemplate")
+  caster:SetSize(1, 1); caster:SetPoint("TOPLEFT"); caster:SetAlpha(0); caster:EnableMouse(false)
+  caster:RegisterForClicks("AnyUp", "AnyDown")
+  TB.RestoreCVars() -- a backup left by a crash or disconnect mid-cast
+  TB.BindCast()
 end)
 
 -- attributes, visibility and layout only out of combat; PLAYER_REGEN_ENABLED -> Refresh re-applies
@@ -53,7 +96,7 @@ local function Apply()
       if a.usable == false then
         b:SetAttribute("type", nil) -- greyed out: visible, does nothing
       elseif key == "pole" then
-        b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", "/equip item:" .. a.item)
+        b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", a.macro or ("/equip item:" .. a.item))
       elseif key == "lure" then
         -- use the lure, then put it on the main-hand slot (16 = the equipped pole)
         b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", "/use item:" .. a.item .. "\n/use 16")
@@ -63,6 +106,7 @@ local function Apply()
         b:SetAttribute("type", "spell"); b:SetAttribute("spell", a.spell)
       end
       b.itemID, b.need = a.item, a.need
+      b.tip = a.weapons and "Equip your weapons" or nil
       b.icon:SetTexture(a.item and C_Item.GetItemIconByID(a.item) or a.icon)
       b.icon:SetDesaturated(a.usable == false); b.icon:SetAlpha(a.usable == false and 0.5 or 1)
       b.count:SetText(a.item and key ~= "pole" and C_Item.GetItemCount(a.item) or "")
@@ -72,6 +116,8 @@ local function Apply()
       b:Hide()
     end
   end
+  local cast = TB.actions.cast
+  caster:SetAttribute("type", cast and "spell" or nil); caster:SetAttribute("spell", cast and cast.spell or nil)
   bar:SetHeight(math.max(52, y + 2))
   bar:SetShown(y > 6 and TB.db.shown) -- only with the panel open; a combat close hides it once combat ends
 end
@@ -83,7 +129,7 @@ local function BagItems()
       local id = C_Container.GetContainerItemID(bag, slot)
       if id then
         local _, _, _, _, _, classID, subID = C_Item.GetItemInfoInstant(id)
-        items[#items + 1] = { id = id, classID = classID, subID = subID }
+        items[#items + 1] = { id = id, classID = classID, subID = subID, bag = bag, slot = slot, link = C_Container.GetContainerItemLink(bag, slot) }
       end
     end
   end
@@ -97,12 +143,26 @@ local function PoleEquipped()
   return classID == 2 and subID == 20
 end
 
+local function SlotItem(s)
+  local id = GetInventoryItemID("player", s)
+  return id and { id = id, link = GetInventoryItemLink("player", s) } or nil
+end
+
 table.insert(TB.refreshers, function()
-  local A, poleOn = {}, PoleEquipped()
+  local A, poleOn, items = {}, PoleEquipped(), BagItems()
   if not poleOn then
-    local pole = TB.PickPole(BagItems())
+    -- any non-pole main hand is the set to come back to; an empty hand keeps the old snapshot
+    if GetInventoryItemID("player", 16) then TB.char.weapons = { mh = SlotItem(16), oh = SlotItem(17) } end
+    local pole = TB.PickPole(items)
     if pole then A.pole = { item = pole } end
   else
+    local w = TB.char.weapons
+    if w and w.mh then
+      local mh, oh = TB.FindWeapon(items, w.mh), w.oh and TB.FindWeapon(items, w.oh)
+      local missing = (not mh and w.mh) or (w.oh and not oh and w.oh) or nil
+      A.pole = { item = w.mh.id, weapons = true, macro = TB.WeaponsMacro(mh, oh), usable = not missing,
+        need = missing and ((TB.ItemName(missing.id)) .. " not in bags") or nil }
+    end
     local counts = {}
     for _, l in ipairs(TB.DATA.lures) do counts[l.id] = C_Item.GetItemCount(l.id) end
     -- 1st return of GetWeaponEnchantInfo: the main hand already has a temp enchant (a lure)
