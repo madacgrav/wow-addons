@@ -499,9 +499,9 @@ TB.On("PLAYER_LOGOUT", function() if TB.db then TB.RestoreCVars() end end) -- SV
 - [x] `/tb bind F` with the panel closed. F casts, F during the channel reels in the bobber and loots, and F casts again. Do it 5 times.
 - [x] Confirm no double cast (one press gives one cast). If it double-fires, set `caster:RegisterForClicks("AnyDown")` and re-test.
 - [x] During a channel, `/dump C_CVar.GetCVar("SoftTargetInteract")` gives `3`. After the channel it shows your original value again.
-- [ ] `/reload` mid-channel. After login the CVars are back to the originals and F casts.
+- [x] `/reload` mid-channel. After login the CVars are back to the originals and F casts.
 - [ ] Get attacked, then cast in combat. No Lua errors or blocked-action messages. After combat F casts again.
-- [ ] `/tb unbind`, then F does its normal job again.
+- [x] `/tb unbind`, then F does its normal job again.
 - [ ] After the probe confirms, ask the user before recording "override-binding API exists on Forever (build N)" in `D:\Source\wowskill\skills\wow-forever-addon\references\forever-api-notes.md` (separate repo).
 
 ---
