@@ -171,11 +171,20 @@ function WCK.BarSpells(rules, tail, known, core)
   return out
 end
 
--- bar button look: fel = a proc on this spell is up; dim = not the suggestion (and no proc) -- visual only, it stays clickable
-function WCK.ButtonLook(spell, nextSpell, procs, procList)
+-- cd = non-secret fields of C_Spell.GetSpellCooldown (secret ones already nil'd); onCD true only for a real
+-- cooldown (GCD alone does not count), nil when unknown; endsAt = startTime + duration when both are known
+function WCK.CooldownState(cd)
+  if type(cd) ~= "table" or cd.isActive == nil then return nil end
+  if not cd.isActive or cd.isOnGCD == true then return false end
+  local s, d = cd.startTime, cd.duration
+  return true, (type(s) == "number" and type(d) == "number") and s + d or nil
+end
+
+-- bar button look: dim = spell on its own cooldown; fel = a proc on this spell is up -- visual only, it stays clickable
+function WCK.ButtonLook(spell, onCD, procs, procList)
   local fel = false
   for _, p in ipairs(procList) do if p.spell == spell and procs[p.key] then fel = true end end
-  return { dim = spell ~= nextSpell and not fel, fel = fel }
+  return { dim = onCD == true, fel = fel }
 end
 
 -- mouseover cast slots: hostile mouseover, else the normal target

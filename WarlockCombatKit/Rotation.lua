@@ -76,12 +76,12 @@ table.insert(WCK.refreshers, function()
   bar:SetShown(WCK.db.shown) -- the core button lives on the bar, so the bar shows with the panel
 end)
 
--- highlights: every refresh, in combat too (textures only)
+-- highlights: every refresh, in combat too (textures only); grey = on cooldown, pulse = suggested
 table.insert(WCK.refreshers, function()
   if not core then return end
   WCK.SetAlert(core, WCK.next == WCK.DATA.core)
   for _, b in ipairs(buttons) do
-    local look = b.spell and WCK.ButtonLook(b.spell, WCK.next, WCK.procs, WCK.DATA.procs) or { dim = false, fel = false }
+    local look = b.spell and WCK.ButtonLook(b.spell, WCK.onCD[b.spell], WCK.procs, WCK.DATA.procs) or { dim = false, fel = false }
     b.icon:SetDesaturated(look.dim); b.icon:SetAlpha(look.dim and 0.6 or 1) -- never Disable(): grey buttons still cast
     WCK.SetAlert(b, b.spell ~= nil and b.spell == WCK.next)
     WCK.SetAlert(b.fel, look.fel and WCK.db.procAlerts)
