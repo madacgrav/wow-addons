@@ -126,4 +126,17 @@ eq(TB.PoolKey("Eel Swarm", SPools), "p1", "pool key"); eq(TB.PoolKey("x", SPools
 eq(TB.PoolKey("School of Deviate Fish", TB.DATA.pools), "deviate", "probe 6B tooltip name matches")
 for name, s in pairs(TB.DATA.spots) do for _, pk in ipairs(s.pools) do assert(TB.PoolByKey(TB.DATA.pools, pk), name .. " pool " .. pk) end end
 
+-- Pools
+local function r3(n) return math.floor(n * 1000 + 0.5) end
+local ox, oy = TB.OffsetPos(0.5, 0.5, 0, 10, 1000, 1000); eq(r3(ox), 500, "north keeps x"); eq(r3(oy), 490, "north moves up")
+ox, oy = TB.OffsetPos(0.5, 0.5, math.pi / 2, 10, 1000, 1000); eq(r3(ox), 490, "west moves left"); eq(r3(oy), 500, "west keeps y")
+local pl = {}
+local _, new = TB.MergePool(pl, 0.5, 0.5, "eel", 1, 15, 1000, 1000); eq(new, true, "first pool new")
+_, new = TB.MergePool(pl, 0.505, 0.5, "eel", 2, 15, 1000, 1000); eq(new, false, "5 yd merges"); eq(pl[1].n, 2, "count bumped"); eq(pl[1].last, 2, "last updated")
+eq(r3(pl[1].x * 10), 5025, "position averaged")
+_, new = TB.MergePool(pl, 0.505, 0.5, "oily", 3, 15, 1000, 1000); eq(new, true, "other type separate")
+_, new = TB.MergePool(pl, 0.6, 0.5, "eel", 4, 15, 1000, 1000); eq(new, true, "100 yd separate")
+local near = TB.NearestPools(pl, 0.6, 0.5, 1000, 1000, 2); eq(#near, 2, "max respected"); eq(near[1].pool.x, 0.6, "nearest first")
+eq(#TB.NearestPools({}, 0, 0, 1, 1), 0, "no pools")
+
 print("all tests passed")

@@ -252,3 +252,31 @@ function TB.SpotsRows(spots, zones, pools, skill, current)
   end
   return rows
 end
+
+local function Yards(ax, ay, bx, by, w, h) return math.sqrt(((ax - bx) * w) ^ 2 + ((ay - by) * h) ^ 2) end
+
+-- facing: GetPlayerFacing radians, 0 = north, counter-clockwise; zone y grows south, x grows east
+function TB.OffsetPos(x, y, facing, yards, w, h)
+  return x - math.sin(facing) * yards / w, y - math.cos(facing) * yards / h
+end
+
+-- same type within radius yards: average into it; else append. ponytail: linear scan, fine for hundreds per map
+function TB.MergePool(list, x, y, t, now, radius, w, h)
+  for _, p in ipairs(list) do
+    if p.t == t and Yards(p.x, p.y, x, y, w, h) <= radius then
+      p.x, p.y = (p.x * p.n + x) / (p.n + 1), (p.y * p.n + y) / (p.n + 1)
+      p.n, p.last = p.n + 1, now
+      return list, false
+    end
+  end
+  list[#list + 1] = { x = x, y = y, t = t, n = 1, last = now }
+  return list, true
+end
+
+function TB.NearestPools(list, px, py, w, h, max)
+  local out = {}
+  for _, p in ipairs(list) do out[#out + 1] = { pool = p, yd = Yards(p.x, p.y, px, py, w, h) } end
+  table.sort(out, function(a, b) return a.yd < b.yd end)
+  for i = #out, (max or 10) + 1, -1 do out[i] = nil end
+  return out
+end

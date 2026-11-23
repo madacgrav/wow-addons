@@ -183,12 +183,17 @@ local function GetRow(i)
       GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:AddLine(self.full, 1, 1, 1, true); GameTooltip:Show()
       return
     end
+    if not self.itemID and self.hint then -- nearby pool rows
+      GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:AddLine(self.hint, 1, 1, 1); GameTooltip:Show()
+      return
+    end
     if not self.itemID then return end
     GameTooltip:SetOwner(self, "ANCHOR_LEFT"); GameTooltip:SetItemByID(self.itemID)
     if self.onTooltip then self.onTooltip(GameTooltip) end
     GameTooltip:Show()
   end)
   row:SetScript("OnLeave", GameTooltip_Hide)
+  row:SetScript("OnMouseUp", function(self, b) if b == "LeftButton" and self.onClick then self.onClick() end end)
   panel.rows[i] = row
   return row
 end
@@ -260,14 +265,15 @@ function TB.RenderPanel(rows, skill, misses, tabs, active, zone)
     local row = v and GetRow(i) or panel.rows[i]
     row:SetShown(v ~= nil)
     if v then
-      row.icon:SetShown(not v.empty); row.frame:SetShown(not v.empty)
+      local plain = v.empty or v.header -- header rows: sand text, no icon, no stripe
+      row.icon:SetShown(not plain); row.frame:SetShown(not plain)
       row.icon:SetTexture(v.icon or 134400)
       row.text:SetText(v.text)
-      local c = v.color or (v.empty and T.muted) or { 1, 1, 1 }
+      local c = v.color or (v.empty and T.muted) or (v.header and T.sand) or { 1, 1, 1 }
       row.text:SetTextColor(c[1], c[2], c[3])
       row.sub:SetText(v.sub or "")
-      stripe = not stripe
-      row.band:SetColorTexture(1, 1, 1, stripe and 0.03 or 0)
+      if not v.header then stripe = not stripe end
+      row.band:SetColorTexture(1, 1, 1, (stripe and not v.header) and 0.03 or 0)
       row.bar:SetShown(v.progress ~= nil)
       if v.progress then
         row.bar:SetValue(v.progress)
@@ -276,6 +282,7 @@ function TB.RenderPanel(rows, skill, misses, tabs, active, zone)
       end
       row.itemID, row.onTooltip = v.itemID, v.onTooltip
       row.full = v.zone and v.sub or nil
+      row.onClick, row.hint = v.onClick, v.hint
     end
   end
   local empty = n == 1 and rows[1].empty
@@ -357,7 +364,21 @@ table.insert(TB.sections, { key = "catch", title = "Collection", tab = "Catch", 
   return rows
 end })
 table.insert(TB.sections, { key = "spots", title = "Best spots", tab = "Spots", empty = "No spot data for your skill yet.", icon = "Interface\\Icons\\INV_Misc_Spyglass_01", build = function()
-  return TB.SpotsRows(TB.DATA.spots, TB.DATA.zones, TB.DATA.pools, TB.skill, GetRealZoneText())
+  local rows = TB.SpotsRows(TB.DATA.spots, TB.DATA.zones, TB.DATA.pools, TB.skill, GetRealZoneText())
+  -- learned pools on this map, nearest first; click sets a waypoint
+  local x, y, map = TB.PlayerPos()
+  local list, w, h = map and TB.db.pools[map], nil, nil
+  if map then w, h = TB.HBD:GetZoneSize(map) end
+  if not map then rows[#rows + 1] = { header = true, text = "No map position here" }
+  elseif list and #list > 0 and w and w > 0 then
+    rows[#rows + 1] = { header = true, text = "Nearby pools" }
+    for _, n in ipairs(TB.NearestPools(list, x, y, w, h, 10)) do
+      local p, info = n.pool, TB.PoolByKey(TB.DATA.pools, n.pool.t)
+      rows[#rows + 1] = { text = info and info.name or n.pool.t, sub = math.floor(n.yd) .. " yd - seen " .. p.n .. "x",
+        icon = info and info.icon, hint = "Click: set waypoint", onClick = function() TB.Waypoint(map, p.x, p.y) end }
+    end
+  end
+  return rows
 end })
 table.insert(TB.refreshers, function()
   if not TB.db.shown then if panel then panel:Hide() end return end
