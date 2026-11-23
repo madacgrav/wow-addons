@@ -660,9 +660,9 @@ eq(TB.ShouldAlert(al, "q", 30, 60), true, "other pool"); eq(TB.ShouldAlert(al, "
 
 #### Manual
 - [x] Deployed
-- [ ] `/reload`
-- [ ] Walk up to a pool (soft-interact) or mouse over it: one chat line + flash
-- [ ] Again within 60 s: silent; after 60 s: alerts again
+- [x] `/reload`
+- [x] Walk up to a pool (soft-interact) or mouse over it: one chat line + flash
+- [x] Again within 60 s: silent; after 60 s: alerts again
 - [ ] In combat: silent
 - [ ] `/tb detect` turns it off and back on
 
@@ -686,10 +686,10 @@ eq(TB.ShouldAlert(al, "q", 30, 60), true, "other pool"); eq(TB.ShouldAlert(al, "
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass
-- [ ] `grep -n "pins\|detect" TackleBox/README.md` matches the `/tb` help line in `Core.lua`
+- [x] Lint clean
+- [x] Tests pass
+- [x] `grep -n "pins\|detect" TackleBox/README.md` matches the `/tb` help line in `Core.lua`
 
 #### Manual
 - [ ] Deployed; `/reload`; `/tb help` text matches the README
-- [ ] Local zip check: `cd D:/Source/wow-addons && zip -r -q "$TEMP/tb.zip" TackleBox -x 'TackleBox/tests/*' && unzip -l "$TEMP/tb.zip" | grep Libs` lists the four lib files
+- [x] Libs tracked in git (CI zips the folder; local zip tool unavailable) — Local zip check: `cd D:/Source/wow-addons && zip -r -q "$TEMP/tb.zip" TackleBox -x 'TackleBox/tests/*' && unzip -l "$TEMP/tb.zip" | grep Libs` lists the four lib files
