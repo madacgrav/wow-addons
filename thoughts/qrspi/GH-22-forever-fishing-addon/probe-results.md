@@ -158,3 +158,11 @@ Steps: face a pool and run `/tb probe`; mouse over it and run `/tb probe`; cast 
 
 ### 7B: kit from a secure `type=item` button
 - Click opens a ground-target placement cursor; a second click places the campfire. Placement works from a secure item button (two clicks).
+
+### 7C: `/tb camp` next to the placed Basic Campfire
+- Aura `1283391 Campfire Nearby`, expirationTime 0 (lasts while near the fire): campfire detection = this aura.
+- Kit consumed on use: Basic Campfire Kit x2 -> x1.
+- All three campfire kits share a cooldown after placing: `GetItemCooldown` start 1092365.017, duration 300 (5 min) on 279981, 279961, 279974.
+- Camp items unaffected by the kit cooldown: Fish Bowl / Rack / Hut still 0/0/1.
+- Kit use spells: Journeyman Campfire Kit 279961 -> 1307252, Expert Campfire Kit 279974 -> 1307237 (now cached).
+- Trace: `CAST_OK 1307227` with `BAG_UPDATE_COOLDOWN` around it.
