@@ -9,7 +9,7 @@ local function Acquire()
   used = used + 1
   local f = frames[used]
   if not f then
-    f = CreateFrame("Frame", nil, UIParent); f:SetSize(14, 14); f:EnableMouse(true)
+    f = CreateFrame("Frame", nil, UIParent); f:SetSize(10, 10); f:EnableMouse(true)
     f.icon = f:CreateTexture(nil, "ARTWORK"); f.icon:SetAllPoints(); f.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     f:SetScript("OnEnter", function(self)
       GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
