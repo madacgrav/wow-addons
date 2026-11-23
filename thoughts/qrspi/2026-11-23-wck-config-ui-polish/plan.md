@@ -396,5 +396,5 @@ In the Rotation build:
 - [x] Robocopy deploy exits 0-7
 
 #### Manual
-- [ ] The addon list shows Warlock Combat Kit 0.4.0
-- [ ] Final side-by-side look with `/wuk config`: both windows read as one family
+- [x] The addon list shows Warlock Combat Kit 0.4.0
+- [x] Final side-by-side look with `/wuk config`: both windows read as one family
