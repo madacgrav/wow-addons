@@ -303,8 +303,8 @@ eq(TB.CampPick(CS({ skill = { level = 100 } })), nil, "camp nothing owned")
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass (CampPick)
+- [x] Lint clean
+- [x] Tests pass (CampPick)
 
 #### Manual
 - [ ] Deployed; `/reload`
