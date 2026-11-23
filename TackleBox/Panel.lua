@@ -1,7 +1,8 @@
 local ADDON, TB = ...
 -- ponytail: fixed 30 rows; collapse sections when they overflow, add a ScrollBox if that bites
 local MAX_ROWS = 30
-local WIDTH, ROW_W, TOP, TAB_H = 320, 296, 128, 34 -- TOP = header + tab strip height above the first row
+-- TOP = header + zone line + tab strip height above the first row; HEAD = collapsed panel height
+local WIDTH, ROW_W, TOP, TAB_H, HEAD = 320, 296, 146, 34, 100
 local panel
 
 -- deep water, sand and rope
@@ -102,9 +103,24 @@ local function Build()
   fish:SetSize(16, 16); fish:SetPoint("RIGHT", panel.misses, "LEFT", -4, 0); fish:SetTexture("Interface\\Icons\\INV_Misc_Fish_02")
   sk:SetPoint("RIGHT", fish, "LEFT", -8, 0)
 
+  -- expand/collapse the tabs; state in TB.db.expanded
+  local ex = CreateFrame("Button", nil, panel)
+  ex:SetSize(16, 16); ex:SetPoint("RIGHT", panel, "TOPRIGHT", -12, -86)
+  ex:SetScript("OnClick", function() TB.db.expanded = not TB.db.expanded; TB.Refresh() end)
+  ex:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(TB.db.expanded and "Hide tabs" or "Show tabs", T.sand[1], T.sand[2], T.sand[3]); GameTooltip:Show()
+  end)
+  ex:SetScript("OnLeave", GameTooltip_Hide)
+  panel.expand = ex
+  -- current zone's fishing status, always shown
+  panel.zone = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  panel.zone:SetPoint("LEFT", panel, "TOPLEFT", 12, -86); panel.zone:SetPoint("RIGHT", ex, "LEFT", -4, 0)
+  panel.zone:SetJustifyH("LEFT"); panel.zone:SetWordWrap(false)
+
   local rule = panel:CreateTexture(nil, "ARTWORK")
   rule:SetHeight(1); rule:SetPoint("TOPLEFT", 10, -TOP + 8); rule:SetPoint("TOPRIGHT", -10, -TOP + 8)
   rule:SetColorTexture(T.rope[1], T.rope[2], T.rope[3], 0.5)
+  panel.rule = rule
 
   -- tab strip: one icon tab per section; tabs are made lazily in RenderPanel once the section list is known
   panel.tabs = {}
@@ -142,7 +158,7 @@ end
 local function MakeTab(i, n)
   local w = (ROW_W - (n - 1) * 4) / n
   local t = CreateFrame("Button", nil, panel)
-  t:SetSize(w, TAB_H - 4); t:SetPoint("TOPLEFT", 12 + (i - 1) * (w + 4), -82)
+  t:SetSize(w, TAB_H - 4); t:SetPoint("TOPLEFT", 12 + (i - 1) * (w + 4), -100)
   t.bg = t:CreateTexture(nil, "BACKGROUND"); t.bg:SetAllPoints()
   t.icon = t:CreateTexture(nil, "ARTWORK"); t.icon:SetSize(16, 16); t.icon:SetPoint("TOP", 0, -3)
   t.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
@@ -176,7 +192,7 @@ local function RenderTabs(tabs, active)
 end
 
 -- rows = { {text, sub?, icon?, color?={r,g,b}, empty?, itemID?, onTooltip?, progress?} }
-function TB.RenderPanel(rows, skill, misses, tabs, active)
+function TB.RenderPanel(rows, skill, misses, tabs, active, zone)
   if not panel then Build() end
   RenderTabs(tabs, active)
   local sk = panel.skill
@@ -188,10 +204,19 @@ function TB.RenderPanel(rows, skill, misses, tabs, active)
   sk.text:SetText(TB.SkillText(skill))
   panel.misses:SetText("got away: " .. misses)
 
+  local exp = TB.db.expanded
+  panel.zone:SetText(zone and zone.text or "")
+  local zc = zone and zone.color or { 1, 1, 1 }
+  panel.zone:SetTextColor(zc[1], zc[2], zc[3])
+  panel.expand:SetNormalTexture(exp and "Interface\\Buttons\\UI-MinusButton-Up" or "Interface\\Buttons\\UI-PlusButton-Up")
+  panel.expand:SetHighlightTexture("Interface\\Buttons\\UI-PlusButton-Hilight", "ADD")
+  panel.rule:SetShown(exp)
+  for _, t in ipairs(panel.tabs) do t:SetShown(exp) end
+
   local n, stripe = math.min(#rows, MAX_ROWS), false
   for i, row in ipairs(panel.rows) do
     local v = rows[i]
-    row:SetShown(v ~= nil)
+    row:SetShown(exp and v ~= nil)
     if v then
       row.icon:SetShown(not v.empty)
       row.icon:SetTexture(v.icon or 134400)
@@ -210,7 +235,7 @@ function TB.RenderPanel(rows, skill, misses, tabs, active)
       row.itemID, row.onTooltip = v.itemID, v.onTooltip
     end
   end
-  panel:SetHeight(TOP + 10 + math.max(n, 3) * 26) -- keep a little water under short tabs
+  panel:SetHeight(exp and (TOP + 10 + math.max(n, 3) * 26) or HEAD) -- keep a little water under short tabs
   panel:Show()
 end
 
@@ -283,7 +308,9 @@ table.insert(TB.refreshers, function()
     secs[#secs + 1] = { key = s.key, title = s.title, tab = s.tab, icon = s.icon, empty = s.empty, rows = rows, count = #rows }
   end
   local rows, active = TB.TabRows(secs, TB.db.tab)
-  TB.RenderPanel(rows, TB.skill, TB.session.misses, secs, active)
+  local zone = TB.ZoneStatus(TB.DATA.zones, TB.DATA.lures, TB.skill, GetRealZoneText())
+  if zone then zone.color = FLAG_COLORS[zone.flag] or (zone.flag == nil and { 0.6, 0.6, 0.6 }) end
+  TB.RenderPanel(rows, TB.skill, TB.session.misses, secs, active, zone)
 end)
 
 table.insert(TB.inits, function()
