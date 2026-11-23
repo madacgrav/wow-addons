@@ -2,8 +2,8 @@ local ADDON, TB = ...
 -- Fishing action bar: equip pole, apply lure, water-walk, cast. Every button is player-clicked; nothing fires on its own.
 -- Secure buttons live on their own UIParent frame: a secure child (or anchor) would make the panel protected in combat.
 
-local ORDER = { "pole", "lure", "water", "cast" }
-local TIPS = { pole = "Equip fishing pole", lure = "Apply lure to your pole", water = "Use water-walking", cast = "Cast your line" }
+local ORDER = { "pole", "lure", "water", "camp", "cast" }
+local TIPS = { pole = "Equip fishing pole", lure = "Apply lure to your pole", water = "Use water-walking", camp = "Set up your fishing camp", cast = "Cast your line" }
 local bar, buttons = nil, {}
 TB.actions = {} -- key -> {item=id} | {spell=name} | nil; the panel's Water tab reads TB.actions.water
 
@@ -100,13 +100,13 @@ local function Apply()
       elseif key == "lure" then
         -- use the lure, then put it on the main-hand slot (16 = the equipped pole)
         b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", "/use item:" .. a.item .. "\n/use 16")
-      elseif key == "water" then
+      elseif key == "water" or key == "camp" then -- camp items open a placement cursor; the second click places (probe run 7B)
         b:SetAttribute("type", "item"); b:SetAttribute("item", "item:" .. a.item)
       else
         b:SetAttribute("type", "spell"); b:SetAttribute("spell", a.spell)
       end
       b.itemID, b.need = a.item, a.need
-      b.tip = a.weapons and "Equip your weapons" or nil
+      b.tip = (a.weapons and "Equip your weapons") or (a.action == "fire" and "Place your campfire") or nil
       b.icon:SetTexture(a.item and C_Item.GetItemIconByID(a.item) or a.icon)
       b.icon:SetDesaturated(a.usable == false); b.icon:SetAlpha(a.usable == false and 0.5 or 1)
       b.count:SetText(a.item and key ~= "pole" and C_Item.GetItemCount(a.item) or "")
@@ -176,6 +176,15 @@ table.insert(TB.refreshers, function()
   local water, wok = TB.WaterWalkPick(ww.items, wcounts, active, UnitLevel("player"), ww.minLevel)
   if water then A.water = { item = water, usable = wok, need = not wok and ("Requires level " .. ww.minLevel[water]) or nil } end
   TB.waterActive = active
+
+  -- camp: campfire first, then the best camp item your skill allows; hidden while Camp Benefits is up
+  local cf = TB.DATA.campfires
+  local st = { skill = TB.skill, owned = {}, fires = cf.items, camp = TB.DATA.camp,
+    campActive = TB.ReadAura(TB.DATA.campAura).active, fireUp = TB.ReadAura(cf.aura).active }
+  for _, id in ipairs(cf.items) do st.owned[id] = C_Item.GetItemCount(id) end
+  for _, c in ipairs(TB.DATA.camp) do st.owned[c.item] = C_Item.GetItemCount(c.item) end
+  local action, cid, cok, cneed = TB.CampPick(st)
+  if action then A.camp = { item = cid, usable = cok, need = cneed, action = action } end
 
   if TB.skill then
     local s = C_Spell.GetSpellInfo(7620) -- probe run 1: Fishing = 7620

@@ -297,3 +297,21 @@ function TB.ShouldAlert(last, key, now, cooldown)
   last[key] = now
   return true
 end
+
+-- camp button: st = { skill, owned = {[item]=n}, campActive, fireUp, fires = {kit items best first}, camp = DATA.camp }
+-- returns action ("fire" | "place" | nil), item id, usable, need
+function TB.CampPick(st)
+  if st.campActive then return nil end -- Camp Benefits already up (one shared buff, probe run 7E)
+  if not st.fireUp then
+    for _, id in ipairs(st.fires) do if (st.owned[id] or 0) > 0 then return "fire", id, true end end
+  end
+  local lvl, locked = st.skill and st.skill.level or 0, nil
+  for _, c in ipairs(st.camp) do
+    if (st.owned[c.item] or 0) > 0 then
+      if lvl >= c.skill then return "place", c.item, true, (not st.fireUp) and "Place near a campfire" or nil end
+      locked = locked or c
+    end
+  end
+  if locked then return "place", locked.item, false, "Requires Fishing " .. locked.skill end
+end
+

@@ -153,4 +153,16 @@ local al = {}
 eq(TB.ShouldAlert(al, "p", 0, 60), true, "first alert"); eq(TB.ShouldAlert(al, "p", 30, 60), false, "cooldown")
 eq(TB.ShouldAlert(al, "q", 30, 60), true, "other pool"); eq(TB.ShouldAlert(al, "p", 61, 60), true, "after cooldown")
 
+-- Camp button
+local CC = { { key = "hut", item = 3, skill = 300 }, { key = "bowl", item = 1, skill = 20 } }
+local function Pick(st) st.camp = CC; st.fires = { 50 }; st.owned = st.owned or {}; return { TB.CampPick(st) } end
+local p1 = Pick({ skill = { level = 100 }, owned = { [50] = 1, [1] = 1 } })
+eq(p1[1], "fire", "camp fire first"); eq(p1[2], 50, "camp kit id"); eq(p1[3], true, "camp kit usable")
+local p2 = Pick({ skill = { level = 100 }, owned = { [1] = 1 } }); eq(p2[1], "place", "camp no kit places"); eq(p2[4], "Place near a campfire", "camp fire hint")
+local p3 = Pick({ skill = { level = 100 }, owned = { [50] = 1, [1] = 1 }, fireUp = true }); eq(p3[1], "place", "camp place"); eq(p3[2], 1, "camp bowl")
+eq(Pick({ skill = { level = 300 }, owned = { [1] = 1, [3] = 1 }, fireUp = true })[2], 3, "camp best by skill")
+local p5 = Pick({ skill = { level = 100 }, owned = { [3] = 1 }, fireUp = true }); eq(p5[3], false, "camp locked"); eq(p5[4], "Requires Fishing 300", "camp locked need")
+eq(Pick({ skill = { level = 100 }, owned = { [1] = 1 }, campActive = true, fireUp = true })[1], nil, "camp buff up")
+eq(Pick({ skill = { level = 100 } })[1], nil, "camp nothing owned")
+
 print("all tests passed")
