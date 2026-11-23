@@ -72,7 +72,7 @@ A rule passes when you know the spell, it is off cooldown, and its condition hol
 A bar of round buttons docked to the right of the circle, one per spell in your rules (in rule order, except Life Tap, which is the circle's core), then a fixed group after a gap: Shadow Bolt, Fear and Banish (when you know them). Shadow Bolt always sits in that group, even if a rule uses it.
 
 - Click a button to cast its spell on your target.
-- The button for the suggested spell (first passing rule) pulses purple and stays in colour; every other button is greyed out. Grey buttons still cast when clicked.
+- Buttons stay in colour. A button greys out only while its spell is on cooldown (the global cooldown does not count) and comes back when it is ready. The suggested spell (first passing rule) pulses purple. Grey buttons still cast when clicked.
 - The Shadow Bolt button glows fel green (and stays in colour) while Nightfall is up.
 - Shift+drag the bar's edge or the circle to move the whole kit (out of combat).
 - A rule edit you make in combat updates the bar when combat ends.

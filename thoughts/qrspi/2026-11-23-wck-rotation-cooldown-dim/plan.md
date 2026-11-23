@@ -153,8 +153,8 @@ How the timer behaves:
 - [x] Lint is clean for WarlockCombatKit (no new warnings)
 
 #### Manual
-- [ ] Out of combat, with no target, cast Death Coil or Howl of Terror and don't touch anything: the button greys, then returns to colour within about 0.2 s of the cooldown ending
-- [ ] Stand idle afterwards: `/etrace` shows no repeating activity from WCK
+- [x] Out of combat, with no target, cast Death Coil or Howl of Terror and don't touch anything: the button greys, then returns to colour within about 0.2 s of the cooldown ending
+- [x] Stand idle afterwards: `/etrace` shows no repeating activity from WCK
 
 ---
 
@@ -191,10 +191,10 @@ How the timer behaves:
 
 ### Verification
 #### Automated
-- [ ] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
-- [ ] `grep -n "Version" WarlockCombatKit/WarlockCombatKit.toc` shows `0.2.1`
-- [ ] `grep -n "0.2.1" WarlockCombatKit/CHANGELOG.md` returns the new heading
+- [x] `lua WarlockCombatKit/tests/run.lua` prints `all tests passed`
+- [x] `grep -n "Version" WarlockCombatKit/WarlockCombatKit.toc` shows `0.2.1`
+- [x] `grep -n "0.2.1" WarlockCombatKit/CHANGELOG.md` returns the new heading
 
 #### Manual
-- [ ] Deploy with robocopy to `_forever_\Interface\AddOns\WarlockCombatKit`
+- [x] Deploy with robocopy to `_forever_\Interface\AddOns\WarlockCombatKit`
 - [ ] Final in-game pass: re-run the Phase 1 and Phase 2 manual checks in combat on a mob pack

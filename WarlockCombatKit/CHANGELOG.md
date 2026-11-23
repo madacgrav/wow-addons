@@ -2,6 +2,11 @@
 
 All notable changes to this addon. Versions match `## Version` in `WarlockCombatKit.toc`; each version is published as a `wck-vX.Y.Z` GitHub release.
 
+## [0.2.1] — 2026-11-23
+
+### Changed
+- Rotation buttons stay in colour and grey out only while their spell is on cooldown (not the global cooldown), then return to colour when it is ready. The suggested spell is shown by its purple pulse alone. Shadow Bolt, Fear and Banish are included.
+
 ## [0.2.0] — 2026-11-16
 
 ### Fixed
