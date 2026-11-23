@@ -92,6 +92,17 @@ end
 -- probe snapshots: always on so /tb probe can report the last cast and loot
 TB.trace = {} -- last 12 {t, event, detail}; the probe reads the event order
 local function Trace(ev, d) table.insert(TB.trace, { GetTime(), ev, d }); if #TB.trace > 12 then table.remove(TB.trace, 1) end end
+-- probe run 6: does a fishing pool become the soft-interact target, and is its name readable?
+local function SoftName()
+  local ok, n = pcall(function()
+    if UnitExists("softinteract") then return (UnitIsGameObject("softinteract") and "obj " or "unit ") .. tostring(UnitName("softinteract")) end
+  end)
+  if not ok then return "ERR" end
+  if TB.Secret(n) then return "SECRET" end
+  return n or "none"
+end
+TB.On("PLAYER_SOFT_INTERACT_CHANGED", function(_, new) Trace("SOFT", (TB.Secret(new) and "SECRET" or tostring(new)) .. " " .. SoftName()) end)
+TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit) if unit == "player" then Trace("SOFT@CAST", SoftName()) end end)
 TB.On("UNIT_SPELLCAST_CHANNEL_START", function(unit, _, spellID)
   if unit ~= "player" then return end
   local _, _, _, st, et = UnitChannelInfo("player")
@@ -196,6 +207,18 @@ function TB.Probe()
   end
   P("IsFishingLoot", type(IsFishingLoot))
   P("zone", tostring(GetRealZoneText()) .. " / " .. tostring(GetSubZoneText()))
+  Try("softinteract", function()
+    P("softinteract", tostring(UnitExists("softinteract")) .. " obj " .. tostring(UnitIsGameObject("softinteract"))
+      .. " name " .. S(UnitName("softinteract")) .. " guid " .. S(UnitGUID("softinteract")))
+  end)
+  Try("tooltip", function() P("tooltip", tostring(GameTooltip:IsShown()) .. " " .. S(GameTooltipTextLeft1:GetText())) end)
+  Try("cvar", function() P("SoftTargetInteract", tostring(C_CVar.GetCVar("SoftTargetInteract"))) end)
+  Try("map", function()
+    local m = C_Map.GetBestMapForUnit("player")
+    local pos = m and C_Map.GetPlayerMapPosition(m, "player")
+    P("map", tostring(m) .. " pos " .. (pos and (S(pos.x) .. "," .. S(pos.y)) or "nil") .. " facing " .. S(GetPlayerFacing()))
+  end)
+  P("map hooks", "AddDataProvider " .. type(WorldMapFrame and WorldMapFrame.AddDataProvider) .. " mixin " .. type(MapCanvasDataProviderMixin))
 
   Try("auras", function()
     local first

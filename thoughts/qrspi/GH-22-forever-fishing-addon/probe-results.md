@@ -122,3 +122,13 @@ This settles the Rack ~140 / Hut 300 conflict in the guides.
 - Site 4: at a Campsite Fishing Rack / Fishing Hut.
 - Site 5: with water-walking active.
 - Item IDs: the four Artisan quest fish, Surfer Shoes, Draught of Waterwalking, any Uncommon/Rare/Unique fish, and the Chef's Knife product.
+
+## Run 6: pools, position, map hooks (2026-11-23)
+
+### Library licences (offline)
+- HereBeDragons 2.18-release (2026-10-03): BSD 3-clause per CurseForge (repo has no LICENSE file). Bundling OK with notice reproduced; no endorsement by name.
+- LibStub: public domain (file header).
+- CallbackHandler-1.0: Ace3 LICENSE.txt, BSD-style plus "Redistribution of a stand alone version is strictly prohibited". Embedded copies inside addons are the standard Ace3 use; ship LICENSE.txt alongside.
+
+### In-game (pending)
+Steps: face a pool and run `/tb probe`; mouse over it and run `/tb probe`; cast and catch, then `/tb probe`. Paste `TackleBoxDB.lastProbe` here.
