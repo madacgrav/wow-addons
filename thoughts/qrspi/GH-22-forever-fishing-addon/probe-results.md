@@ -130,5 +130,12 @@ This settles the Rack ~140 / Hut 300 conflict in the guides.
 - LibStub: public domain (file header).
 - CallbackHandler-1.0: Ace3 LICENSE.txt, BSD-style plus "Redistribution of a stand alone version is strictly prohibited". Embedded copies inside addons are the standard Ace3 use; ship LICENSE.txt alongside.
 
-### In-game (pending)
+### In-game, probe A (no pool targeted, no cast), build 1.60.1 71037
+- `map: 1413 pos 0.46504247188568,0.38428139686584 facing 2.0246276855469` in The Barrens / Lushwater Oasis: C_Map position and GetPlayerFacing readable, not secret.
+- `map hooks: AddDataProvider function mixin table`: WorldMapFrame data providers exist.
+- `SoftTargetInteract: 1`: soft-interact on.
+- `softinteract: false obj false name nil guid nil`, `tooltip: false nil`: nothing targeted or hovered at probe time.
+- `lastChannel: none`, no trace: no cast yet. GetProfessionInfo(fishing) level 206/225 mod 0.
+
+### In-game (pending): pool name
 Steps: face a pool and run `/tb probe`; mouse over it and run `/tb probe`; cast and catch, then `/tb probe`. Paste `TackleBoxDB.lastProbe` here.
