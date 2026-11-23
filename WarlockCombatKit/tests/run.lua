@@ -149,4 +149,17 @@ on, ends = WCK.CooldownState({ isActive = true, isOnGCD = false })
 eq(on, true, "real cd, secret timing"); eq(ends, nil, "no end when timing secret")
 on = WCK.CooldownState({ isActive = true }); eq(on, true, "isOnGCD missing = real cd")
 
+-- alt clicks
+local aa = WCK.AltAttrs("Corruption", nil)
+eq(aa.macrotext, WCK.CastMacro("Corruption"), "main macro"); eq(aa.macrotext2, nil, "no right alt")
+eq(WCK.AltAttrs("Corruption", {}).macrotext2, nil, "empty alt table")
+eq(WCK.AltAttrs("Corruption", { right = "Fear" }).macrotext2, WCK.CastMacro("Fear"), "right alt")
+eq(WCK.AltAttrs("Corruption", { right = "" }).macrotext2, nil, "empty right ignored")
+eq(WCK.AltAttrs(nil, { right = "Fear" }).macrotext, "", "no main spell")
+eq(WCK.AltAttrs("Fear", { right = "Fear" }).macrotext2, WCK.CastMacro("Fear"), "alt may equal main")
+local both = WCK.AltAttrs("Corruption", { right = "Fear", shift = "Banish" })
+eq(both.macrotext2, WCK.CastMacro("Fear"), "both: right"); eq(both["shift-macrotext1"], WCK.CastMacro("Banish"), "both: shift")
+local so = WCK.AltAttrs("Corruption", { shift = "Banish" })
+eq(so.macrotext2, nil, "shift only: no right"); eq(so["shift-macrotext1"], WCK.CastMacro("Banish"), "shift only")
+
 print("all tests passed")

@@ -46,7 +46,11 @@ table.insert(WCK.inits, function()
     WCK.AddGlow(b.fel); b.fel.glow:SetVertexColor(0.45, 1, 0.3) -- fel green, as the Nightfall orb
     b:SetScript("OnEnter", function(self)
       if not self.spell then return end
-      GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(self.spell); GameTooltip:Show()
+      GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:AddLine(self.spell)
+      local alt = WCK.char.alts[self.spell]
+      if alt and alt.right then GameTooltip:AddLine("Right-click: " .. alt.right, 1, 1, 1) end
+      if alt and alt.shift then GameTooltip:AddLine("Shift-click: " .. alt.shift, 1, 1, 1) end
+      GameTooltip:Show()
     end)
     b:SetScript("OnLeave", GameTooltip_Hide)
     b:Hide(); buttons[i] = b
@@ -63,12 +67,15 @@ table.insert(WCK.refreshers, function()
     if e then
       if e.tail and i > 1 and not list[i - 1].tail then x = x + EGAP end
       b.spell = e.spell
-      b:SetAttribute("macrotext", WCK.CastMacro(e.spell))
+      local attrs = WCK.AltAttrs(e.spell, WCK.char.alts[e.spell])
+      b:SetAttribute("macrotext", attrs.macrotext)
+      for _, attr in pairs(WCK.ALT_ATTRS) do b:SetAttribute(attr, attrs[attr]) end -- nil clears a removed alternate
       b.icon:SetTexture(C_Spell.GetSpellTexture(e.spell) or 134400) -- 134400 = question mark
       b:ClearAllPoints(); b:SetPoint("LEFT", bar, "LEFT", x, 0); b:Show()
       x = x + SIZE + GAP
     else
       b.spell = nil; b:Hide()
+      for _, attr in pairs(WCK.ALT_ATTRS) do b:SetAttribute(attr, nil) end
     end
   end
   bar:SetWidth(math.max(x - GAP + PAD, SIZE + PAD * 2))

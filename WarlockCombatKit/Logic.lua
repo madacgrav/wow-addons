@@ -209,3 +209,17 @@ function WCK.CastMacro(spell)
   if type(spell) ~= "string" or spell == "" then return "" end
   return "/cast [@mouseover,harm,nodead][] " .. spell
 end
+
+-- rotation bar click variants: attribute name per alternate; an unset alternate stays nil so the secure
+-- template falls back to the plain macrotext (the button's own spell)
+WCK.ALT_ATTRS = { right = "macrotext2", shift = "shift-macrotext1" }
+function WCK.AltAttrs(spell, alt)
+  local out = { macrotext = WCK.CastMacro(spell) }
+  if type(alt) == "table" then
+    for key, attr in pairs(WCK.ALT_ATTRS) do
+      local m = WCK.CastMacro(alt[key])
+      if m ~= "" then out[attr] = m end
+    end
+  end
+  return out
+end
