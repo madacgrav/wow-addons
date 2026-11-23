@@ -1,7 +1,9 @@
 local ADDON, TB = ...
 -- Hand-maintained. Every ID must trace to a line in thoughts/qrspi/GH-22-forever-fishing-addon/probe-results.md
 TB.DATA = {
-  fishingSpells = { [7620] = true }, -- probe run 1: 7620 = Fishing; 131474 does not exist
+  -- the cast spell is the rank: probe run 1: 7620 (Apprentice); run 5: 7732 at skill 205 (Expert).
+  -- 7731 Journeyman and 18248 Artisan are the Classic rank IDs, not yet seen in a Forever trace
+  fishingSpells = { [7620] = true, [7731] = true, [7732] = true, [18248] = true },
   castSeconds = 30,   -- probe run 2: channel is 30000 ms; fallback only, times were not secret
   -- Artisan quest fish; IDs from wago DB2 build 70450 (probe-results.md). need=1 until the quest text is read in game
   questFish = {
