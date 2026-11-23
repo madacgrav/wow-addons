@@ -605,12 +605,12 @@ Add `pins map||minimap` to the help line.
 
 #### Manual
 - [x] Deployed
-- [ ] `/reload`
-- [ ] Learned pools show on the world map (current zone and parent continent) and the minimap; hover tooltip shows name + count
-- [ ] Toggle the `rotateMinimap` option: pins stay in place relative to terrain
-- [ ] `/tb pins map` and `/tb pins minimap` hide/show
-- [ ] Open the world map in combat, close it, cast spells: no `ADDON_ACTION_BLOCKED` (BugSack)
-- [ ] Learning a new pool adds a pin without `/reload`
+- [x] `/reload`
+- [x] Learned pools show on the world map (current zone and parent continent) and the minimap; hover tooltip shows name + count
+- [x] Toggle the `rotateMinimap` option: pins stay in place relative to terrain
+- [x] `/tb pins map` and `/tb pins minimap` hide/show
+- [x] Open the world map in combat, close it, cast spells: no `ADDON_ACTION_BLOCKED` (BugSack)
+- [x] Learning a new pool adds a pin without `/reload`
 
 ---
 
