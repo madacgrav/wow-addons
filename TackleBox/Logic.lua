@@ -298,9 +298,22 @@ function TB.ShouldAlert(last, key, now, cooldown)
   return true
 end
 
--- camp button: st = { skill, owned = {[item]=n}, campActive, fireUp, fires = {kit items best first}, camp = DATA.camp }
--- returns action ("fire" | "place" | nil), item id, usable, need
+-- start/duration in seconds (GetTime clock); nil when ready
+function TB.CampCooldownText(start, duration, now)
+  if not start or not duration or duration <= 1.5 then return nil end -- 1.5: ignore the global cooldown
+  local left = start + duration - now
+  if left <= 0 then return nil end
+  return "camp ready in " .. TB.FormatTime(left)
+end
+
+-- camp button: st = { skill, owned = {[item]=n}, campActive, fireUp, cooldown = text|nil, fires = {kit items best first}, camp = DATA.camp }
+-- returns action ("cooldown" | "fire" | "place" | nil), item id, usable, need
 function TB.CampPick(st)
+  if st.cooldown then -- greyed countdown on the first owned camp item (or kit) while the shared 1 h cooldown runs
+    for _, c in ipairs(st.camp) do if (st.owned[c.item] or 0) > 0 then return "cooldown", c.item, false, st.cooldown end end
+    for _, id in ipairs(st.fires) do if (st.owned[id] or 0) > 0 then return "cooldown", id, false, st.cooldown end end
+    return nil
+  end
   if st.campActive then return nil end -- Camp Benefits already up (one shared buff, probe run 7E)
   if not st.fireUp then
     for _, id in ipairs(st.fires) do if (st.owned[id] or 0) > 0 then return "fire", id, true end end

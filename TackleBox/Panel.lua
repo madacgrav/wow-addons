@@ -338,7 +338,8 @@ table.insert(TB.sections, { key = "camp", title = "Fishing camp", tab = "Camp", 
   -- shared camp buff on top (probe run 7E: one "Camp Benefits" aura for every camp item)
   local a = TB.ReadAura(TB.DATA.campAura)
   TB.auraState[TB.DATA.campAura] = a
-  if a.active then rows[1] = { header = true, text = "Camp Benefits: " .. (a.remaining and (TB.FormatTime(a.remaining) .. " left") or "active") } end
+  if a.active then rows[1] = { header = true, text = "Camp Benefits: " .. (a.remaining and (TB.FormatTime(a.remaining) .. " left") or "active") }
+  else rows[1] = { header = true, text = TB.campCooldownText or "camp ready" } end -- set by the action bar refresher (runs first)
   for _, r in ipairs(TB.CampRows(camp, TB.auraState, TB.skill, counts)) do
     r.icon, r.itemID = C_Item.GetItemIconByID(r.item), r.item
     if r.missing then r.sub = "missing " .. (TB.ItemName(r.missing)) end

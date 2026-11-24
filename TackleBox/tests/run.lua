@@ -165,4 +165,12 @@ local p5 = Pick({ skill = { level = 100 }, owned = { [3] = 1 }, fireUp = true })
 eq(Pick({ skill = { level = 100 }, owned = { [1] = 1 }, campActive = true, fireUp = true })[1], nil, "camp buff up")
 eq(Pick({ skill = { level = 100 } })[1], nil, "camp nothing owned")
 
+-- Camp cooldown
+eq(TB.CampCooldownText(100, 3600, 200), "camp ready in 58:20", "cd running"); eq(TB.CampCooldownText(100, 3600, 4000), nil, "cd done")
+eq(TB.CampCooldownText(100, 1, 100.5), nil, "gcd ignored"); eq(TB.CampCooldownText(nil, nil, 0), nil, "no cd")
+local pc = Pick({ skill = { level = 100 }, owned = { [1] = 1 }, fireUp = true, campActive = true, cooldown = "camp ready in 1:00" })
+eq(pc[1], "cooldown", "cooldown shows during buff"); eq(pc[3], false, "cooldown greyed"); eq(pc[4], "camp ready in 1:00", "cooldown text")
+eq(Pick({ skill = { level = 100 }, owned = { [50] = 1 }, cooldown = "x" })[2], 50, "cooldown on kit when no camp item")
+eq(Pick({ skill = { level = 100 }, cooldown = "x" })[1], nil, "cooldown nothing owned")
+
 print("all tests passed")

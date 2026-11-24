@@ -18,6 +18,7 @@ local function MakeButton(key)
   b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
   b:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
   b.count = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal"); b.count:SetPoint("BOTTOMRIGHT", -3, 3)
+  if key == "camp" then b.cd = CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate"); b.cd:SetAllPoints(b.icon) end
   -- slow ripple so the bar reads as water
   local ripple = b:CreateTexture(nil, "BACKGROUND"); ripple:SetPoint("CENTER"); ripple:SetSize(64, 64)
   ripple:SetTexture("Interface\\Buttons\\UI-ActionButton-Border"); ripple:SetBlendMode("ADD"); ripple:SetVertexColor(T.line[1], T.line[2], T.line[3])
@@ -110,6 +111,10 @@ local function Apply()
       b.icon:SetTexture(a.item and C_Item.GetItemIconByID(a.item) or a.icon)
       b.icon:SetDesaturated(a.usable == false); b.icon:SetAlpha(a.usable == false and 0.5 or 1)
       b.count:SetText(a.item and key ~= "pole" and C_Item.GetItemCount(a.item) or "")
+      if b.cd then
+        local cd = a.action == "cooldown" and TB.campCD
+        if cd then b.cd:SetCooldown(cd[1], cd[2]) else b.cd:Clear() end
+      end
       b:ClearAllPoints(); b:SetPoint("TOP", bar, "TOP", 0, -y); b:Show()
       y = y + 44
     else
@@ -178,9 +183,14 @@ table.insert(TB.refreshers, function()
   TB.waterActive = active
 
   -- camp: campfire first, then the best camp item your skill allows; hidden while Camp Benefits is up
+  -- shared camp cooldown (probe run 7D: item cooldown on every camp item, owned or not)
+  local cs, cdur = C_Container.GetItemCooldown(TB.DATA.camp[1].item)
+  if TB.Secret(cs) or TB.Secret(cdur) then cs, cdur = nil, nil end
+  TB.campCooldownText = TB.CampCooldownText(cs, cdur, GetTime())
+  TB.campCD = TB.campCooldownText and { cs, cdur } or nil
   local cf = TB.DATA.campfires
   local st = { skill = TB.skill, owned = {}, fires = cf.items, camp = TB.DATA.camp,
-    campActive = TB.ReadAura(TB.DATA.campAura).active, fireUp = TB.ReadAura(cf.aura).active }
+    campActive = TB.ReadAura(TB.DATA.campAura).active, fireUp = TB.ReadAura(cf.aura).active, cooldown = TB.campCooldownText }
   for _, id in ipairs(cf.items) do st.owned[id] = C_Item.GetItemCount(id) end
   for _, c in ipairs(TB.DATA.camp) do st.owned[c.item] = C_Item.GetItemCount(c.item) end
   local action, cid, cok, cneed = TB.CampPick(st)

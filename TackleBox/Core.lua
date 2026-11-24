@@ -78,6 +78,7 @@ function TB.ReadAura(spellID)
   return { active = true, remaining = math.max(0, exp - GetTime()) }
 end
 TB.On("UNIT_AURA", function(u) if u == "player" then TB.Refresh() end end)
+TB.On("BAG_UPDATE_COOLDOWN", TB.Refresh) -- camp cooldown starts/ends (probe run 7C/7D)
 -- tick the camp countdown once a second while a camp buff is up
 table.insert(TB.inits, function()
   C_Timer.NewTicker(1, function()
