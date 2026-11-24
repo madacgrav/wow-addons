@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: TackleBox
-## Notes: Forever fishing companion: skill, where to fish, best spots, learned pools on your map, quest fish, catches, camp buffs, water-walking.
-## Version: 1.2.0
+## Notes: Forever fishing companion: skill, where to fish, best spots, learned pools on your map, quest fish, catches, fishing camp, water-walking.
+## Version: 1.3.0
 ## IconTexture: Interface\Icons\Trade_Fishing
 ## SavedVariables: TackleBoxDB
 ## SavedVariablesPerCharacter: TackleBoxCharDB

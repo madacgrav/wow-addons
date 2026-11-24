@@ -2,6 +2,22 @@
 
 All notable changes to this addon. Versions match `## Version` in `TackleBox.toc`; each version is published as a `tb-vX.Y.Z` GitHub release.
 
+## [1.3.0] — 2026-11-23
+
+### Added
+- **Camp button** on the fishing bar. One button for the whole fishing camp:
+  - places your campfire kit when no campfire is nearby, then your best camp item (Fishing Hut, Fishing Rack, Fish Bowl) your skill allows;
+  - shows the shared 1-hour camp cooldown as a greyed countdown ("camp ready in M:SS");
+  - when you own no camp item, offers to craft a Fish Bowl (hammer badge): the click opens Fishing so you press Create, or names the missing reagent.
+- **`/tb camp`** prints camp facts (buffs, cooldowns, recipes, camp reagents in bags) for troubleshooting.
+
+### Changed
+- Camp tab: shows Camp Benefits time left or when the next camp is ready, and per item "in bags", "can craft", "missing <reagent>" or "needs skill N". Uses the camp buffs confirmed in game ("Camp Benefits", "Campfire Nearby").
+- The fishing bar lines up with the collapsed panel (two rows); one column when expanded.
+
+### Fixed
+- Riverglades shows its skill band (the zone was listed as "The Riverglades").
+
 ## [1.2.0] — 2026-11-23
 
 ### Added
