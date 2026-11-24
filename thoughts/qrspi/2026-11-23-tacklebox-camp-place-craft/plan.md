@@ -348,8 +348,8 @@ eq(ca, "cooldown", "cooldown beats place")
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass
+- [x] Lint clean
+- [x] Tests pass
 
 #### Manual
 - [ ] Deployed; `/reload`
