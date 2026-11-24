@@ -429,9 +429,9 @@ eq(TB.CampPick(CK({ skill = { level = 50 }, known = {}, counts = { [7] = 1 } }))
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass
-- [ ] README commands match the `/tb` help line
+- [x] Lint clean
+- [x] Tests pass
+- [x] README commands match the `/tb` help line
 
 #### Manual
 - [ ] Deployed; `/tb` with an unknown word prints help matching the README
