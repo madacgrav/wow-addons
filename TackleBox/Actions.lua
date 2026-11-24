@@ -94,7 +94,7 @@ end)
 -- attributes, visibility and layout only out of combat; PLAYER_REGEN_ENABLED -> Refresh re-applies
 local function Apply()
   if not bar or InCombatLockdown() then return end
-  local y = 6
+  local shown = {}
   for _, key in ipairs(ORDER) do
     local b, a = buttons[key], TB.actions[key]
     if a then
@@ -128,16 +128,25 @@ local function Apply()
         local cd = a.action == "cooldown" and TB.campCD
         if cd then b.cd:SetCooldown(cd[1], cd[2]) else b.cd:Clear() end
       end
-      b:ClearAllPoints(); b:SetPoint("TOP", bar, "TOP", 0, -y); b:Show()
-      y = y + 44
+      shown[#shown + 1] = b
     else
       b:Hide()
     end
   end
   local cast = TB.actions.cast
   caster:SetAttribute("type", cast and "spell" or nil); caster:SetAttribute("spell", cast and cast.spell or nil)
-  bar:SetHeight(math.max(52, y + 2))
-  bar:SetShown(y > 6 and TB.db.shown) -- only with the panel open; a combat close hides it once combat ends
+  -- expanded: one column down the tall panel; collapsed: two rows so the bar is as tall as the panel (TB.PANEL_HEAD)
+  local n = #shown
+  local rows = TB.db.expanded and n or math.min(n, 2)
+  local cols = math.max(1, math.ceil(n / math.max(rows, 1)))
+  local h = TB.db.expanded and math.max(52, rows * 44 + 8) or (TB.PANEL_HEAD or 100)
+  local top = TB.db.expanded and 6 or math.floor((h - (rows * 44 - 4)) / 2)
+  for i, b in ipairs(shown) do
+    local c, r = math.floor((i - 1) / rows), (i - 1) % rows
+    b:ClearAllPoints(); b:SetPoint("TOPLEFT", bar, "TOPLEFT", 6 + c * 44, -(top + r * 44)); b:Show()
+  end
+  bar:SetSize(cols * 44 + 8, h)
+  bar:SetShown(n > 0 and TB.db.shown) -- only with the panel open; a combat close hides it once combat ends
 end
 
 local function BagItems()

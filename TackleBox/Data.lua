@@ -18,7 +18,7 @@ TB.DATA = {
     { band = 1, max = 55, names = { "Elwynn Forest", "Dun Morogh", "Teldrassil", "Durotar", "Mulgore", "Tirisfal Glades",
       "Stormwind City", "Ironforge", "Darnassus", "Orgrimmar", "Thunder Bluff", "Undercity", "Zephras Isle" } },
     { band = 55, max = 135, names = { "Westfall", "Loch Modan", "Darkshore", "The Barrens", "Silverpine Forest", "Redridge Mountains" } },
-    { band = 135, max = 205, names = { "Wetlands", "Ashenvale", "Hillsbrad Foothills", "Stonetalon Mountains", "Duskwood", "The Riverglades" } },
+    { band = 135, max = 205, names = { "Wetlands", "Ashenvale", "Hillsbrad Foothills", "Stonetalon Mountains", "Duskwood", "Riverglades" } },
     -- old-guide band (not in Gfinity): kept so these zones still list
     { band = 150, max = 225, names = { "Swamp of Sorrows", "Thousand Needles", "Alterac Mountains" } },
     { band = 205, max = 275, names = { "Stranglethorn Vale", "Arathi Highlands", "Desolace", "Dustwallow Marsh", "Feralas", "The Hinterlands", "Shen'Dralas" } },

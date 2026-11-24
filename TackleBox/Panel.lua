@@ -1,6 +1,7 @@
 local ADDON, TB = ...
 -- HEAD = collapsed panel height; the tab strip starts at -HEAD; TOP = first row's y
 local WIDTH, ROW_W, PAD, TAB_H, HEAD = 320, 296, 12, 34, 100
+TB.PANEL_HEAD = HEAD -- the action bar matches the collapsed panel height
 local TOP = HEAD + TAB_H + PAD               -- 146
 local PITCH, ROW_H = 26, 24                  -- row spacing and height
 local SKILL_Y, ZONE_Y = -58, -86             -- skill bar top; zone line centre
