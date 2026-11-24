@@ -352,10 +352,10 @@ eq(ca, "cooldown", "cooldown beats place")
 - [x] Tests pass
 
 #### Manual
-- [ ] Deployed; `/reload`
-- [ ] After placing a camp item: button greyed with swipe; tooltip "camp ready in M:SS"; Camp tab header shows the same
-- [ ] `/reload` mid-cooldown: still shown
-- [ ] When it ends: button returns to place/fire
+- [x] Deployed; `/reload`
+- [x] After placing a camp item: button greyed with swipe; tooltip "camp ready in M:SS"; Camp tab header shows the same
+- [x] `/reload` mid-cooldown: still shown
+- [x] When it ends: button returns to place/fire
 
 ---
 
@@ -401,8 +401,8 @@ eq(TB.CampPick(CK({ skill = { level = 50 }, known = {}, counts = { [7] = 1 } }))
 
 ### Verification
 #### Automated
-- [ ] Lint clean
-- [ ] Tests pass
+- [x] Lint clean
+- [x] Tests pass
 
 #### Manual
 - [ ] Deployed; `/reload`
