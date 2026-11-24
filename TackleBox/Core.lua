@@ -78,6 +78,7 @@ function TB.ReadAura(spellID)
   return { active = true, remaining = math.max(0, exp - GetTime()) }
 end
 TB.On("UNIT_AURA", function(u) if u == "player" then TB.Refresh() end end)
+TB.On("BAG_UPDATE_COOLDOWN", TB.Refresh) -- camp cooldown starts/ends (probe run 7C/7D)
 -- tick the camp countdown once a second while a camp buff is up
 table.insert(TB.inits, function()
   C_Timer.NewTicker(1, function()
@@ -133,6 +134,9 @@ end)
 -- cast bar + got-away: a fishing cast that ends with no fishing loot within 1s counts as a miss
 TB.session = { misses = 0 }
 TB.Trace = Trace
+-- traces for /tb probe and /tb camp: casts and crafts
+TB.On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID) if unit == "player" then Trace("CAST_OK", TB.Secret(spellID) and "SECRET" or tostring(spellID)) end end)
+TB.On("TRADE_SKILL_ITEM_CRAFTED_RESULT", function() Trace("CRAFTED") end)
 local function IsFishing(spellID) return spellID and not TB.Secret(spellID) and TB.DATA.fishingSpells[spellID] end
 
 -- pool learning: name at cast time, position = player + offset along facing, saved on confirmed fishing loot
@@ -360,6 +364,63 @@ function TB.Probe()
   for _, e in ipairs(TB.trace) do P("trace", string.format("+%.2f %s %s", e[1] - t0, e[2], tostring(e[3] or ""))) end
 end
 
+-- probe run 7: camp items, campfire/camp buffs, cooldown source, recipe-known check, craft methods
+local CAMP_PROBE = {
+  items = { 279967, 279965, 279966, 279981, 279961, 279974 }, -- Bowl, Rack, Hut, campfire kits (Basic, Journeyman, Expert)
+  recipes = { 1229745, 1262990, 1262998 },                   -- Bowl, Rack, Hut craft spells (probe-results.md:100-113)
+  places = { 1307247, 1307246 },                             -- Rack, Hut placement spells
+  words = { "Wood", "Steak", "Vial", "Runecloth", "Trout", "Smallfish", "Campfire", "Blueprint" },
+}
+function TB.CampProbe()
+  TB.db.lastProbe = {}
+  local function S(v) if TB.Secret(v) then return "SECRET" end return tostring(v) end
+  local function P(k, v) local line = k .. ": " .. tostring(v); TB.Print(line); table.insert(TB.db.lastProbe, line) end
+  local function Try(k, fn) local ok, err = pcall(fn); if not ok then P(k, "ERROR " .. tostring(err)) end end
+  P("combat", InCombatLockdown())
+  Try("auras", function()
+    for i = 1, 40 do
+      local a = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL")
+      if not a then break end
+      P("aura " .. i, S(a.spellId) .. " " .. S(a.name) .. " exp " .. S(a.expirationTime))
+    end
+  end)
+  for _, id in ipairs(CAMP_PROBE.items) do
+    Try("item" .. id, function()
+      local st, d, e = C_Container.GetItemCooldown(id)
+      local sn, sid = C_Item.GetItemSpell(id)
+      P("item " .. id, tostring(C_Item.GetItemNameByID(id)) .. " n" .. C_Item.GetItemCount(id) .. " cd " .. S(st) .. "/" .. S(d) .. "/" .. S(e)
+        .. " spell " .. tostring(sn) .. " " .. tostring(sid))
+    end)
+  end
+  for _, id in ipairs(CAMP_PROBE.places) do
+    Try("place" .. id, function()
+      local c = C_Spell.GetSpellCooldown(id)
+      P("place " .. id, c and (S(c.startTime) .. "/" .. S(c.duration)) or "nil")
+    end)
+  end
+  for _, id in ipairs(CAMP_PROBE.recipes) do
+    Try("recipe" .. id, function()
+      local info = C_TradeSkillUI.GetRecipeInfo(id)
+      P("recipe " .. id, "known " .. tostring(C_SpellBook.IsSpellKnown(id)) .. " info "
+        .. (info and (tostring(info.name) .. " learned " .. tostring(info.learned)) or "nil"))
+    end)
+  end
+  Try("bags", function()
+    for bag = 0, NUM_BAG_SLOTS or 4 do
+      for slot = 1, C_Container.GetContainerNumSlots(bag) do
+        local it = C_Container.GetContainerItemInfo(bag, slot)
+        if it and it.itemID then
+          for _, w in ipairs(CAMP_PROBE.words) do
+            if (it.itemName or ""):find(w, 1, true) then P("bag " .. it.itemID, it.itemName .. " x" .. tostring(it.stackCount)); break end
+          end
+        end
+      end
+    end
+  end)
+  local t0 = TB.trace[1] and TB.trace[1][1] or 0
+  for _, e in ipairs(TB.trace) do P("trace", string.format("+%.2f %s %s", e[1] - t0, e[2], tostring(e[3] or ""))) end
+end
+
 SLASH_TACKLEBOX1 = "/tb"
 SlashCmdList.TACKLEBOX = function(msg)
   local cmd = (msg or ""):lower():match("^%s*(%S*)")
@@ -369,6 +430,7 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "reset" then wipe(TB.db.frames); TB.Print("positions reset; /reload to apply")
   elseif cmd == "probe" then TB.Probe()
   elseif cmd == "flash" then TB.db.flash = not TB.db.flash; TB.Print("flash " .. (TB.db.flash and "on" or "off"))
+  elseif cmd == "camp" then TB.CampProbe()
   elseif cmd == "detect" then TB.db.detect = not TB.db.detect; TB.Print("pool alerts " .. (TB.db.detect and "on" or "off"))
   elseif cmd == "pins" then
     local which = (msg or ""):lower():match("^%s*%S+%s+(%S+)")
@@ -386,5 +448,5 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "unbind" then
     if InCombatLockdown() then TB.Print("can't change the cast key in combat")
     else TB.db.castKey = nil; TB.BindCast(); TB.Print("cast key cleared") end
-  else TB.Print("/tb show||hide||lock||reset||probe||flash||pins map||minimap||detect||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
+  else TB.Print("/tb show||hide||lock||reset||probe||flash||pins map||minimap||detect||camp||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
 end

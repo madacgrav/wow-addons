@@ -60,11 +60,20 @@ eq(TB.IsMiss(10, nil), true, "no loot"); eq(TB.IsMiss(10, 9.7), false, "loot jus
 eq(TB.IsMiss(10, 10.01), false, "loot after stop"); eq(TB.IsMiss(10, 5), true, "old loot")
 
 -- Phase 4
-local B = { { spellID = 1, name = "Rack", unlock = 140 }, { spellID = 2, name = "Hut", unlock = 300 }, { name = "Fire", unlock = 1, subzone = "Camp" } }
-local cr = TB.CampRows(B, { [1] = { active = true, remaining = 65 }, [2] = { active = false } }, { level = 200 }, "Camp")
-eq(cr[1].sub, "1:05 left", "timer"); eq(cr[2].sub, "needs skill 300", "below unlock"); eq(cr[3].sub, "active", "subzone active")
-cr = TB.CampRows(B, { [1] = { active = true } }, { level = 300 }, nil)
-eq(cr[1].sub, "active", "secret timer"); eq(cr[2].sub, "available", "eligible")
+local C = { { key = "hut", name = "Hut", item = 3, skill = 300 },
+  { key = "bowl", name = "Bowl", item = 1, skill = 20, aura = 11, reagents = { { 7, 1 }, { 8, 1 } } } }
+local cr = TB.CampRows(C, { [11] = { active = true, remaining = 65 } }, { level = 200 }, {})
+eq(cr[1].sub, "needs skill 300", "camp below skill"); eq(cr[2].sub, "1:05 left", "camp timer")
+cr = TB.CampRows(C, {}, { level = 200 }, { [1] = 2 }); eq(cr[2].sub, "in bags (2)", "camp in bags")
+cr = TB.CampRows(C, {}, { level = 200 }, { [7] = 1, [8] = 1 }); eq(cr[2].sub, "can craft", "camp can craft")
+cr = TB.CampRows(C, {}, { level = 200 }, { [7] = 1 }); eq(cr[2].missing, 8, "camp missing reagent")
+cr = TB.CampRows(C, { [11] = { active = true } }, { level = 300 }, {}); eq(cr[2].sub, "active", "camp secret timer"); eq(cr[1].sub, "available", "camp no reagents data")
+eq(TB.CanCraft({ { 1, 2 } }, { [1] = 2 }), true, "craft ok"); eq(select(2, TB.CanCraft({ { 1, 2 }, { 5, 1 } }, { [1] = 1 })), 1, "craft first missing")
+eq(TB.CanCraft({}, {}), true, "no reagents")
+for _, ce in ipairs(TB.DATA.camp) do
+  assert(ce.item and ce.recipe and ce.skill, "camp data " .. tostring(ce.key))
+  for _, r in ipairs(ce.reagents or {}) do assert(r[1] and r[2], "camp reagent " .. ce.key) end
+end
 
 -- Phase 5
 eq(TB.WaterWalkPick({ 1, 2 }, {}, false), nil, "none owned")
@@ -143,5 +152,34 @@ eq(#TB.NearestPools({}, 0, 0, 1, 1), 0, "no pools")
 local al = {}
 eq(TB.ShouldAlert(al, "p", 0, 60), true, "first alert"); eq(TB.ShouldAlert(al, "p", 30, 60), false, "cooldown")
 eq(TB.ShouldAlert(al, "q", 30, 60), true, "other pool"); eq(TB.ShouldAlert(al, "p", 61, 60), true, "after cooldown")
+
+-- Camp button
+local CC = { { key = "hut", item = 3, skill = 300 }, { key = "bowl", item = 1, skill = 20 } }
+local function Pick(st) st.camp = st.camp or CC; st.fires = { 50 }; st.owned = st.owned or {}; st.known = st.known or {}; st.counts = st.counts or {}; return { TB.CampPick(st) } end
+local p1 = Pick({ skill = { level = 100 }, owned = { [50] = 1, [1] = 1 } })
+eq(p1[1], "fire", "camp fire first"); eq(p1[2], 50, "camp kit id"); eq(p1[3], true, "camp kit usable")
+local p2 = Pick({ skill = { level = 100 }, owned = { [1] = 1 } }); eq(p2[1], "place", "camp no kit places"); eq(p2[4], "Place near a campfire", "camp fire hint")
+local p3 = Pick({ skill = { level = 100 }, owned = { [50] = 1, [1] = 1 }, fireUp = true }); eq(p3[1], "place", "camp place"); eq(p3[2], 1, "camp bowl")
+eq(Pick({ skill = { level = 300 }, owned = { [1] = 1, [3] = 1 }, fireUp = true })[2], 3, "camp best by skill")
+local p5 = Pick({ skill = { level = 100 }, owned = { [3] = 1 }, fireUp = true }); eq(p5[3], false, "camp locked"); eq(p5[4], "Requires Fishing 300", "camp locked need")
+eq(Pick({ skill = { level = 100 }, owned = { [1] = 1 }, campActive = true, fireUp = true })[1], nil, "camp buff up")
+eq(Pick({ skill = { level = 100 } })[1], nil, "camp nothing owned")
+
+-- Camp cooldown
+eq(TB.CampCooldownText(100, 3600, 200), "camp ready in 58:20", "cd running"); eq(TB.CampCooldownText(100, 3600, 4000), nil, "cd done")
+eq(TB.CampCooldownText(100, 1, 100.5), nil, "gcd ignored"); eq(TB.CampCooldownText(nil, nil, 0), nil, "no cd")
+local pc = Pick({ skill = { level = 100 }, owned = { [1] = 1 }, fireUp = true, campActive = true, cooldown = "camp ready in 1:00" })
+eq(pc[1], "cooldown", "cooldown shows during buff"); eq(pc[3], false, "cooldown greyed"); eq(pc[4], "camp ready in 1:00", "cooldown text")
+eq(Pick({ skill = { level = 100 }, cooldown = "x" })[1], nil, "cooldown nothing owned")
+
+-- Camp craft
+local CR = { { key = "bowl", item = 1, skill = 20, reagents = { { 7, 1 } } } }
+eq(Pick({ camp = CR, skill = { level = 50 }, known = { bowl = true }, counts = { [7] = 1 }, fireUp = true })[1], "craft", "craft when none owned")
+eq(Pick({ camp = CR, skill = { level = 50 }, known = { bowl = true }, counts = { [7] = 1 }, cooldown = "x" })[1], "craft", "craft during cooldown")
+eq(Pick({ camp = CR, skill = { level = 50 }, owned = { [1] = 1 }, known = { bowl = true }, counts = { [7] = 1 }, fireUp = true })[1], "place", "owned beats craft")
+local pk = Pick({ camp = CR, skill = { level = 50 }, known = { bowl = true } }); eq(pk[3], false, "craft missing"); eq(pk[4], "missing item:7", "craft missing text")
+eq(Pick({ camp = CR, skill = { level = 50 }, counts = { [7] = 1 } })[1], nil, "craft unknown recipe")
+eq(Pick({ camp = CR, skill = { level = 10 }, known = { bowl = true }, counts = { [7] = 1 } })[1], nil, "craft below skill")
+eq(Pick({ skill = { level = 300 }, known = { hut = true } })[1], nil, "craft no reagent data")
 
 print("all tests passed")

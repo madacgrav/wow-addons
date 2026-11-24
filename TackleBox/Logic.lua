@@ -148,17 +148,27 @@ function TB.IsMiss(stopT, lastLootT)
   return not (lastLootT and lastLootT >= stopT - 0.5)
 end
 
--- state[spellID] = {active, remaining|nil}; skill = TB.skill
-function TB.CampRows(buffs, state, skill, subzone)
+-- reagents = { {id, n} }; returns true, or false + the first short reagent id
+function TB.CanCraft(reagents, counts)
+  for _, r in ipairs(reagents) do if (counts[r[1]] or 0) < r[2] then return false, r[1] end end
+  return true
+end
+
+-- camp = DATA.camp; state[auraID] = {active, remaining|nil}; counts[itemID] = n (camp items and reagents)
+function TB.CampRows(camp, state, skill, counts)
   local rows, lvl = {}, skill and skill.level or 0
-  for _, b in ipairs(buffs) do
-    local s = b.spellID and state[b.spellID]
-    local active = (s and s.active) or (b.subzone ~= nil and b.subzone == subzone)
-    local sub
-    if active then sub = (s and s.remaining) and TB.FormatTime(s.remaining) .. " left" or "active"
-    elseif lvl < b.unlock then sub = "needs skill " .. b.unlock
+  for _, c in ipairs(camp) do
+    local s = c.aura and state[c.aura]
+    local active = s and s.active
+    local sub, miss, ok
+    if active then sub = s.remaining and (TB.FormatTime(s.remaining) .. " left") or "active"
+    elseif lvl < c.skill then sub = "needs skill " .. c.skill
+    elseif (counts[c.item] or 0) > 0 then sub = "in bags (" .. counts[c.item] .. ")"
+    elseif c.reagents then
+      ok, miss = TB.CanCraft(c.reagents, counts)
+      sub = ok and "can craft" or ("missing item:" .. miss) -- the panel swaps in the reagent name via r.missing
     else sub = "available" end
-    rows[#rows + 1] = { text = b.name, sub = sub, active = active, color = active and { 0.25, 0.75, 0.25 } or nil }
+    rows[#rows + 1] = { text = c.name, sub = sub, item = c.item, missing = miss, active = active, color = active and { 0.25, 0.75, 0.25 } or nil }
   end
   return rows
 end
@@ -287,3 +297,46 @@ function TB.ShouldAlert(last, key, now, cooldown)
   last[key] = now
   return true
 end
+
+-- start/duration in seconds (GetTime clock); nil when ready
+function TB.CampCooldownText(start, duration, now)
+  if not start or not duration or duration <= 1.5 then return nil end -- 1.5: ignore the global cooldown
+  local left = start + duration - now
+  if left <= 0 then return nil end
+  return "camp ready in " .. TB.FormatTime(left)
+end
+
+-- camp button: st = { skill, owned = {[item]=n}, campActive, fireUp, cooldown = text|nil, known = {[key]=bool},
+--   counts = {[reagent]=n}, fires = {kit items best first}, camp = DATA.camp }
+-- returns action ("craft" | "cooldown" | "fire" | "place" | nil), item id, usable, need
+local function CampCraft(st, lvl)
+  local short
+  for _, c in ipairs(st.camp) do
+    if c.reagents and lvl >= c.skill and st.known[c.key] then
+      local ok, miss = TB.CanCraft(c.reagents, st.counts)
+      if ok then return "craft", c.item, true end
+      short = short or { c = c, miss = miss }
+    end
+  end
+  if short then return "craft", short.c.item, false, "missing item:" .. short.miss end
+end
+
+function TB.CampPick(st)
+  local lvl, owned = st.skill and st.skill.level or 0, nil
+  for _, c in ipairs(st.camp) do if (st.owned[c.item] or 0) > 0 then owned = owned or c end end
+  if not owned then return CampCraft(st, lvl) end -- nothing to place: craft one (allowed during the cooldown)
+  if st.cooldown then return "cooldown", owned.item, false, st.cooldown end -- greyed countdown, shared 1 h cooldown
+  if st.campActive then return nil end -- Camp Benefits already up (one shared buff, probe run 7E)
+  if not st.fireUp then
+    for _, id in ipairs(st.fires) do if (st.owned[id] or 0) > 0 then return "fire", id, true end end
+  end
+  local locked
+  for _, c in ipairs(st.camp) do
+    if (st.owned[c.item] or 0) > 0 then
+      if lvl >= c.skill then return "place", c.item, true, (not st.fireUp) and "Place near a campfire" or nil end
+      locked = locked or c
+    end
+  end
+  return "place", locked.item, false, "Requires Fishing " .. locked.skill
+end
+

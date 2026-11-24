@@ -144,3 +144,48 @@ This settles the Rack ~140 / Hut 300 conflict in the guides.
 - Conclusion: learning and detection use the tooltip path. Pool name must come from a hover at or shortly before the cast (cache last hovered pool with a timestamp).
 - Cast-at-pool trace not yet captured.
 Steps: face a pool and run `/tb probe`; mouse over it and run `/tb probe`; cast and catch, then `/tb probe`. Paste `TackleBoxDB.lastProbe` here.
+
+## Run 7: camp (2026-11-23)
+
+### 7A: `/tb camp` away from a fire
+- Item use spells (`C_Item.GetItemSpell`): Fish Bowl 279967 -> 1307245, Fishing Rack 279965 -> 1307247, Fishing Hut 279966 -> 1307246, Basic Campfire Kit 279981 -> 1307227 ("Basic Campfire").
+- Journeyman 279961 / Expert 279974 kits: name nil, spell nil (not owned, item data not cached).
+- `C_Container.GetItemCooldown` readable, not secret: 0/0/1 for all owned camp items (no cooldown running).
+- `C_Spell.GetSpellCooldown` for place spells 1307247/1307246: 0/0.
+- Recipe known: `C_SpellBook.IsSpellKnown(1229745)` true (Fish Bowl), false for Rack 1262990 / Hut 1262998 (not learned). `C_TradeSkillUI.GetRecipeInfo(id).learned` false for all three with the profession window closed: not usable as a known-check.
+- Bags: Fish Bowl x6, Basic Campfire Kit x2, Bolt of Runecloth 14048 x1, Raw Brilliant Smallfish 6291 x3, Coated Cerulean Vial 17693 x1. No Empty Vial.
+- No helpful auras at the time.
+
+### 7B: kit from a secure `type=item` button
+- Click opens a ground-target placement cursor; a second click places the campfire. Placement works from a secure item button (two clicks).
+
+### 7C: `/tb camp` next to the placed Basic Campfire
+- Aura `1283391 Campfire Nearby`, expirationTime 0 (lasts while near the fire): campfire detection = this aura.
+- Kit consumed on use: Basic Campfire Kit x2 -> x1.
+- All three campfire kits share a cooldown after placing: `GetItemCooldown` start 1092365.017, duration 300 (5 min) on 279981, 279961, 279974.
+- Camp items unaffected by the kit cooldown: Fish Bowl / Rack / Hut still 0/0/1.
+- Kit use spells: Journeyman Campfire Kit 279961 -> 1307252, Expert Campfire Kit 279974 -> 1307237 (now cached).
+- Trace: `CAST_OK 1307227` with `BAG_UPDATE_COOLDOWN` around it.
+
+### 7D: Fish Bowl placed at the campfire, craft buttons
+- First bowl click: `UI_ERR You cannot place a feature that close to a creature or object.` Second try: `CAST_OK 1307245`, Fish Bowl consumed (x6 -> x5). Placement = ground-target cursor, like the kit.
+- Shared camp cooldown: after the Bowl, `C_Container.GetItemCooldown` = start 1092461.161, duration 3600 on Fish Bowl, Fishing Rack and Fishing Hut (even unowned). `C_Spell.GetSpellCooldown` on place spells 1307247/1307246 = same 3600. Kits keep their separate 300 s cooldown. Cooldown source: item cooldown.
+- Auras after placing (not seated a full minute): only `1283391 Campfire Nearby`. No Fish Bowl buff observed; the 1 h camp cooldown starting at placement stands in for "camp active".
+- Craft: `api` button -> `pcall(C_TradeSkillUI.CraftRecipe, 1229745)` returned true (no error) but no CAST_OK/CRAFTED trace was captured (no Empty Vial in bags). `window` button -> `OpenTradeSkill(356)` returned true, true. macro / spell results pending.
+
+### 7E: seated at the camp after placing the Fish Bowl
+- Aura `1229741 Camp Benefits`, expirationTime 1096217.168 (~1 h after placement): the camp buff. One shared buff, not per item. Not secret out of combat.
+- Rack/Hut-specific buffs (1280341/1280342) not observed (no Rack/Hut placed); "Camp Benefits" is the confirmed state.
+- `C_TradeSkillUI.GetRecipeInfo(1229745).learned` now true: it only answers after the Fishing window has been opened once. `C_SpellBook.IsSpellKnown(recipe)` answers at any time: use it as the known-check.
+- Clicking camp items during the shared cooldown: `UI_ERR Item is not ready yet.` (game handles it).
+- `CAST_OK 1278067` seen once while seated (unidentified; likely the camp-benefit sit trigger).
+
+### Run 7 conclusions
+- Campfire detection: aura 1283391 "Campfire Nearby". Kits are consumed; all kits share a 300 s cooldown.
+- Camp active: aura 1229741 "Camp Benefits" (~1 h).
+- Shared camp cooldown: `C_Container.GetItemCooldown(<any camp item>)`, 3600 s, starts at placement (Bowl/Rack/Hut and their place spells).
+- Placement: secure `type=item` click opens a ground-target cursor; second click places. Camp items are consumed.
+- Known recipe: `C_SpellBook.IsSpellKnown(recipeSpell)`.
+- Craft buttons (user report): `macro` (/cast Fish Bowl) -> "Item is not ready yet" (name resolves to the item, not the recipe); `spell` (type=spell 1229745) -> nothing happens.
+- Craft method: one-click methods unproven (no reagents in bags; CraftRecipe pcall returned no error). Chosen: "window" (`C_TradeSkillUI.OpenTradeSkill(356)` returned true). Revisit with reagents in bags.
+- Reagent IDs: Raw Brilliant Smallfish 6291, Bolt of Runecloth 14048 confirmed in bags. Empty Vial / Simple Wood / Seasonal Fish Steaks / Crystal Vial / Raw Mithril Head Trout not seen.

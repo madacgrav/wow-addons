@@ -2,8 +2,8 @@ local ADDON, TB = ...
 -- Fishing action bar: equip pole, apply lure, water-walk, cast. Every button is player-clicked; nothing fires on its own.
 -- Secure buttons live on their own UIParent frame: a secure child (or anchor) would make the panel protected in combat.
 
-local ORDER = { "pole", "lure", "water", "cast" }
-local TIPS = { pole = "Equip fishing pole", lure = "Apply lure to your pole", water = "Use water-walking", cast = "Cast your line" }
+local ORDER = { "pole", "lure", "water", "camp", "cast" }
+local TIPS = { pole = "Equip fishing pole", lure = "Apply lure to your pole", water = "Use water-walking", camp = "Set up your fishing camp", cast = "Cast your line" }
 local bar, buttons = nil, {}
 TB.actions = {} -- key -> {item=id} | {spell=name} | nil; the panel's Water tab reads TB.actions.water
 
@@ -18,6 +18,11 @@ local function MakeButton(key)
   b:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
   b:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
   b.count = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal"); b.count:SetPoint("BOTTOMRIGHT", -3, 3)
+  if key == "camp" then
+    b.cd = CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate"); b.cd:SetAllPoints(b.icon)
+    b.badge = b:CreateTexture(nil, "OVERLAY", nil, 2); b.badge:SetSize(14, 14); b.badge:SetPoint("BOTTOMLEFT", 3, 3)
+    b.badge:SetTexture("Interface\\Icons\\Trade_BlackSmithing"); b.badge:Hide() -- marks "craft" vs "place"
+  end
   -- slow ripple so the bar reads as water
   local ripple = b:CreateTexture(nil, "BACKGROUND"); ripple:SetPoint("CENTER"); ripple:SetSize(64, 64)
   ripple:SetTexture("Interface\\Buttons\\UI-ActionButton-Border"); ripple:SetBlendMode("ADD"); ripple:SetVertexColor(T.line[1], T.line[2], T.line[3])
@@ -89,7 +94,7 @@ end)
 -- attributes, visibility and layout only out of combat; PLAYER_REGEN_ENABLED -> Refresh re-applies
 local function Apply()
   if not bar or InCombatLockdown() then return end
-  local y = 6
+  local shown = {}
   for _, key in ipairs(ORDER) do
     local b, a = buttons[key], TB.actions[key]
     if a then
@@ -100,26 +105,48 @@ local function Apply()
       elseif key == "lure" then
         -- use the lure, then put it on the main-hand slot (16 = the equipped pole)
         b:SetAttribute("type", "macro"); b:SetAttribute("macrotext", "/use item:" .. a.item .. "\n/use 16")
-      elseif key == "water" then
+      elseif key == "camp" and a.action == "craft" then
+        -- probe run 7: /cast and type=spell do not craft; DATA.campCraftMethod "window" opens Fishing to press Create
+        b:SetAttribute("type", nil)
+      elseif key == "water" or key == "camp" then -- camp items open a placement cursor; the second click places (probe run 7B)
         b:SetAttribute("type", "item"); b:SetAttribute("item", "item:" .. a.item)
       else
         b:SetAttribute("type", "spell"); b:SetAttribute("spell", a.spell)
       end
       b.itemID, b.need = a.item, a.need
-      b.tip = a.weapons and "Equip your weapons" or nil
+      b.tip = (a.weapons and "Equip your weapons") or (a.action == "fire" and "Place your campfire")
+        or (a.action == "craft" and ("Craft " .. a.name .. ": opens Fishing")) or nil
+      if key == "camp" then
+        local craft = a.action == "craft" and a.usable ~= false
+        b:SetScript("PostClick", craft and function() if not InCombatLockdown() then C_TradeSkillUI.OpenTradeSkill(356) end end or nil)
+        b.badge:SetShown(a.action == "craft")
+      end
       b.icon:SetTexture(a.item and C_Item.GetItemIconByID(a.item) or a.icon)
       b.icon:SetDesaturated(a.usable == false); b.icon:SetAlpha(a.usable == false and 0.5 or 1)
       b.count:SetText(a.item and key ~= "pole" and C_Item.GetItemCount(a.item) or "")
-      b:ClearAllPoints(); b:SetPoint("TOP", bar, "TOP", 0, -y); b:Show()
-      y = y + 44
+      if b.cd then
+        local cd = a.action == "cooldown" and TB.campCD
+        if cd then b.cd:SetCooldown(cd[1], cd[2]) else b.cd:Clear() end
+      end
+      shown[#shown + 1] = b
     else
       b:Hide()
     end
   end
   local cast = TB.actions.cast
   caster:SetAttribute("type", cast and "spell" or nil); caster:SetAttribute("spell", cast and cast.spell or nil)
-  bar:SetHeight(math.max(52, y + 2))
-  bar:SetShown(y > 6 and TB.db.shown) -- only with the panel open; a combat close hides it once combat ends
+  -- expanded: one column down the tall panel; collapsed: two rows so the bar is as tall as the panel (TB.PANEL_HEAD)
+  local n = #shown
+  local rows = TB.db.expanded and n or math.min(n, 2)
+  local cols = math.max(1, math.ceil(n / math.max(rows, 1)))
+  local h = TB.db.expanded and math.max(52, rows * 44 + 8) or (TB.PANEL_HEAD or 100)
+  local top = TB.db.expanded and 6 or math.floor((h - (rows * 44 - 4)) / 2)
+  for i, b in ipairs(shown) do
+    local c, r = math.floor((i - 1) / rows), (i - 1) % rows
+    b:ClearAllPoints(); b:SetPoint("TOPLEFT", bar, "TOPLEFT", 6 + c * 44, -(top + r * 44)); b:Show()
+  end
+  bar:SetSize(cols * 44 + 8, h)
+  bar:SetShown(n > 0 and TB.db.shown) -- only with the panel open; a combat close hides it once combat ends
 end
 
 local function BagItems()
@@ -176,6 +203,31 @@ table.insert(TB.refreshers, function()
   local water, wok = TB.WaterWalkPick(ww.items, wcounts, active, UnitLevel("player"), ww.minLevel)
   if water then A.water = { item = water, usable = wok, need = not wok and ("Requires level " .. ww.minLevel[water]) or nil } end
   TB.waterActive = active
+
+  -- camp: campfire first, then the best camp item your skill allows; hidden while Camp Benefits is up
+  -- shared camp cooldown (probe run 7D: item cooldown on every camp item, owned or not)
+  local cs, cdur = C_Container.GetItemCooldown(TB.DATA.camp[1].item)
+  if TB.Secret(cs) or TB.Secret(cdur) then cs, cdur = nil, nil end
+  TB.campCooldownText = TB.CampCooldownText(cs, cdur, GetTime())
+  TB.campCD = TB.campCooldownText and { cs, cdur } or nil
+  local cf = TB.DATA.campfires
+  local st = { skill = TB.skill, owned = {}, fires = cf.items, camp = TB.DATA.camp,
+    campActive = TB.ReadAura(TB.DATA.campAura).active, fireUp = TB.ReadAura(cf.aura).active, cooldown = TB.campCooldownText }
+  for _, id in ipairs(cf.items) do st.owned[id] = C_Item.GetItemCount(id) end
+  for _, c in ipairs(TB.DATA.camp) do st.owned[c.item] = C_Item.GetItemCount(c.item) end
+  st.known, st.counts = {}, {}
+  for _, c in ipairs(TB.DATA.camp) do
+    st.known[c.key] = C_SpellBook.IsSpellKnown(c.recipe) -- answers without the profession window (probe run 7E)
+    for _, r in ipairs(c.reagents or {}) do st.counts[r[1]] = C_Item.GetItemCount(r[1]) end
+  end
+  local action, cid, cok, cneed = TB.CampPick(st)
+  if action then
+    local miss = cneed and tonumber(cneed:match("^missing item:(%d+)"))
+    if miss then cneed = "Missing " .. (TB.ItemName(miss)) end
+    local name
+    for _, c in ipairs(TB.DATA.camp) do if c.item == cid then name = c.name end end
+    A.camp = { item = cid, usable = cok, need = cneed, action = action, name = name }
+  end
 
   if TB.skill then
     local s = C_Spell.GetSpellInfo(7620) -- probe run 1: Fishing = 7620

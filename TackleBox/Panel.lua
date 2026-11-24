@@ -1,6 +1,7 @@
 local ADDON, TB = ...
 -- HEAD = collapsed panel height; the tab strip starts at -HEAD; TOP = first row's y
 local WIDTH, ROW_W, PAD, TAB_H, HEAD = 320, 296, 12, 34, 100
+TB.PANEL_HEAD = HEAD -- the action bar matches the collapsed panel height
 local TOP = HEAD + TAB_H + PAD               -- 146
 local PITCH, ROW_H = 26, 24                  -- row spacing and height
 local SKILL_Y, ZONE_Y = -58, -86             -- skill bar top; zone line centre
@@ -328,11 +329,23 @@ table.insert(TB.sections, { key = "where", title = "Where to fish", tab = "Where
   return rows
 end })
 
-local CAMP_ITEMS = { 279965, 279966 } -- Fishing Rack, Fishing Hut placeables, for their icons
-table.insert(TB.sections, { key = "camp", title = "Camp buffs", tab = "Camp", empty = "No camp buffs known.", icon = "Interface\\Icons\\Spell_Fire_Fire", build = function()
-  for _, b in ipairs(TB.DATA.campBuffs) do if b.spellID then TB.auraState[b.spellID] = TB.ReadAura(b.spellID) end end
-  local rows = TB.CampRows(TB.DATA.campBuffs, TB.auraState, TB.skill, GetSubZoneText())
-  for i, r in ipairs(rows) do r.icon = CAMP_ITEMS[i] and C_Item.GetItemIconByID(CAMP_ITEMS[i]) or "Interface\\Icons\\Spell_Fire_Fire" end
+table.insert(TB.sections, { key = "camp", title = "Fishing camp", tab = "Camp", empty = "No camp data.", icon = "Interface\\Icons\\Spell_Fire_Fire", build = function()
+  local camp, counts = TB.DATA.camp, {}
+  for _, c in ipairs(camp) do
+    counts[c.item] = C_Item.GetItemCount(c.item)
+    for _, r in ipairs(c.reagents or {}) do counts[r[1]] = C_Item.GetItemCount(r[1]) end
+  end
+  local rows = {}
+  -- shared camp buff on top (probe run 7E: one "Camp Benefits" aura for every camp item)
+  local a = TB.ReadAura(TB.DATA.campAura)
+  TB.auraState[TB.DATA.campAura] = a
+  if a.active then rows[1] = { header = true, text = "Camp Benefits: " .. (a.remaining and (TB.FormatTime(a.remaining) .. " left") or "active") }
+  else rows[1] = { header = true, text = TB.campCooldownText or "camp ready" } end -- set by the action bar refresher (runs first)
+  for _, r in ipairs(TB.CampRows(camp, TB.auraState, TB.skill, counts)) do
+    r.icon, r.itemID = C_Item.GetItemIconByID(r.item), r.item
+    if r.missing then r.sub = "missing " .. (TB.ItemName(r.missing)) end
+    rows[#rows + 1] = r
+  end
   return rows
 end })
 
