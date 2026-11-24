@@ -155,7 +155,7 @@ eq(TB.ShouldAlert(al, "q", 30, 60), true, "other pool"); eq(TB.ShouldAlert(al, "
 
 -- Camp button
 local CC = { { key = "hut", item = 3, skill = 300 }, { key = "bowl", item = 1, skill = 20 } }
-local function Pick(st) st.camp = CC; st.fires = { 50 }; st.owned = st.owned or {}; return { TB.CampPick(st) } end
+local function Pick(st) st.camp = st.camp or CC; st.fires = { 50 }; st.owned = st.owned or {}; st.known = st.known or {}; st.counts = st.counts or {}; return { TB.CampPick(st) } end
 local p1 = Pick({ skill = { level = 100 }, owned = { [50] = 1, [1] = 1 } })
 eq(p1[1], "fire", "camp fire first"); eq(p1[2], 50, "camp kit id"); eq(p1[3], true, "camp kit usable")
 local p2 = Pick({ skill = { level = 100 }, owned = { [1] = 1 } }); eq(p2[1], "place", "camp no kit places"); eq(p2[4], "Place near a campfire", "camp fire hint")
@@ -170,7 +170,16 @@ eq(TB.CampCooldownText(100, 3600, 200), "camp ready in 58:20", "cd running"); eq
 eq(TB.CampCooldownText(100, 1, 100.5), nil, "gcd ignored"); eq(TB.CampCooldownText(nil, nil, 0), nil, "no cd")
 local pc = Pick({ skill = { level = 100 }, owned = { [1] = 1 }, fireUp = true, campActive = true, cooldown = "camp ready in 1:00" })
 eq(pc[1], "cooldown", "cooldown shows during buff"); eq(pc[3], false, "cooldown greyed"); eq(pc[4], "camp ready in 1:00", "cooldown text")
-eq(Pick({ skill = { level = 100 }, owned = { [50] = 1 }, cooldown = "x" })[2], 50, "cooldown on kit when no camp item")
 eq(Pick({ skill = { level = 100 }, cooldown = "x" })[1], nil, "cooldown nothing owned")
+
+-- Camp craft
+local CR = { { key = "bowl", item = 1, skill = 20, reagents = { { 7, 1 } } } }
+eq(Pick({ camp = CR, skill = { level = 50 }, known = { bowl = true }, counts = { [7] = 1 }, fireUp = true })[1], "craft", "craft when none owned")
+eq(Pick({ camp = CR, skill = { level = 50 }, known = { bowl = true }, counts = { [7] = 1 }, cooldown = "x" })[1], "craft", "craft during cooldown")
+eq(Pick({ camp = CR, skill = { level = 50 }, owned = { [1] = 1 }, known = { bowl = true }, counts = { [7] = 1 }, fireUp = true })[1], "place", "owned beats craft")
+local pk = Pick({ camp = CR, skill = { level = 50 }, known = { bowl = true } }); eq(pk[3], false, "craft missing"); eq(pk[4], "missing item:7", "craft missing text")
+eq(Pick({ camp = CR, skill = { level = 50 }, counts = { [7] = 1 } })[1], nil, "craft unknown recipe")
+eq(Pick({ camp = CR, skill = { level = 10 }, known = { bowl = true }, counts = { [7] = 1 } })[1], nil, "craft below skill")
+eq(Pick({ skill = { level = 300 }, known = { hut = true } })[1], nil, "craft no reagent data")
 
 print("all tests passed")

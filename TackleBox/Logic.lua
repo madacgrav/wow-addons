@@ -306,25 +306,37 @@ function TB.CampCooldownText(start, duration, now)
   return "camp ready in " .. TB.FormatTime(left)
 end
 
--- camp button: st = { skill, owned = {[item]=n}, campActive, fireUp, cooldown = text|nil, fires = {kit items best first}, camp = DATA.camp }
--- returns action ("cooldown" | "fire" | "place" | nil), item id, usable, need
-function TB.CampPick(st)
-  if st.cooldown then -- greyed countdown on the first owned camp item (or kit) while the shared 1 h cooldown runs
-    for _, c in ipairs(st.camp) do if (st.owned[c.item] or 0) > 0 then return "cooldown", c.item, false, st.cooldown end end
-    for _, id in ipairs(st.fires) do if (st.owned[id] or 0) > 0 then return "cooldown", id, false, st.cooldown end end
-    return nil
+-- camp button: st = { skill, owned = {[item]=n}, campActive, fireUp, cooldown = text|nil, known = {[key]=bool},
+--   counts = {[reagent]=n}, fires = {kit items best first}, camp = DATA.camp }
+-- returns action ("craft" | "cooldown" | "fire" | "place" | nil), item id, usable, need
+local function CampCraft(st, lvl)
+  local short
+  for _, c in ipairs(st.camp) do
+    if c.reagents and lvl >= c.skill and st.known[c.key] then
+      local ok, miss = TB.CanCraft(c.reagents, st.counts)
+      if ok then return "craft", c.item, true end
+      short = short or { c = c, miss = miss }
+    end
   end
+  if short then return "craft", short.c.item, false, "missing item:" .. short.miss end
+end
+
+function TB.CampPick(st)
+  local lvl, owned = st.skill and st.skill.level or 0, nil
+  for _, c in ipairs(st.camp) do if (st.owned[c.item] or 0) > 0 then owned = owned or c end end
+  if not owned then return CampCraft(st, lvl) end -- nothing to place: craft one (allowed during the cooldown)
+  if st.cooldown then return "cooldown", owned.item, false, st.cooldown end -- greyed countdown, shared 1 h cooldown
   if st.campActive then return nil end -- Camp Benefits already up (one shared buff, probe run 7E)
   if not st.fireUp then
     for _, id in ipairs(st.fires) do if (st.owned[id] or 0) > 0 then return "fire", id, true end end
   end
-  local lvl, locked = st.skill and st.skill.level or 0, nil
+  local locked
   for _, c in ipairs(st.camp) do
     if (st.owned[c.item] or 0) > 0 then
       if lvl >= c.skill then return "place", c.item, true, (not st.fireUp) and "Place near a campfire" or nil end
       locked = locked or c
     end
   end
-  if locked then return "place", locked.item, false, "Requires Fishing " .. locked.skill end
+  return "place", locked.item, false, "Requires Fishing " .. locked.skill
 end
 
