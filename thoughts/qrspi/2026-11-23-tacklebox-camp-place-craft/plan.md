@@ -405,10 +405,10 @@ eq(TB.CampPick(CK({ skill = { level = 50 }, known = {}, counts = { [7] = 1 } }))
 - [x] Tests pass
 
 #### Manual
-- [ ] Deployed; `/reload`
-- [ ] No Fish Bowl, reagents in bags: camp button shows Bowl with hammer badge; click crafts (or opens Fishing with Create ready for the window method); the button then switches to place
-- [ ] Missing a reagent: greyed, tooltip names it
-- [ ] In combat: click does nothing harmful, no taint
+- [x] Deployed; `/reload`
+- [x] No Fish Bowl, reagents in bags: camp button shows Bowl with hammer badge; click crafts (or opens Fishing with Create ready for the window method); the button then switches to place
+- [x] Missing a reagent: greyed, tooltip names it
+- [x] In combat: click does nothing harmful, no taint
 
 ---
 
