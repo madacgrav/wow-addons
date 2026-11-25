@@ -182,4 +182,13 @@ eq(Pick({ camp = CR, skill = { level = 50 }, counts = { [7] = 1 } })[1], nil, "c
 eq(Pick({ camp = CR, skill = { level = 10 }, known = { bowl = true }, counts = { [7] = 1 } })[1], nil, "craft below skill")
 eq(Pick({ skill = { level = 300 }, known = { hut = true } })[1], nil, "craft no reagent data")
 
+-- Lure alert
+local on, off = { item = 6256, pole = true, lure = true }, { item = 6256, pole = true, lure = false }
+eq(TB.LureExpired(nil, off), false, "lure: first read")
+eq(TB.LureExpired(on, off), true, "lure: expired on same pole")
+eq(TB.LureExpired(off, off), false, "lure: still off")
+eq(TB.LureExpired(on, on), false, "lure: still on")
+eq(TB.LureExpired(on, { item = 6365, pole = true, lure = false }), false, "lure: other pole")
+eq(TB.LureExpired(on, { item = 2000, pole = false, lure = false }), false, "lure: swapped to weapon")
+
 print("all tests passed")

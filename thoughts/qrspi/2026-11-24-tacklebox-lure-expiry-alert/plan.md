@@ -163,9 +163,9 @@ Help line (`:451`): insert `lure||` after `flash||`:
 
 ### Verification
 #### Automated
-- [ ] `lua D:/Source/wow-addons/TackleBox/tests/run.lua` prints `all tests passed` (6 new lure cases)
-- [ ] Lint shows 0 errors, with no new undefined-global warnings (`RaidNotice_AddMessage`, `RaidWarningFrame`, `ChatTypeInfo`, `UIErrorsFrame`, `SOUNDKIT`, `PlaySound`, `GetWeaponEnchantInfo` are all in the std)
-- [ ] `grep -n "PoleEquipped" TackleBox/*.lua` shows only `TB.PoleEquipped` (definition + 2 calls)
+- [x] `lua D:/Source/wow-addons/TackleBox/tests/run.lua` prints `all tests passed` (6 new lure cases)
+- [x] Lint shows 0 errors, with no new undefined-global warnings (`RaidNotice_AddMessage`, `RaidWarningFrame`, `ChatTypeInfo`, `UIErrorsFrame`, `SOUNDKIT`, `PlaySound`, `GetWeaponEnchantInfo` are all in the std)
+- [x] `grep -n "PoleEquipped" TackleBox/*.lua` shows only `TB.PoleEquipped` (definition + 2 calls)
 
 #### Manual (after commit + deploy + `/reload`)
 - [ ] Pole equipped, no lure, `/reload`: no alert

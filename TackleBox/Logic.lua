@@ -298,6 +298,12 @@ function TB.ShouldAlert(last, key, now, cooldown)
   return true
 end
 
+-- lure state = { item = slot-16 itemID|nil, pole = bool, lure = bool }; prev nil = first read (login)
+-- true only when the lure dropped off the same pole that is still equipped (a swap clears the read too)
+function TB.LureExpired(prev, cur)
+  return (prev and prev.lure and not cur.lure and cur.pole and prev.item == cur.item) and true or false
+end
+
 -- start/duration in seconds (GetTime clock); nil when ready
 function TB.CampCooldownText(start, duration, now)
   if not start or not duration or duration <= 1.5 then return nil end -- 1.5: ignore the global cooldown
