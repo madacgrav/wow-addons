@@ -131,7 +131,7 @@ end)
 TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
   if unit == "player" and TB.lastChannel then TB.lastChannel.stopT = GetTime() end
 end)
--- cast bar + got-away: a fishing cast that ends with no fishing loot within 1s counts as a miss
+-- cast bar + got-away count: a fishing cast that ends with no fishing loot within 1s counts as a miss
 TB.session = { misses = 0 }
 TB.Trace = Trace
 -- traces for /tb probe and /tb camp: casts and crafts
@@ -236,7 +236,6 @@ TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
   C_Timer.After(1, function()
     if TB.IsMiss(stopT, TB.lastLootT) then
       TB.session.misses = TB.session.misses + 1
-      if TB.db.flash then TB.Flash() end
       TB.Refresh()
     end
   end)
