@@ -215,5 +215,5 @@ Help line (`:451`): insert `lure||` after `flash||`:
 - [x] `grep -n "tb lure" TackleBox/README.md` finds the section and the table row
 
 #### Manual (after commit + deploy + `/reload`)
-- [ ] `/tb xyz` help line includes `lure`
-- [ ] The addon list shows TackleBox 1.4.0
+- [x] `/tb xyz` help line includes `lure`
+- [x] The addon list shows TackleBox 1.4.0
