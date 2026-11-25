@@ -163,7 +163,7 @@ local function BagItems()
   return items
 end
 
-local function PoleEquipped()
+function TB.PoleEquipped()
   local id = GetInventoryItemID("player", 16)
   if not id then return false end
   local _, _, _, _, _, classID, subID = C_Item.GetItemInfoInstant(id)
@@ -176,7 +176,7 @@ local function SlotItem(s)
 end
 
 table.insert(TB.refreshers, function()
-  local A, poleOn, items = {}, PoleEquipped(), BagItems()
+  local A, poleOn, items = {}, TB.PoleEquipped(), BagItems()
   if not poleOn then
     -- any non-pole main hand is the set to come back to; an empty hand keeps the old snapshot
     if GetInventoryItemID("player", 16) then TB.char.weapons = { mh = SlotItem(16), oh = SlotItem(17) } end

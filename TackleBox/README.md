@@ -33,7 +33,7 @@ TackleBox learns pools as you fish them. The game only shows a pool's name in it
 1. Hover the pool (its tooltip shows), then cast at it within 60 seconds. One-key cast works too.
 2. When the catch lands, the spot is saved for all your characters: your position plus 15 yards in the direction you face. Chat says `learned <pool>` the first time.
 
-Learned pools appear under Nearby pools on the Spots tab and as pins on the world map and minimap (hover a pin for the name and count). `/tb pins map` and `/tb pins minimap` hide or show them. Hovering a pool also prints `<pool> nearby` and flashes (once per pool per minute, never in combat); `/tb detect` turns that off. Pools are spawn points, so a learned spot may be empty until the pool respawns.
+Learned pools appear under Nearby pools on the Spots tab and as pins on the world map and minimap (hover a pin for the name and count). `/tb pins map` and `/tb pins minimap` hide or show them. Hovering a pool also prints `<pool> nearby` and flashes blue (once per pool per minute, never in combat); `/tb detect` turns that off. Pools are spawn points, so a learned spot may be empty until the pool respawns.
 
 ## Fishing bar
 
@@ -61,9 +61,13 @@ Forever camp items only work next to a campfire, and all of them share a 1-hour 
 
 Placing needs two clicks because the game asks where to put the item. "You cannot place a feature that close to a creature or object" means: pick a spot with more room.
 
-## Cast bar and "got away" flash
+## Cast bar and "got away" count
 
-While you fish, a line-style bar under the panel counts down the 30-second cast. When a cast ends without a catch (a fish got away, the cast ran out, or you moved), the screen edge flashes blue and the header's "got away" count goes up. `/tb flash` turns the flash off or on; the count keeps counting either way. The game does not tell addons when a fish bites, so the flash only ever reacts to a cast that already ended.
+While you fish, a line-style bar under the panel counts down the 30-second cast. When a cast ends without a catch (a fish got away, the cast ran out, or you moved), the header's "got away" count goes up. The game does not tell addons when a fish bites, so the count only ever reacts to a cast that already ended.
+
+## Lure expired alert
+
+When the lure on your equipped fishing pole wears off, TackleBox shows "Lure expired: reapply" in the centre of the screen and in chat, flashes the screen edge amber and plays the raid-warning sound. Swapping the pole off does not trigger it. `/tb lure` turns the alert off or on; `/tb flash` turns off just the flash. It can take up to 5 seconds to notice.
 
 The minimap button toggles the panel (left-click) and prints your skill (right-click). Drag it around the minimap.
 
@@ -91,7 +95,8 @@ Limits:
 | `/tb show` / `/tb hide` | Show or hide the panel |
 | `/tb lock` | Lock or unlock frame dragging |
 | `/tb reset` | Forget saved positions (applies after `/reload`) |
-| `/tb flash` | Turn the got-away flash on or off (also used by pool alerts) |
+| `/tb flash` | Turn the screen flash for pool and lure alerts on or off |
+| `/tb lure` | Turn the lure expired alert on or off |
 | `/tb pins map` / `/tb pins minimap` | Hide or show learned-pool pins |
 | `/tb detect` | Turn pool alerts on or off |
 | `/tb camp` | Print camp buffs, cooldowns, recipes and camp reagents in your bags |

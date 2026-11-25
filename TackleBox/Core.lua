@@ -17,7 +17,7 @@ end)
 -- version 2: pools/pins/detect added; nothing to convert from v1, MergeDefaults fills them. Bump + migrate here on schema change.
 -- pools[uiMapID] = { {x, y, t = poolKey, n, last} }, x/y are 0-1 zone coordinates
 local DEFAULTS = { version = 2, locked = false, shown = true, frames = {}, minimapAngle = 200, tab = "where", flash = true, expanded = false,
-  pools = {}, pins = { map = true, minimap = true }, detect = true }
+  pools = {}, pins = { map = true, minimap = true }, detect = true, lureAlert = true }
 local CHAR_DEFAULTS = { catches = {} }
 
 TB.On("ADDON_LOADED", function(name)
@@ -131,7 +131,7 @@ end)
 TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
   if unit == "player" and TB.lastChannel then TB.lastChannel.stopT = GetTime() end
 end)
--- cast bar + got-away: a fishing cast that ends with no fishing loot within 1s counts as a miss
+-- cast bar + got-away count: a fishing cast that ends with no fishing loot within 1s counts as a miss
 TB.session = { misses = 0 }
 TB.Trace = Trace
 -- traces for /tb probe and /tb camp: casts and crafts
@@ -166,6 +166,41 @@ end)
 TB.On("PLAYER_SOFT_INTERACT_CHANGED", function()
   local ok, n = pcall(function() if UnitExists("softinteract") and UnitIsGameObject("softinteract") then return UnitName("softinteract") end end)
   if ok and n and not TB.Secret(n) and TB.PoolKey(n, TB.DATA.pools) then Alert(n) end
+end)
+
+-- lure expiry: remember whether the equipped pole has a temp enchant; alert when it drops off the same pole.
+-- Only the 1st GetWeaponEnchantInfo return is used (Actions.lua uses it too); the expiry time is unverified on Forever.
+TB.LURE_MSG, TB.LURE_COLOR = "Lure expired: reapply", { 1, 0.65, 0.1 }
+TB.lureState = nil -- { item, pole, lure }
+
+function TB.ReadLureState()
+  local has = GetWeaponEnchantInfo()
+  if TB.Secret(has) then return nil end -- unknown: keep the last state
+  return { item = GetInventoryItemID("player", 16), pole = TB.PoleEquipped() and true or false, lure = has and true or false }
+end
+
+function TB.LureAlert()
+  local c = TB.LURE_COLOR
+  if not pcall(RaidNotice_AddMessage, RaidWarningFrame, TB.LURE_MSG, ChatTypeInfo["RAID_WARNING"]) then
+    UIErrorsFrame:AddMessage(TB.LURE_MSG, c[1], c[2], c[3])
+  end
+  TB.Print(TB.LURE_MSG)
+  if TB.db.flash then TB.Flash(c[1], c[2], c[3]) end
+  PlaySound(SOUNDKIT.RAID_WARNING or 8959, "Master")
+end
+
+function TB.CheckLure()
+  if not TB.active then return end
+  local cur = TB.ReadLureState()
+  if not cur then return end
+  if TB.db.lureAlert and TB.LureExpired(TB.lureState, cur) then TB.LureAlert() end
+  TB.lureState = cur
+end
+table.insert(TB.refreshers, TB.CheckLure) -- Refresh already runs on UNIT_INVENTORY_CHANGED
+TB.On("WEAPON_ENCHANT_CHANGED", TB.CheckLure)
+-- backup if no event fires on expiry: poll only while a lure is on the pole (alert lags up to 5s)
+table.insert(TB.inits, function()
+  C_Timer.NewTicker(5, function() local s = TB.lureState; if s and s.lure and s.pole then TB.CheckLure() end end)
 end)
 
 -- pool under soft-interact, else the tooltip, else a recent hover; nil when secret or not a known pool
@@ -236,7 +271,6 @@ TB.On("UNIT_SPELLCAST_CHANNEL_STOP", function(unit)
   C_Timer.After(1, function()
     if TB.IsMiss(stopT, TB.lastLootT) then
       TB.session.misses = TB.session.misses + 1
-      if TB.db.flash then TB.Flash() end
       TB.Refresh()
     end
   end)
@@ -430,6 +464,7 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "reset" then wipe(TB.db.frames); TB.Print("positions reset; /reload to apply")
   elseif cmd == "probe" then TB.Probe()
   elseif cmd == "flash" then TB.db.flash = not TB.db.flash; TB.Print("flash " .. (TB.db.flash and "on" or "off"))
+  elseif cmd == "lure" then TB.db.lureAlert = not TB.db.lureAlert; TB.Print("lure alert " .. (TB.db.lureAlert and "on" or "off"))
   elseif cmd == "camp" then TB.CampProbe()
   elseif cmd == "detect" then TB.db.detect = not TB.db.detect; TB.Print("pool alerts " .. (TB.db.detect and "on" or "off"))
   elseif cmd == "pins" then
@@ -448,5 +483,5 @@ SlashCmdList.TACKLEBOX = function(msg)
   elseif cmd == "unbind" then
     if InCombatLockdown() then TB.Print("can't change the cast key in combat")
     else TB.db.castKey = nil; TB.BindCast(); TB.Print("cast key cleared") end
-  else TB.Print("/tb show||hide||lock||reset||probe||flash||pins map||minimap||detect||camp||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
+  else TB.Print("/tb show||hide||lock||reset||probe||flash||lure||pins map||minimap||detect||camp||bind <key>||unbind") end -- || prints one pipe; a bare |h starts a chat link escape
 end

@@ -21,12 +21,13 @@ table.insert(TB.inits, function()
   bar.text = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); bar.text:SetPoint("RIGHT", -4, 0)
   bar.holder = holder
 
-  -- blue screen-edge vignette; mouse-transparent so it never blocks a click
+  -- screen-edge vignette (blue by default); mouse-transparent so it never blocks a click
   flash = CreateFrame("Frame", "TBFlash", UIParent)
   flash:SetAllPoints(UIParent); flash:SetFrameStrata("FULLSCREEN_DIALOG"); flash:EnableMouse(false)
   local t = flash:CreateTexture(nil, "BACKGROUND"); t:SetAllPoints()
   -- LowHealth art is red; desaturate first or the tint multiplies into red
   t:SetTexture("Interface\\FullScreenTextures\\LowHealth"); t:SetDesaturated(true); t:SetBlendMode("ADD"); t:SetVertexColor(0.3, 0.6, 1)
+  flash.tex = t
   flash:SetAlpha(0); flash:Show()
   local ag = flash:CreateAnimationGroup()
   local a1 = ag:CreateAnimation("Alpha"); a1:SetFromAlpha(0); a1:SetToAlpha(0.8); a1:SetDuration(0.15); a1:SetOrder(1)
@@ -51,4 +52,5 @@ function TB.StartCastBar(st, et)
   end)
 end
 function TB.StopCastBar() bar:SetScript("OnUpdate", nil); bar.holder:Hide() end
-function TB.Flash() flash.anim:Stop(); flash.anim:Play() end
+-- default blue (pool alerts); callers pass a tint for other alerts
+function TB.Flash(r, g, b) flash.tex:SetVertexColor(r or 0.3, g or 0.6, b or 1); flash.anim:Stop(); flash.anim:Play() end
