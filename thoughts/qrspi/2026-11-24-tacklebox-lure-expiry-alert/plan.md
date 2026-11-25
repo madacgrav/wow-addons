@@ -62,8 +62,8 @@ Leave the pool alert at `:156` unchanged (`TB.Flash()` with no arguments stays b
 - [x] `grep -n "TB.Flash" TackleBox/*.lua` shows only the definition and the pool call (`Core.lua:156`)
 
 #### Manual (after commit + deploy + `/reload`)
-- [ ] Cast and let it run out or miss: the "got away" count goes up and the screen does not flash
-- [ ] Hover a fishing pool (out of combat, `/tb detect` on): chat says `<pool> nearby` and the screen edge flashes blue
+- [x] Cast and let it run out or miss: the "got away" count goes up and the screen does not flash
+- [x] Hover a fishing pool (out of combat, `/tb detect` on): chat says `<pool> nearby` and the screen edge flashes blue
 
 ---
 
@@ -168,12 +168,12 @@ Help line (`:451`): insert `lure||` after `flash||`:
 - [x] `grep -n "PoleEquipped" TackleBox/*.lua` shows only `TB.PoleEquipped` (definition + 2 calls)
 
 #### Manual (after commit + deploy + `/reload`)
-- [ ] Pole equipped, no lure, `/reload`: no alert
-- [ ] Apply Shiny Bauble with the Lure button. Wait for it to expire (about 10 minutes). Expect `Lure expired: reapply` as centre raid-warning text, a TB chat line, an amber screen-edge flash and the raid-warning sound, once
-- [ ] Apply a lure, then swap to weapons with the Pole button: no alert
-- [ ] `/tb lure` prints `lure alert off`; let a lure expire: no alert. `/tb lure` again prints `lure alert on`
-- [ ] `/tb flash` off; let a lure expire: text, chat and sound, no flash
-- [ ] Hover a pool: flash is still blue (the amber tint does not stick)
+- [x] Pole equipped, no lure, `/reload`: no alert
+- [x] Apply Shiny Bauble with the Lure button. Wait for it to expire (about 10 minutes). Expect `Lure expired: reapply` as centre raid-warning text, a TB chat line, an amber screen-edge flash and the raid-warning sound, once
+- [x] Apply a lure, then swap to weapons with the Pole button: no alert
+- [x] `/tb lure` prints `lure alert off`; let a lure expire: no alert. `/tb lure` again prints `lure alert on`
+- [x] `/tb flash` off; let a lure expire: text, chat and sound, no flash
+- [x] Hover a pool: flash is still blue (the amber tint does not stick)
 
 ---
 
@@ -210,9 +210,9 @@ Help line (`:451`): insert `lure||` after `flash||`:
 ### Verification
 #### Automated
 - [x] `lua D:/Source/wow-addons/TackleBox/tests/run.lua` prints `all tests passed`
-- [ ] Lint shows 0 errors
-- [ ] `grep -n "Version" TackleBox/TackleBox.toc` shows `1.4.0`; `grep -n "1.4.0" TackleBox/CHANGELOG.md` finds the new heading
-- [ ] `grep -n "tb lure" TackleBox/README.md` finds the section and the table row
+- [x] Lint shows 0 errors
+- [x] `grep -n "Version" TackleBox/TackleBox.toc` shows `1.4.0`; `grep -n "1.4.0" TackleBox/CHANGELOG.md` finds the new heading
+- [x] `grep -n "tb lure" TackleBox/README.md` finds the section and the table row
 
 #### Manual (after commit + deploy + `/reload`)
 - [ ] `/tb xyz` help line includes `lure`

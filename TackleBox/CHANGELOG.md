@@ -2,6 +2,15 @@
 
 All notable changes to this addon. Versions match `## Version` in `TackleBox.toc`; each version is published as a `tb-vX.Y.Z` GitHub release.
 
+## [1.4.0] — 2026-11-24
+
+### Added
+- **Lure expired alert.** When the lure on your equipped fishing pole wears off, TackleBox shows "Lure expired: reapply" on screen and in chat, flashes the screen edge amber and plays a sound. `/tb lure` turns it off or on; `/tb flash` controls just the flash.
+
+### Changed
+- A fish getting away no longer flashes the screen. The "got away" count still counts.
+- Pool alerts keep the blue flash; the lure alert flashes amber so the two are easy to tell apart.
+
 ## [1.3.0] — 2026-11-23
 
 ### Added
